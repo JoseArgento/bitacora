@@ -70,6 +70,7 @@ EDITIONS = {
         "ui": ["UI/RemindersTab.lua"],
         "icon": "Interface\\Icons\\INV_Misc_PocketWatch_01",
         "standalone": True,
+        # "curse": 123456,  # Recordame's own CurseForge project, once it exists (then run this script)
     },
 }
 
@@ -101,6 +102,8 @@ def toc(name: str, e: dict, files: list[str]) -> str:
         "## Version: @project-version@",
         *([f"## SavedVariables: {name}DB"] if e.get("standalone") else ["## Dependencies: Bitacora_Datos"]),
         f"## IconTexture: {e['icon']}",
+        *([f"## X-Curse-Project-ID: {e['curse']}"] if e.get("curse") else []),  # set "curse" once the project exists
+        *([f"## X-Wago-ID: {e['wago']}"] if e.get("wago") else []),
         f"## AddonCompartmentFunc: {name}_OnAddonCompartmentClick",
         f"## AddonCompartmentFuncOnEnter: {name}_OnAddonCompartmentEnter",
         f"## AddonCompartmentFuncOnLeave: {name}_OnAddonCompartmentLeave",
