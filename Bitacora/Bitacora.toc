@@ -19,6 +19,7 @@ Notes.lua
 Journal.lua
 Album.lua
 Reminders.lua
+GuildReminders.lua
 Progress.lua
 Chronicle.lua
 Events.lua

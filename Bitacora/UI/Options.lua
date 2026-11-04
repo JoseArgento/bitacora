@@ -39,6 +39,7 @@ add("zoneNotes", L.OPT_ZONE, ns.Notes)
 add("screenshotChat", L.OPT_SCREENSHOT, ns.Album)
 add("journalQuests", L.OPT_QUESTS, ns.Journal)
 add("chronicle", L.OPT_CHRONICLE, ns.Chronicle)
+add("guildReminders", L.OPT_GUILD_REMINDERS, ns.GuildReminders)
 add("bookIntro", L.OPT_BOOK_INTRO, true)
 
 local lootLabel = UI.Label(panel, L.SETTINGS_LOOT, "GameFontNormal")

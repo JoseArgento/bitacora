@@ -1,8 +1,8 @@
 ## Interface: 16001
 ## Title: Bitácora · Recordatorios
-## Notes: Bitácora reminders: by zone, level, login, mailbox, bank, vendor, auction house or day and time.
-## Notes-esES: Recordatorios de Bitácora: por zona, nivel, al entrar, correo, banco, vendedor, subasta o día y hora.
-## Notes-esMX: Recordatorios de Bitácora: por zona, nivel, al entrar, correo, banco, vendedor, subasta o día y hora.
+## Notes: Bitácora reminders: by zone, level, login, mailbox, bank, vendor, auction house, day and time or before the weekly reset, plus your officers' guild reminders.
+## Notes-esES: Recordatorios de Bitácora: por zona, nivel, al entrar, correo, banco, vendedor, subasta, día y hora o antes del reinicio semanal, y los recordatorios de guild de tus oficiales.
+## Notes-esMX: Recordatorios de Bitácora: por zona, nivel, al entrar, correo, banco, vendedor, subasta, día y hora o antes del reinicio semanal, y los recordatorios de guild de tus oficiales.
 ## Author: José Argento
 ## Version: @project-version@
 ## Dependencies: Bitacora_Datos
@@ -16,6 +16,7 @@ Edition.lua
 Locales.lua
 Core.lua
 Reminders.lua
+GuildReminders.lua
 Events.lua
 UI\Widgets.lua
 UI\Main.lua

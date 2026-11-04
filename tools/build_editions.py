@@ -52,10 +52,10 @@ EDITIONS = {
     },
     "Bitacora_Recordatorios": {
         "title": "Bitácora · Recordatorios",
-        "en": "Bitácora reminders: by zone, level, login, mailbox, bank, vendor, auction house or day and time.",
-        "es": "Recordatorios de Bitácora: por zona, nivel, al entrar, correo, banco, vendedor, subasta o día y hora.",
+        "en": "Bitácora reminders: by zone, level, login, mailbox, bank, vendor, auction house, day and time or before the weekly reset, plus your officers' guild reminders.",
+        "es": "Recordatorios de Bitácora: por zona, nivel, al entrar, correo, banco, vendedor, subasta, día y hora o antes del reinicio semanal, y los recordatorios de guild de tus oficiales.",
         "slash": ["/recordatorios", "/recordar"],
-        "logic": ["Reminders.lua"],
+        "logic": ["Reminders.lua", "GuildReminders.lua"],
         "ui": ["UI/RemindersTab.lua"],
         "icon": "Interface\\Icons\\INV_Misc_PocketWatch_01",
     },

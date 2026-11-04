@@ -86,7 +86,16 @@ on("PLAYER_LOGIN", function()
 		end)
 		C_Timer.NewTicker(30, function()
 			ns.Reminders.Check({ event = "tick", now = time() }, ns.CharKey())
+			if ns.GuildReminders then
+				ns.GuildReminders.Check("tick")
+			end
 		end)
+		if ns.GuildReminders then
+			C_Timer.After(10, function()
+				ns.GuildReminders.Check("login")
+				ns.GuildReminders.Ask()
+			end)
+		end
 	end
 end)
 
@@ -152,8 +161,15 @@ end
 if ns.Album then
 	on("SCREENSHOT_SUCCEEDED", ns.Album.OnScreenshot)
 end
-if ns.Chronicle then
-	on("CHAT_MSG_ADDON", ns.Chronicle.OnAddonMessage)
+if ns.Chronicle or ns.GuildReminders then
+	on("CHAT_MSG_ADDON", function(...)
+		if ns.Chronicle then
+			ns.Chronicle.OnAddonMessage(...)
+		end
+		if ns.GuildReminders then
+			ns.GuildReminders.OnAddonMessage(...)
+		end
+	end)
 end
 if ns.Reminders then
 	for event, place in pairs({ MAIL_SHOW = "MAIL", BANKFRAME_OPENED = "BANK", MERCHANT_SHOW = "MERCHANT", AUCTION_HOUSE_SHOW = "AUCTION" }) do

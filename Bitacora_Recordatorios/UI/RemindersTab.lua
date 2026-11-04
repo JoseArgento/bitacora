@@ -2,8 +2,16 @@ local _, ns = ...
 local L = ns.L
 local UI = ns.UI
 local R = ns.Reminders
+local G = ns.GuildReminders
 
-local KINDS = { { "zone", "R_ZONE" }, { "level", "R_LEVEL" }, { "login", "R_LOGIN" }, { "place", "R_PLACE" }, { "time", "R_TIME" } }
+local KINDS = {
+	{ "zone", "R_ZONE" },
+	{ "level", "R_LEVEL" },
+	{ "login", "R_LOGIN" },
+	{ "place", "R_PLACE" },
+	{ "time", "R_TIME" },
+	{ "reset", "R_RESET" },
+}
 
 UI.RegisterTab("TAB_REMINDERS", "reminders", function(panel)
 	local view = { kind = "zone", place = "MAIL", wday = 0 }
@@ -39,6 +47,9 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(panel)
 	onlyChar:SetPoint("TOPLEFT", whenLabel, "BOTTOMLEFT", -4, -10)
 	local repeating = UI.Check(form, L.REPEAT)
 	repeating:SetPoint("LEFT", onlyChar.label, "RIGHT", 16, 0)
+	-- officers can send a day-and-time reminder to the whole guild
+	local forGuild = UI.Check(form, L.FOR_GUILD)
+	forGuild:SetPoint("LEFT", repeating.label, "RIGHT", 16, 0)
 
 	local create = UI.Button(form, L.NEW_REMINDER, 160, nil)
 	create:SetPoint("BOTTOMRIGHT", -12, 10)
@@ -50,7 +61,7 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(panel)
 				kindButton:SetText(L[pair[2]])
 			end
 		end
-		value:SetShown(k == "zone" or k == "level" or k == "time")
+		value:SetShown(k == "zone" or k == "level" or k == "time" or k == "reset")
 		minute:SetShown(k == "time")
 		optionButton:SetShown(k == "place" or k == "time")
 		value:ClearAllPoints()
@@ -62,16 +73,19 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(panel)
 			valueHint:SetPoint("LEFT", minute, "RIGHT", 8, 0)
 			valueHint:SetText(L.R_TIME_HINT)
 		else
-			value:SetWidth(k == "level" and 50 or 200)
+			value:SetWidth((k == "level" or k == "reset") and 50 or 200)
 			value:SetPoint("LEFT", kindButton, "RIGHT", 12, 0)
 			valueHint:ClearAllPoints()
 			valueHint:SetPoint("LEFT", value, "RIGHT", 8, 0)
-			valueHint:SetText(k == "zone" and L.R_ZONE_HINT or k == "level" and L.R_LEVEL_HINT or "")
+			valueHint:SetText(k == "zone" and L.R_ZONE_HINT or k == "level" and L.R_LEVEL_HINT or k == "reset" and L.R_RESET_HINT or "")
 			optionButton:SetText(L[R.PLACE_LABEL[view.place]])
 		end
 		valueHint:SetShown(value:IsShown())
 		repeating:SetShown(k ~= "level")
+		forGuild:SetShown(G ~= nil and G.IAmOfficer() and k == "time")
+		onlyChar:SetShown(not (forGuild:IsShown() and forGuild:GetChecked()))
 	end
+	forGuild:HookScript("OnClick", layout)
 
 	kindButton:SetScript("OnClick", function(self)
 		UI.Menu(self, function(root)
@@ -131,12 +145,24 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(panel)
 				local w = ns.Where()
 				fields.value, fields.mapID = w.zone, w.mapID
 			end
-		elseif view.kind == "level" then
+		elseif view.kind == "level" or view.kind == "reset" then
 			fields.value = tonumber(value:GetText())
 		elseif view.kind == "place" then
 			fields.value = view.place
 		elseif view.kind == "time" then
 			fields.value = { wday = view.wday, hour = tonumber(value:GetText()), min = tonumber(minute:GetText()) or 0 }
+		end
+		if view.kind == "time" and forGuild:IsShown() and forGuild:GetChecked() then
+			local v = fields.value
+			local at = v.hour and G.NextAt(v.wday, v.hour % 24, v.min % 60)
+			local every = fields.repeating and (v.wday == 0 and 86400 or 604800) or 0
+			if at and G.Create(fields.text, at, every) then
+				text:SetText("")
+				value:SetText("")
+				minute:SetText("")
+				text:ClearFocus()
+			end
+			return
 		end
 		if R.Create(fields) then
 			text:SetText("")
@@ -161,6 +187,11 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(panel)
 			row.when:SetPoint("RIGHT", -10, 0)
 			row.when:SetWidth(200)
 		end
+		if r.guild then
+			row.text:SetText("|cff40c0ff" .. r.text .. "|r")
+			row.when:SetText(L.GUILD_TAG:format(r.by, date("%a %d/%m %H:%M", r.next - (GetServerTime() - time()))))
+			return
+		end
 		row.text:SetText(r.done and ("|cff808080" .. r.text .. "|r") or r.text)
 		local when = R.Describe(r)
 		if r.char then
@@ -173,6 +204,14 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(panel)
 	end, function(r, _, row)
 		UI.Menu(row, function(root)
 			root:CreateTitle(r.text)
+			if r.guild then
+				if r.by == UnitName("player") then
+					root:CreateButton(L.DELETE, function()
+						G.Delete(r.id)
+					end)
+				end
+				return
+			end
 			if r.done then
 				root:CreateButton(L.REACTIVATE, function()
 					R.Reactivate(r.id)
@@ -199,6 +238,12 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(panel)
 			end
 			return (a.created or 0) < (b.created or 0)
 		end)
+		if G then
+			for _, g in ipairs(G.Sorted()) do
+				g.guild = true
+				table.insert(items, 1, g)
+			end
+		end
 		list:SetData(items)
 		empty:SetShown(#items == 0)
 	end

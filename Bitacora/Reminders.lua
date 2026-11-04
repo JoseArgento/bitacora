@@ -10,6 +10,7 @@ ns.Reminders = R
 --   kind "login": no value
 --   kind "place": value = "MAIL" | "BANK" | "MERCHANT" | "AUCTION"
 --   kind "time":  value = { wday = 1-7 (1 = Sunday) or 0 for every day, hour = 0-23, min = 0-59 }
+--   kind "reset": value = hours before the weekly reset (1-168); week = the reset it last fired for
 
 R.PLACES = { "MAIL", "BANK", "MERCHANT", "AUCTION" }
 R.PLACE_LABEL = { MAIL = "PLACE_MAIL", BANK = "PLACE_BANK", MERCHANT = "PLACE_MERCHANT", AUCTION = "PLACE_AUCTION" }
@@ -39,6 +40,12 @@ function R.Create(fields)
 		if r.value == "" and not r.mapID then
 			return nil
 		end
+	elseif r.kind == "reset" then
+		r.value = tonumber(r.value)
+		if not r.value or r.value < 1 or r.value > 168 then
+			return nil
+		end
+		r.value = math.floor(r.value)
 	elseif r.kind == "time" then
 		local v = r.value
 		if type(v) ~= "table" or not tonumber(v.hour) or not tonumber(v.min) then
@@ -95,6 +102,8 @@ function R.Describe(r)
 		local v = r.value
 		local day = v.wday and v.wday >= 1 and v.wday <= 7 and L.WEEKDAYS[v.wday] or L.EVERY_DAY
 		return L.R_DESC_TIME:format(day, v.hour, v.min)
+	elseif r.kind == "reset" then
+		return L.R_DESC_RESET:format(r.value)
 	end
 	return r.kind
 end
@@ -113,6 +122,16 @@ function R.LastDue(v, now)
 		end
 	end
 	return nil
+end
+
+-- The next weekly reset (epoch, rounded to the hour) from the game; nil when the game does not say.
+function R.NextReset()
+	local f = C_DateAndTime and C_DateAndTime.GetSecondsUntilWeeklyReset
+	local secs = f and f()
+	if type(secs) ~= "number" or issecretvalue(secs) or secs <= 0 then
+		return nil
+	end
+	return math.floor((GetServerTime() + secs) / 3600 + 0.5) * 3600, secs
 end
 
 local function fire(r)
@@ -141,6 +160,13 @@ function R.Check(ctx, charKey)
 				hit = true
 			elseif r.kind == "place" and ctx.event == "place" then
 				hit = r.value == ctx.place
+			elseif r.kind == "reset" and (ctx.event == "tick" or ctx.event == "login") then
+				local nextReset, secs = R.NextReset()
+				-- once per week, from N hours before the reset until it happens
+				hit = nextReset ~= nil and secs <= r.value * 3600 and r.week ~= nextReset
+				if hit then
+					r.week = nextReset
+				end
 			elseif r.kind == "time" and (ctx.event == "tick" or ctx.event == "login") then
 				local now = ctx.now or time()
 				local due = R.LastDue(r.value, now)

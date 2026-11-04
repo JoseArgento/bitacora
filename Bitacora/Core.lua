@@ -101,6 +101,7 @@ ns.DEFAULTS = {
 		skin = "classic",
 		bookIntro = true,
 		chronicle = false, -- the guild chronicle sends addon messages: only if you turn it on
+		guildReminders = true, -- officers' guild reminders: asks the guild for them at login (an empty "Q|1")
 	},
 	sections = {},
 	notes = {},

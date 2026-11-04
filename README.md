@@ -21,9 +21,10 @@ El diario de a bordo de tus personajes de **WoW Forever**: una libreta, un diari
   - Le podés poner un epígrafe.
   - La página web junta esas anotaciones con las fotos.
 - **Recordatorios**
-  - "Cuando entre a Forjaz, vender el paño", "al llegar a 40, la montura", "al abrir el correo", "al entrar al juego", "los martes a las 20:30".
+  - "Cuando entre a Forjaz, vender el paño", "al llegar a 40, la montura", "al abrir el correo", "al entrar al juego", "los martes a las 20:30", "6 horas antes del reinicio semanal".
   - Pueden ser de un solo personaje o repetirse.
   - Avisan en el centro de la pantalla, con sonido.
+  - **De la guild:** un oficial (rango 0 o 1) puede mandar uno por día y hora a toda la guild ("jueves 19:45, raid: traigan pociones"). Salta a la misma hora para todos, se muestra en tu hora local, y solo lo puede borrar quien lo creó.
 - **Progreso**
   - Tus números: días jugados, zonas pisadas, misiones, jefes distintos, primeras muertes de jefes, botín, muertes y dónde más moriste.
   - Cada mazmorra y banda de la guía de aventuras del juego, con cuántos jefes mataste ("Minas de la Muerte: 2 de 3").
@@ -80,7 +81,7 @@ La pestaña **Imágenes** de la página web lleva cualquier imagen a potencia de
 
 ## Privacidad
 
-Si no prendés la crónica de la guild, el addon no manda nada a nadie: solo escribe en tu propia ventana, y lo único que guarda está en tu `SavedVariables`.
+El addon no manda nada tuyo a nadie si no prendés la crónica de la guild. Lo único que manda sin que lo prendas es un pedido vacío (`Q|1`) a tu guild al entrar, para recibir los recordatorios de tus oficiales; se apaga en las opciones. Los recordatorios de guild solo se aceptan de quien el roster dice que es oficial, y su texto se guarda sin el carácter `|` ni caracteres de control, cortado a 120 letras.
 
 **La crónica** viene apagada. Si la prendés, manda por el canal de la guild, y nada más, un texto corto por hito: `M|1|level|20` o `M|1|boss|2746|Edwin VanCleef`. Lo que recibe se lee con patrones y se arma con textos propios: los nombres de logros y objetos se buscan en tu juego a partir del número, y el único texto libre (el nombre de un jefe) se guarda sin el carácter `|`, que es el que usa el juego para colores y links, y cortado a 40 letras. Nunca ejecuta nada de lo que llega. Acepta hasta 5 mensajes cada 10 segundos por persona y guarda los últimos 300. Las cuentas de prueba no pueden mandar mensajes de addon: ven la crónica pero no mandan la suya. Los nombres de tu grupo en el álbum son los que el juego muestra; si el juego los oculta (valores "secretos" de Forever), no se anotan.
 
@@ -89,8 +90,8 @@ Si no prendés la crónica de la guild, el addon no manda nada a nadie: solo esc
 **Probado:**
 - ✅ **Cada función, evento y template existe en Forever 1.60.1.** Lo revisa `tools/check_api.py` contra los dumps de [Ketho/BlizzardInterfaceResources](https://github.com/Ketho/BlizzardInterfaceResources) y el código de la UI de [Gethe/wow-ui-source](https://github.com/Gethe/wow-ui-source), rama `forever`. Ejemplos: `ChatFrameUtil.InsertLink` (Forever no tiene `ChatEdit_InsertLink`), `RaidWarningUtil.AddMessage` (`RaidNotice_AddMessage` solo existe con los alias viejos), `TooltipDataProcessor`, `ScrollingEditBoxTemplate`, el compartimento de addons de Forever. El script encuentra nombres inventados o mal escritos.
 - ✅ [forever-lint](https://github.com/JoseArgento/forever-lint): solo la nota FL012 (las cuentas de prueba no pueden mandar mensajes de addon), que la crónica ya maneja. [Addon Sentry](https://github.com/JoseArgento/addon-sentry) da "Sin señales de riesgo".
-- ✅ **106 tests.**
-  - 95 corren el addon en Lua 5.1 (el Lua de WoW), con un reemplazo chico del cliente (`tests/wow_mock.lua`): eventos, datos guardados y recargados, recordatorios (incluido el semanal), tooltips, links con shift-click, nombres de imágenes, patrones de botín en varios idiomas, valores secretos, cada pestaña armándose sin errores de Lua, el progreso contra una guía de aventuras de prueba, la crónica (mensajes malos, con códigos de color o con código adentro, inundación, tope de 300, dos jugadores pasándose hitos), los reportes de la beta (muertes dobles, zona vieja al llegar), el aspecto Taberna, y las partes sueltas: cada una sola, varias juntas compartiendo los datos, y el completo con una parte (la parte se hace a un lado).
+- ✅ **128 tests.**
+  - 117 corren el addon en Lua 5.1 (el Lua de WoW), con un reemplazo chico del cliente (`tests/wow_mock.lua`): eventos, datos guardados y recargados, recordatorios (incluido el semanal), tooltips, links con shift-click, nombres de imágenes, patrones de botín en varios idiomas, valores secretos, cada pestaña armándose sin errores de Lua, el progreso contra una guía de aventuras de prueba, la crónica (mensajes malos, con códigos de color o con código adentro, inundación, tope de 300, dos jugadores pasándose hitos), los reportes de la beta (muertes dobles, zona vieja al llegar), el aspecto Taberna, y las partes sueltas: cada una sola, varias juntas compartiendo los datos, y el completo con una parte (la parte se hace a un lado).
   - El resto prueban la página: lee el archivo igual que Lua 5.1, empareja capturas y arma los textos.
 - ✅ Las dos páginas probadas en Chromium: cada pestaña, capturas y PNG reales, escritorio y celular, claro y oscuro, y que no aparezca ningún "null" ni "undefined" en pantalla.
 

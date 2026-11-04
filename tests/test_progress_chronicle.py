@@ -22,9 +22,9 @@ def rows(g, part=None):
     return out
 
 
-def sent(g):
+def sent(g, prefix="BitacoraCron1"):
     s = g.m.sent
-    return [(s[i].prefix, s[i].text, s[i].chatType) for i in range(1, len(s) + 1)]
+    return [(s[i].prefix, s[i].text, s[i].chatType) for i in range(1, len(s) + 1) if s[i].prefix == prefix]
 
 
 def receive(g, text, sender="Ana-Forever", channel="GUILD", prefix="BitacoraCron1"):
