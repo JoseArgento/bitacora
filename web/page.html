@@ -328,6 +328,7 @@ code, .mono { font: 13px var(--mono); overflow-wrap: anywhere; }
     return n;
   };
   const L = () => T[lang];
+  const put = (node, ...kids) => node.replaceChildren(...kids.flat().filter((k) => k != null && k !== false));
   const fmtDay = (day) => {
     const [y, m, d] = day.split("-").map(Number);
     if (!y) return day;
@@ -376,7 +377,8 @@ code, .mono { font: 13px var(--mono); overflow-wrap: anywhere; }
     if (!c) { p.replaceChildren(); return; }
     const s = C.summary(c);
     const item = (label, value) => el("li", {}, label ? label + " " : "", el("b", { text: value }));
-    p.replaceChildren(
+    // replaceChildren would print a null as the word "null": only real nodes go in
+    put(p,
       item(L().level, String(s.level || "?")),
       s.played != null ? el("li", {}, el("b", { text: C.duration(s.played, lang) }), " " + L().played) : null,
       el("li", { text: L().bosses(s.bosses) }),
