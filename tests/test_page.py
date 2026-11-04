@@ -40,3 +40,22 @@ def test_no_stray_null_in_any_view(pages):
             assert not bad and not errors, (bad, errors)
             pg.close()
         browser.close()
+
+
+def test_no_sideways_scroll_on_a_phone(pages):
+    with sync_api.sync_playwright() as p:
+        browser = p.chromium.launch()
+        wide = []
+        for page_file in pages:
+            pg = browser.new_page(viewport={"width": 375, "height": 740})
+            pg.goto(page_file.as_uri())
+            pg.wait_for_selector("#particulars li")
+            for view in ["diario", "album", "libreta", "imagenes"]:
+                pg.click(f".tabs a[data-view={view}]")
+                pg.wait_for_timeout(50)
+                width = pg.evaluate("document.documentElement.scrollWidth")
+                if width > 375:
+                    wide.append((page_file.name, view, width))
+            pg.close()
+        browser.close()
+        assert not wide, wide

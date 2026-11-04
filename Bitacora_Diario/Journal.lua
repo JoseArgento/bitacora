@@ -176,7 +176,14 @@ function J.OnBossKill(encounterID, encounterName)
 	recordBoss(encounterID, ns.Plain(encounterName))
 end
 
+-- In Forever PLAYER_DEAD fires twice for one death (reported in the beta, 1.60.1): one entry per death.
+local lastDeath
 function J.OnDead()
+	local now = GetTime()
+	if lastDeath and now - lastDeath < 5 then
+		return
+	end
+	lastDeath = now
 	J.Add("death")
 end
 

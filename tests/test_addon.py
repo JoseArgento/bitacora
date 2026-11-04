@@ -53,6 +53,11 @@ class Game:
     def fire(self, event, *args):
         self.m.fire(event, *args)
 
+    def arrive(self):
+        """A zone change, and the moment Bitácora waits before reading the zone (it can be stale right away)."""
+        self.fire("ZONE_CHANGED_NEW_AREA")
+        self.m.runTimers()
+
     def login(self):
         for name in self.addons:
             self.fire("ADDON_LOADED", name)
@@ -125,10 +130,10 @@ def test_level_up_and_first_visit_of_a_zone(game):
     game.m.player.level = 11
     game.fire("PLAYER_LEVEL_UP", 11)
     game.m.where.mapID, game.m.where.zone, game.m.where.sub = 1453, "Stormwind City", "Trade District"
-    game.fire("ZONE_CHANGED_NEW_AREA")
-    game.fire("ZONE_CHANGED_NEW_AREA")  # same zone again: nothing new
+    game.arrive()
+    game.arrive()  # same zone again: nothing new
     game.m.where.mapID, game.m.where.zone = 1429, "Elwynn Forest"
-    game.fire("ZONE_CHANGED_NEW_AREA")  # where the journal started: already known
+    game.arrive()  # where the journal started: already known
     assert game.kinds() == ["start", "level", "zone"]
     assert game.journal()[2].name == "Stormwind City"
 
@@ -243,7 +248,7 @@ def test_zone_reminder_by_name_any_case_and_by_subzone(game):
     make(game, text="vender el paño", kind="zone", value="  ironforge ")
     make(game, text="posada", kind="zone", value="The Commons")
     game.m.where.mapID, game.m.where.zone, game.m.where.sub = 1455, "Ironforge", ""
-    game.fire("ZONE_CHANGED_NEW_AREA")
+    game.arrive()
     game.m.where.sub = "The Commons"
     game.fire("ZONE_CHANGED")
     game.fire("ZONE_CHANGED")  # once only
@@ -255,8 +260,48 @@ def test_repeating_place_reminder(game):
     make(game, text="mandar hierbas al alt", kind="place", value="MAIL", repeating=True)
     game.fire("MAIL_SHOW")
     game.fire("MERCHANT_SHOW")
+    game.m.gametime = game.m.gametime + 60
     game.fire("MAIL_SHOW")
     assert game.warnings() == ["Reminder: mandar hierbas al alt"] * 2
+
+
+def test_a_window_that_opens_twice_is_one_visit(game):
+    """Some window events fire twice in Forever (beta report, 18/10): one reminder per visit."""
+    make(game, text="vender el paño", kind="place", value="MERCHANT", repeating=True)
+    game.fire("MERCHANT_SHOW")
+    game.fire("MERCHANT_SHOW")
+    assert game.warnings() == ["Reminder: vender el paño"]
+
+
+def test_one_death_is_one_entry_even_if_the_event_fires_twice(game):
+    """PLAYER_DEAD fires twice for one death in Forever (beta report, 18/10)."""
+    game.fire("PLAYER_DEAD")
+    game.fire("PLAYER_DEAD")
+    assert game.kinds().count("death") == 1
+    game.m.gametime = game.m.gametime + 120
+    game.fire("PLAYER_DEAD")
+    assert game.kinds().count("death") == 2
+
+
+def test_the_zone_is_read_after_arriving(game):
+    """Right after a hearthstone or a flight the zone text can still be the old one (beta report)."""
+    game.m.where.mapID, game.m.where.zone = 1453, "Elwynn Forest"  # stale text the moment you arrive
+    game.fire("ZONE_CHANGED_NEW_AREA")
+    assert "zone" not in game.kinds()[1:]
+    game.m.where.zone = "Stormwind City"  # a moment later the game has it right
+    game.m.runTimers()
+    zones = [e for e in game.journal() if e.kind == "zone"]
+    assert len(zones) == 1 and zones[0].zone == "Stormwind City"
+
+
+def test_an_empty_zone_is_read_again(game):
+    game.m.where.mapID, game.m.where.zone = None, ""
+    game.fire("ZONE_CHANGED_NEW_AREA")
+    game.m.runTimers()
+    assert "zone" not in game.kinds()[1:]
+    game.m.where.mapID, game.m.where.zone = 1455, "Ironforge"
+    game.m.runTimers()
+    assert [e.zone for e in game.journal() if e.kind == "zone"] == ["Ironforge"]
 
 
 def test_level_reminder_fires_at_or_after_the_level(game):
@@ -423,7 +468,7 @@ def test_item_note_uses_the_first_item_link(game):
 def test_zone_notes_are_announced_on_arrival(game):
     game.run('local n = ns.Notes.Create({ title = "Cofre escondido" }); ns.Notes.Attach(n.id, "zone", 1455, "Ironforge")')
     game.m.where.mapID, game.m.where.zone = 1455, "Ironforge"
-    game.fire("ZONE_CHANGED_NEW_AREA")
+    game.arrive()
     assert "1 note(s) for Ironforge: Cofre escondido" in game.chat()[-1]
 
 

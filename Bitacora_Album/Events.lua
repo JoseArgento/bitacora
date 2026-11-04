@@ -96,12 +96,32 @@ local function remind(ctx)
 	end
 end
 
-on("ZONE_CHANGED_NEW_AREA", function()
+-- Right after a hearthstone, a flight or a portal the zone text can still be the old zone, or empty
+-- (reported in Forever's beta). Read it a moment later, once per arrival, and again if it was empty.
+local zonePending = false
+local function arrived(retry)
+	local w = ns.Where()
+	if (w.zone == nil or w.zone == "") and not w.mapID and not retry then
+		C_Timer.After(2, function()
+			arrived(true)
+		end)
+		return
+	end
 	if ns.Journal then
 		ns.Journal.OnZoneChanged(false)
 	end
 	remind(whereCtx())
 	zoneNotes()
+end
+on("ZONE_CHANGED_NEW_AREA", function()
+	if zonePending then
+		return
+	end
+	zonePending = true
+	C_Timer.After(1, function()
+		zonePending = false
+		arrived(false)
+	end)
 end)
 
 -- Subzones (an inn, a district of a city) only matter to reminders.
@@ -134,7 +154,14 @@ if ns.Album then
 end
 if ns.Reminders then
 	for event, place in pairs({ MAIL_SHOW = "MAIL", BANKFRAME_OPENED = "BANK", MERCHANT_SHOW = "MERCHANT", AUCTION_HOUSE_SHOW = "AUCTION" }) do
+		local last
 		on(event, function()
+			-- opening the same window twice in a row (some fire twice in Forever) is one visit
+			local now = GetTime()
+			if last and now - last < 3 then
+				return
+			end
+			last = now
 			remind({ event = "place", place = place })
 		end)
 	end
