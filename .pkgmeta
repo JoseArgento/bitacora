@@ -1,0 +1,9 @@
+package-as: Bitacora
+
+ignore:
+  - tests
+  - tools
+  - web
+  - dist
+  - pyproject.toml
+  - README.en.md

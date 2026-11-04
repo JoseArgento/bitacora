@@ -1,0 +1,20 @@
+# Bitácora
+
+A logbook for your **WoW Forever** characters: a notebook, a journal that writes itself, a screenshot album and reminders, in one window, plus a web page to read it all outside the game.
+
+- **Notebook**: notes with your own tabs and search, for all characters or one; shift-click links items, quests and achievements. Notes can be **attached** to an NPC (your target), a linked item or a zone: they show in the NPC's or item's tooltip, and you get a chat line when you enter the zone. Up to 4 **images** per note.
+- **Journal**: written for you. Levels, first visit of each zone, bosses (first kills marked), deaths, quests, loot of the quality you choose, achievements, gold (1/10/100/1000), time played, and your own entries. A "milestones" filter reads it like a story.
+- **Album**: every screenshot (Print Screen) is noted with when, where, level and who you were with; add a caption. The web page pairs the notes with the photos.
+- **Reminders**: "when I enter Ironforge", "at level 40", "when I open the mailbox", "when I log in", "Tuesdays at 20:30"; per character or for all, once or repeating. Center-screen alert with sound.
+
+Open it with `/bitacora` (or `/bita`), a key binding, or the addon compartment by the minimap. `/bita note <text>` and `/bita entry <text>` save without opening it.
+
+**Images**: the game only loads images from the AddOns folder, as PNG, JPG, TGA or BLP with power-of-2 sides; a new file appears after `/reload`. Put them in `Interface\AddOns\BitacoraImagenes\` (outside the addon's folder, so updates keep them) and type the file name in the note. The web page's Images tab resizes any picture to a power of 2 and tells you the name to type.
+
+**Web page**: `dist/bitacora.html`, one file that works offline. Open `WTF\Account\<ACCOUNT>\SavedVariables\Bitacora.lua` to read the journal day by day, drop your screenshots to build the album, read and copy the notebook. Nothing leaves your computer.
+
+**Privacy**: the addon sends nothing to anyone (no addon messages, no chat). Group members' names are only noted when the game does not hide them.
+
+**Tested**: every global, event and template it uses was checked against Forever 1.60.1's API dumps and UI source (`tools/check_api.py`); forever-lint and Addon Sentry report nothing; 57 tests run the addon in Lua 5.1 with a small client stand-in and test the page's file reader against Lua. **Not tested in the game** (no Forever client here): how the window looks, PNG loading from `BitacoraImagenes`, Forever's screenshot file names, boss events in Forever dungeons, and the exact Forever folder name.
+
+Not affiliated with Blizzard Entertainment. MIT license.
