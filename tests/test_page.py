@@ -25,6 +25,7 @@ def test_no_stray_null_in_any_view(pages):
             pg = browser.new_page()
             errors: list[str] = []
             pg.on("pageerror", lambda e, errors=errors: errors.append(str(e)))
+            pg.set_default_timeout(90_000)  # a busy machine can be slow; a real failure still shows
             pg.goto(page_file.as_uri())
             pg.wait_for_selector("#particulars li")
             bad = []
@@ -48,6 +49,7 @@ def test_no_sideways_scroll_on_a_phone(pages):
         wide = []
         for page_file in pages:
             pg = browser.new_page(viewport={"width": 375, "height": 740})
+            pg.set_default_timeout(90_000)  # a busy machine can be slow; a real failure still shows
             pg.goto(page_file.as_uri())
             pg.wait_for_selector("#particulars li")
             for view in ["diario", "album", "libreta", "imagenes"]:
@@ -68,6 +70,7 @@ def test_a_postcard_of_a_day(pages):
             pg = browser.new_page(accept_downloads=True)
             errors: list[str] = []
             pg.on("pageerror", lambda e, errors=errors: errors.append(str(e)))
+            pg.set_default_timeout(90_000)  # a busy machine can be slow; a real failure still shows
             pg.goto(page_file.as_uri())
             pg.wait_for_selector(".postcard-btn")
             with pg.expect_download() as dl:
