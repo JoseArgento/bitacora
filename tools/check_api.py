@@ -55,6 +55,7 @@ def main() -> int:
     known_globals |= set(re.findall(r"^(\w+) = ", (res / "GlobalStrings" / "enUS.lua").read_text(encoding="utf-8"), re.M))
     enum_text = (res / "LuaEnum.lua").read_text(encoding="utf-8")
     known_globals |= {"Enum"} | {f"Enum.{m}" for m in re.findall(r"^\t(\w+) = \{", enum_text, re.M)}
+    known_globals |= {n.split(".")[0] for n in known_globals if "." in n}  # C_DateAndTime on its own, as in `C_DateAndTime and ...`
     known_methods: set[str] = set(re.findall(r'"(\w+)"', (res / "WidgetAPI.lua").read_text(encoding="utf-8")))
 
     # Blizzard UI code: globals it defines and methods its mixins and utility tables have.
@@ -111,7 +112,7 @@ def main() -> int:
                 continue
             if first in ("SOUNDKIT",) and r.name.split(".")[-1] in soundkit:
                 continue
-            if first in known_globals and "." in r.name and first not in ("C_Map", "C_Item", "C_QuestLog", "C_Timer", "C_AddOns"):
+            if first in known_globals and "." in r.name and not first.startswith("C_"):
                 # a Blizzard table; its fields are checked when the table is a known namespace
                 if r.name in known_globals or any(r.name.endswith("." + m) and m in known_methods for m in [r.name.split(".")[-1]]):
                     continue
@@ -120,7 +121,7 @@ def main() -> int:
             if (
                 first in known_globals
                 and r.name.split(".")[-1] in fields
-                and first not in ("C_Map", "C_Item", "C_QuestLog", "C_Timer", "C_AddOns")
+                and not first.startswith("C_")
             ):
                 continue
             missing.append(f"{rel}:{r.tok.line}: global {r.name}")
