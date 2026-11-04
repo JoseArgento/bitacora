@@ -4,6 +4,23 @@ El diario de a bordo de tus personajes de **WoW Forever**: una libreta, un diari
 
 [Read in English](README.en.md)
 
+![La página web de Bitácora: el diario como libro de a bordo](docs/web.png)
+
+**La web, en vivo:** [Bitácora](https://joseargento.github.io/bitacora/) · [Taberna](https://joseargento.github.io/bitacora/taberna.html)
+
+**Contenido**
+
+- [Qué hace](#qué-hace)
+- [Las partes sueltas](#las-partes-sueltas)
+- [Instalar](#instalar)
+- [Imágenes en la libreta](#imágenes-en-la-libreta)
+- [La página web](#la-página-web)
+- [Privacidad](#privacidad)
+- [Cómo se probó](#cómo-se-probó)
+- [Límites](#límites)
+- [Desarrollo](#desarrollo)
+- [Apoyar](#apoyar)
+
 ## Qué hace
 
 - **Libreta**
@@ -123,5 +140,9 @@ python tools/check_api.py --bir ../BlizzardInterfaceResources --ui ../wow-ui-sou
 ```
 
 Las partes sueltas y Recordame se generan: el código se edita solo en `Bitacora/`. Un tag `v*` arma dos zips con el packager de BigWigs (las seis carpetas de Bitácora, y Recordame con `.pkgmeta-recordame`) (`.github/workflows/release.yml`).
+
+## Apoyar
+
+Todo esto es gratis y de código abierto, y va a seguir así: no hay funciones pagas ni nada antes para quien aporta. Si te sirvió y querés bancar el tiempo de mantenerlo (con cada parche de Blizzard hay que actualizar los datos y arreglar lo que se rompe), podés hacerlo en [Patreon](https://www.patreon.com/cw/DoblePupi). Gracias ♥
 
 Sin relación con Blizzard Entertainment. World of Warcraft es marca registrada de Blizzard Entertainment, Inc. Licencia MIT.

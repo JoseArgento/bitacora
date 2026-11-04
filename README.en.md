@@ -2,6 +2,12 @@
 
 A logbook for your **WoW Forever** characters: a notebook, a journal that writes itself, a screenshot album and reminders, in one window, plus a web page to read it all outside the game.
 
+[Leer en castellano](README.md)
+
+![Bitácora's web page: the journal as a logbook](docs/web.png)
+
+**The web page, live:** [Bitácora](https://joseargento.github.io/bitacora/) · [Tavern](https://joseargento.github.io/bitacora/taberna.html)
+
 - **Notebook**: notes with your own tabs and search, for all characters or one; shift-click links items, quests and achievements. Notes can be **attached** to an NPC (your target), a linked item or a zone: they show in the NPC's or item's tooltip, and you get a chat line when you enter the zone. Up to 4 **images** per note.
 - **Journal**: written for you. Levels, first visit of each zone, bosses (first kills marked), deaths, quests, loot of the quality you choose, achievements, gold (1/10/100/1000), time played, and your own entries. A "milestones" filter reads it like a story.
 - **Album**: every screenshot (Print Screen) is noted with when, where, level and who you were with; add a caption. The web page pairs the notes with the photos.
@@ -20,5 +26,9 @@ Open it with `/bitacora` (or `/bita`), a key binding, or the addon compartment b
 **Privacy**: unless you turn on the guild chronicle, the addon sends nothing of yours to anyone; the only thing it sends on its own is an empty request (`Q|1`) to your guild at login for your officers' reminders, which you can turn off in the options. The chronicle (off by default) sends one short line per milestone on the GUILD channel only; what arrives is parsed with patterns, turned into text with the addon's own strings (achievement and item names are looked up in your own client), and never run. Group members' names are only noted when the game does not hide them.
 
 **Tested**: every global, event and template it uses was checked against Forever 1.60.1's API dumps and UI source (`tools/check_api.py`); forever-lint only shows the FL012 note (trial accounts and the chronicle's addon messages, handled) and Addon Sentry finds no risk signals; 136 tests run the addon (each part alone, several together, and full plus a part included) in Lua 5.1 with a small client stand-in and test the page's file reader against Lua. **Not tested in the game** (no Forever client here): how the window looks, PNG loading from `BitacoraImagenes`, Forever's screenshot file names, boss events in Forever dungeons, and the exact Forever folder name.
+
+## Support
+
+All of this is free and open source, and it stays that way: no paid features, nothing early for supporters. If it helped you and you want to cover the time it takes to keep it working (every Blizzard patch means refreshing the data and fixing what broke), you can do that on [Patreon](https://www.patreon.com/cw/DoblePupi). Thanks ♥
 
 Not affiliated with Blizzard Entertainment. MIT license.
