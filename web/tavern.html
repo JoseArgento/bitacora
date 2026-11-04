@@ -1,0 +1,299 @@
+<title>Bitácora de la posada</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Tu diario, tus capturas y tu libreta de WoW Forever, junto al fuego de la posada. Todo queda en tu compu.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@600;700&family=Alegreya:ital,wght@0,400;0,600;1,400&family=Alegreya+Sans+SC:wght@500;700&display=swap">
+<style>
+/* Layout: an inn at night. A wooden table under the hearth's light; the book lies open on it as one parchment
+   page, its sections hanging from the top as ribbons; characters sit along the bench as little cards. */
+:root {
+  --wood-dark: #1f130b;
+  --wood: #3d2516;
+  --wood-light: #5b3920;
+  --parchment: #f2e3c0;
+  --parchment-deep: #e4cf9e;
+  --ink: #3a2313;
+  --ink-soft: #6c4e31;
+  --gold: #d8a845;
+  --gold-deep: #94701f;
+  --hearth: #ff8a3d;
+  --blue: #2b5da8;       /* the old kingdom's banner blue: links and the open ribbon */
+  --crimson: #8f2a1d;
+  --display: "Cinzel Decorative", "Cinzel", "Trajan Pro", Georgia, serif;
+  --heading: "Cinzel", "Trajan Pro", Georgia, serif;
+  --body: "Alegreya", Georgia, "Times New Roman", serif;
+  --mono: "Alegreya Sans SC", "Gill Sans", "Trebuchet MS", sans-serif;
+  /* tokens app.js and the shared markup expect */
+  --muted: var(--ink-soft); --rule: #cdb27a; --accent: var(--blue); --mark: var(--gold-deep); --death: var(--crimson);
+  --sheet: #f7ebcd; --hatch: #e0c995; --paper: var(--parchment);
+  --q0: #6b6257; --q1: #3a2313; --q2: #1d6e10; --q3: #0b55a3; --q4: #7027ad; --q5: #ad5000; --q6: #7d6025; --q7: #006a85; --qq: #7a5c00;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html { background: var(--wood-dark); }
+body {
+  margin: 0; color: var(--ink); font: 17px/1.6 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 26px 64px;
+  background:
+    radial-gradient(120% 60% at 50% 115%, color-mix(in srgb, var(--hearth) 38%, transparent) 0%, transparent 60%),
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.18) 0 2px, transparent 2px 180px),
+    repeating-linear-gradient(0deg, transparent 0 7px, rgba(255,255,255,0.025) 7px 9px, transparent 9px 23px),
+    linear-gradient(180deg, var(--wood) 0%, var(--wood-dark) 100%);
+  min-height: 100%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  body::after {
+    content: ""; position: fixed; inset: auto 0 0 0; height: 40vh; pointer-events: none; z-index: 0;
+    background: radial-gradient(60% 80% at 50% 100%, color-mix(in srgb, var(--hearth) 22%, transparent), transparent 70%);
+    animation: hearth 3.2s ease-in-out infinite alternate;
+  }
+  @keyframes hearth { from { opacity: 0.55; } to { opacity: 1; } }
+}
+.book { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; display: grid; gap: 20px; }
+.book > * { min-width: 0; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+a { color: var(--blue); }
+
+/* the inn's sign */
+.sign {
+  position: relative; justify-self: center; text-align: center; padding: 18px 34px 16px; margin-top: 18px;
+  background: linear-gradient(180deg, #6a4325, #4b2d18); border: 3px solid var(--gold-deep); border-radius: 10px;
+  box-shadow: inset 0 0 0 2px #2b190d, inset 0 2px 0 4px rgba(255,220,150,0.08), 0 10px 24px rgba(0,0,0,0.5);
+  color: var(--parchment); max-width: 100%;
+}
+.sign::before, .sign::after { content: ""; position: absolute; top: -26px; width: 3px; height: 26px; background: linear-gradient(var(--gold), var(--gold-deep)); }
+.sign::before { left: 22%; } .sign::after { right: 22%; }
+.sign h1 { margin: 0; font: 900 clamp(40px, 9vw, 68px)/1 var(--display); color: var(--gold); text-shadow: 0 2px 0 #2b190d, 0 0 18px color-mix(in srgb, var(--hearth) 45%, transparent); letter-spacing: 0.02em; }
+.sign p { margin: 8px auto 0; max-width: 46ch; color: #ead8b0; font-size: 16px; text-wrap: balance; }
+.lang { margin-top: 12px; display: inline-flex; border: 1px solid var(--gold-deep); border-radius: 4px; overflow: hidden; }
+.lang button { border: 0; background: transparent; padding: 2px 8px; font: 700 12px var(--mono); color: #ead8b0; cursor: pointer; }
+.lang button[aria-pressed="true"] { background: var(--gold); color: var(--wood-dark); }
+@media (max-width: 520px) { .sign { padding-inline: 18px; } }
+
+/* parchment, used for every sheet on the table */
+.parchment {
+  background:
+    radial-gradient(130% 90% at 50% 40%, var(--parchment) 55%, var(--parchment-deep) 100%);
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(80,50,20,0.35), 0 1px 0 6px color-mix(in srgb, var(--parchment-deep) 70%, transparent), 0 14px 30px rgba(0,0,0,0.45);
+}
+
+.open { display: grid; grid-template-columns: 1fr auto; gap: 10px 18px; align-items: center; padding: 14px 18px; }
+@media (max-width: 640px) { .open { grid-template-columns: 1fr; } }
+.open .where { font-size: 15px; color: var(--ink-soft); overflow-wrap: anywhere; min-width: 0; }
+.open .where b { font: 700 14px/1.5 var(--mono); color: var(--ink); letter-spacing: 0.02em; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 16px; border-radius: 6px;
+  font: 700 15px var(--heading); letter-spacing: 0.03em; color: #fff7e0;
+  background: linear-gradient(180deg, #3b6fc0, var(--blue) 55%, #1d3f75); border: 2px solid var(--gold);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 3px 0 #10223f;
+}
+.btn:active { transform: translateY(2px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 1px 0 #10223f; }
+.btn.quiet { background: transparent; color: var(--ink); border-color: var(--gold-deep); box-shadow: none; }
+.btn input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.notice { margin: 0; font-size: 15px; color: var(--ink-soft); }
+.notice strong { color: var(--crimson); }
+.error { border-left: 4px solid var(--crimson); padding: 6px 10px; margin: 0; background: rgba(143,42,29,0.08); }
+
+/* the bench: character cards */
+.crew { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+.crew button {
+  --class: var(--gold); position: relative; display: grid; gap: 1px; text-align: left; cursor: pointer;
+  padding: 10px 16px 10px 52px; min-width: 170px; border-radius: 8px; color: var(--ink);
+  background: radial-gradient(120% 120% at 30% 20%, var(--parchment), var(--parchment-deep));
+  border: 2px solid var(--gold-deep); box-shadow: 0 6px 14px rgba(0,0,0,0.45);
+}
+.crew button::before {
+  content: ""; position: absolute; left: 12px; top: 50%; width: 28px; height: 28px; margin-top: -14px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff8, transparent 45%), var(--class); border: 2px solid var(--gold); box-shadow: 0 0 0 2px var(--wood-dark);
+}
+.crew button b { font: 700 17px var(--heading); }
+.crew button span { font: 500 13px var(--mono); color: var(--ink-soft); }
+.crew button[aria-pressed="true"] { border-color: var(--gold); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 55%, transparent), 0 0 22px color-mix(in srgb, var(--hearth) 45%, transparent); transform: translateY(-3px); }
+/* class colors as the game shows them in chat */
+.crew button[data-class="mage"] { --class: #3fc7eb; } .crew button[data-class="priest"] { --class: #f4f1ea; }
+.crew button[data-class="warrior"] { --class: #c69b6d; } .crew button[data-class="rogue"] { --class: #fff468; }
+.crew button[data-class="paladin"] { --class: #f48cba; } .crew button[data-class="hunter"] { --class: #aad372; }
+.crew button[data-class="warlock"] { --class: #8788ee; } .crew button[data-class="druid"] { --class: #ff7c0a; }
+.crew button[data-class="shaman"] { --class: #0070dd; }
+
+.particulars { display: flex; flex-wrap: wrap; gap: 4px 20px; justify-content: center; margin: 0; padding: 0; list-style: none; font: 500 15px var(--mono); color: #e7d4aa; }
+.particulars li b { color: var(--gold); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* the open book with its ribbons */
+.page { position: relative; padding: 30px clamp(16px, 4vw, 40px) 28px; margin-top: 34px; }
+.tabs { position: absolute; top: -34px; left: clamp(12px, 4vw, 36px); right: 12px; display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+.tabs a {
+  flex: none; padding: 8px 14px 16px; text-decoration: none; font: 700 16px var(--heading); letter-spacing: 0.04em; color: #f6e8c6;
+  background: linear-gradient(180deg, #7b2a1e, #5c1d14); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.25);
+}
+.tabs a[aria-current="page"] { background: linear-gradient(180deg, #3b6fc0, var(--blue)); padding-bottom: 22px; color: #fff; }
+@media (max-width: 520px) { .tabs a { font-size: 14px; padding-inline: 10px; } }
+#view { min-width: 0; }
+
+.bar { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; justify-content: space-between; }
+.seg { display: inline-flex; border: 2px solid var(--gold-deep); border-radius: 6px; overflow: hidden; }
+.seg button { border: 0; background: transparent; padding: 4px 12px; cursor: pointer; font: 700 14px var(--heading); color: var(--ink-soft); }
+.seg button[aria-pressed="true"] { background: var(--gold); color: var(--wood-dark); }
+input[type="search"], input[type="text"], select { background: #fbf2db; border: 1px solid var(--gold-deep); border-radius: 4px; padding: 6px 10px; min-width: 0; color: var(--ink); }
+
+/* journal: the innkeeper's ledger */
+.day h2 { font: 700 24px/1.2 var(--heading); margin: 24px 0 6px; color: var(--ink); text-wrap: balance; }
+.day h2::before { content: "❧ "; color: var(--gold-deep); }
+.day h2 small { font: 500 13px var(--mono); color: var(--ink-soft); margin-left: 8px; }
+.ledger-wrap { overflow-x: auto; }
+table.ledger { width: 100%; border-collapse: collapse; font-size: 16px; }
+.ledger th { font: 700 12px var(--mono); letter-spacing: 0.08em; color: var(--ink-soft); text-align: left; padding: 4px 8px; border-bottom: 2px solid var(--ink); }
+.ledger td { padding: 7px 8px; border-bottom: 1px dashed var(--rule); vertical-align: top; }
+.ledger .t, .ledger .lv { font: 500 14px var(--mono); color: var(--ink-soft); white-space: nowrap; font-variant-numeric: tabular-nums; width: 1%; }
+.ledger .place { color: var(--ink-soft); font-style: italic; width: 26%; }
+.ledger .entry { min-width: 14em; }
+.kind {
+  display: inline-block; font: 700 11px/1 var(--mono); letter-spacing: 0.06em; padding: 3px 7px; margin-right: 8px; vertical-align: 2px;
+  border-radius: 999px; color: #fff7e0; background: var(--ink-soft);
+}
+.k-level, .k-start, .k-money { background: var(--gold-deep); }
+.k-boss, .k-achievement { background: linear-gradient(180deg, #b38a2c, #7b5c14); box-shadow: 0 0 0 1px var(--gold); }
+.k-death { background: var(--crimson); }
+.k-note { background: var(--blue); }
+tr.note .entry { font-style: italic; }
+.inline-place { display: none; font: 500 13px/1.4 var(--mono); color: var(--ink-soft); margin-top: 2px; }
+@media (max-width: 560px) { .ledger .place { display: none; } .inline-place { display: block; } .ledger .entry { min-width: 0; } }
+.empty { color: var(--ink-soft); font-style: italic; margin: 18px 0; }
+.q0 { color: var(--q0); } .q1 { color: var(--q1); } .q2 { color: var(--q2); } .q3 { color: var(--q3); } .q4 { color: var(--q4); }
+.q5 { color: var(--q5); } .q6 { color: var(--q6); } .q7 { color: var(--q7); } .qq { color: var(--qq); } .qx { color: inherit; }
+.link { font-weight: 600; }
+
+.overview { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 18px 26px; align-items: start; margin-top: 18px; }
+@media (max-width: 720px) { .overview { grid-template-columns: 1fr; } }
+figure.chart { margin: 0; min-width: 0; }
+.chart-title, .trip h3 { font: 700 13px var(--mono); letter-spacing: 0.06em; color: var(--ink-soft); margin: 0 0 4px; }
+svg.levels { width: 100%; height: auto; display: block; overflow: visible; }
+svg.levels .grid { stroke: var(--rule); stroke-width: 1; stroke-dasharray: 3 4; }
+svg.levels .axis { stroke: var(--ink); stroke-width: 1; }
+svg.levels .tick { fill: var(--ink-soft); font: 500 12px var(--mono); }
+svg.levels .line { fill: none; stroke: var(--blue); stroke-width: 2; stroke-linejoin: round; }
+svg.levels .dot { fill: var(--blue); stroke: var(--parchment); stroke-width: 2; }
+svg.levels .dot.end { fill: var(--gold); stroke: var(--gold-deep); }
+svg.levels .endlabel { fill: var(--ink); font: 700 13px var(--mono); }
+.trip { display: grid; gap: 14px; min-width: 0; }
+.trip ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.trip li { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px dashed var(--rule); padding: 3px 0; min-width: 0; }
+.trip li .n { font: 500 13px var(--mono); color: var(--ink-soft); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* album: paintings on the wall */
+.drop { border: 2px dashed var(--gold-deep); border-radius: 6px; padding: 14px 16px; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; }
+.drop.over { background: color-mix(in srgb, var(--gold) 18%, transparent); }
+.drop p { margin: 0; color: var(--ink-soft); max-width: 60ch; }
+.plates { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 26px; }
+figure.plate { margin: 0; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.photo {
+  aspect-ratio: 16 / 9; max-width: 100%; overflow: hidden; display: grid; place-items: center; background: var(--wood);
+  border: 8px solid transparent; border-image: linear-gradient(135deg, #f0cf72, var(--gold-deep) 40%, #f3d98a 60%, #7a5a16) 1;
+  box-shadow: 0 0 0 2px #4b3410, 0 10px 18px rgba(60,35,10,0.45);
+}
+.photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo.missing { background: repeating-linear-gradient(135deg, #4a2e1a 0 8px, #3d2516 8px 16px); }
+.photo.missing span { font: 500 13px var(--mono); color: #ead8b0; text-align: center; padding: 6px; overflow-wrap: anywhere; max-width: 92%; }
+figcaption { display: grid; gap: 2px; min-width: 0; text-align: center; }
+figcaption .cap { font-style: italic; font-size: 18px; line-height: 1.3; }
+figcaption .meta { font: 500 13px/1.5 var(--mono); color: var(--ink-soft); overflow-wrap: anywhere; }
+
+/* notebook: notes pinned to the inn's board */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button { border: 2px solid var(--gold-deep); background: transparent; border-radius: 999px; padding: 2px 12px; cursor: pointer; font: 700 14px var(--heading); color: var(--ink-soft); }
+.chips button[aria-pressed="true"] { background: var(--gold); color: var(--wood-dark); }
+.notes { columns: 2 280px; column-gap: 26px; }
+article.note {
+  break-inside: avoid; position: relative; display: grid; gap: 6px; margin: 0 0 26px; padding: 18px 18px 14px;
+  background: linear-gradient(180deg, #fff5da, #f3e2b6); border: 1px solid var(--rule); box-shadow: 0 8px 16px rgba(60,35,10,0.3);
+}
+article.note:nth-child(odd) { transform: rotate(-0.6deg); } article.note:nth-child(even) { transform: rotate(0.5deg); }
+article.note::before { content: ""; position: absolute; top: -7px; left: 50%; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #f7a08f, var(--crimson) 60%); box-shadow: 0 2px 2px rgba(0,0,0,0.4); }
+article.note h3 { font: 700 20px/1.25 var(--heading); margin: 0; text-wrap: balance; }
+article.note .pin { color: var(--crimson); font: 700 12px var(--mono); letter-spacing: 0.06em; }
+article.note .body { margin: 0; overflow-wrap: anywhere; }
+article.note .meta { font: 500 13px/1.5 var(--mono); color: var(--ink-soft); }
+.files { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.files li { font: 500 13px var(--mono); border: 1px solid var(--gold-deep); border-radius: 3px; padding: 1px 6px; }
+.reminders { border-top: 2px solid var(--ink); padding-top: 10px; }
+.reminders h2 { font: 700 22px var(--heading); margin: 0 0 6px; }
+.reminders ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.reminders li { display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: space-between; border-bottom: 1px dashed var(--rule); padding: 5px 0; }
+.reminders li span { font: 500 14px var(--mono); color: var(--ink-soft); }
+.reminders li.done { color: var(--ink-soft); text-decoration: line-through; }
+
+/* images */
+.prep { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+@media (max-width: 720px) { .prep { grid-template-columns: 1fr; } .prep .canvas-wrap { order: -1; } }
+.prep form { display: grid; gap: 12px; }
+.prep label { display: grid; gap: 4px; font-size: 15px; color: var(--ink-soft); }
+.canvas-wrap { background: repeating-conic-gradient(var(--hatch) 0 25%, var(--sheet) 0 50%) 0 0 / 16px 16px; border: 2px solid var(--gold-deep); display: grid; place-items: center; padding: 10px; min-height: 220px; }
+.canvas-wrap canvas, .canvas-wrap img { max-width: 100%; height: auto; }
+.steps { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+code, .mono { font: 600 14px var(--mono); overflow-wrap: anywhere; }
+.copy-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.privacy { text-align: center; font-size: 14px; color: #d8c49a; margin: 0; }
+</style>
+
+<div class="book">
+  <header class="sign">
+    <h1>Bitácora</h1>
+    <p data-t="tagline"></p>
+    <div class="lang" role="group" aria-label="Idioma / Language">
+      <button type="button" data-lang="es" aria-pressed="true">ES</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+  </header>
+
+  <section class="open parchment" aria-labelledby="open-title">
+    <div class="where">
+      <span id="open-title" data-t="openWhere"></span><br>
+      <b>WTF\Account\<span data-t="account"></span>\SavedVariables\Bitacora.lua</b>
+    </div>
+    <div class="btns">
+      <label class="btn" for="dbfile"><span data-t="openFile"></span><input type="file" id="dbfile" accept=".lua,text/plain"></label>
+      <button type="button" class="btn quiet" id="demo" data-t="loadDemo"></button>
+    </div>
+    <p class="notice" id="status"></p>
+  </section>
+
+  <nav class="crew" id="crew" aria-label="Personajes"></nav>
+  <ul class="particulars" id="particulars"></ul>
+
+  <section class="page parchment">
+    <nav class="tabs" aria-label="Secciones">
+      <a href="#diario" data-view="diario" data-t="tabJournal"></a>
+      <a href="#album" data-view="album" data-t="tabAlbum"></a>
+      <a href="#libreta" data-view="libreta" data-t="tabNotes"></a>
+      <a href="#imagenes" data-view="imagenes" data-t="tabImages"></a>
+    </nav>
+    <main id="view"></main>
+  </section>
+
+  <p class="privacy" data-t="privacy"></p>
+</div>
+
+<script>
+var BITACORA_SKIN_TEXTS = {
+  es: {
+    tagline: "Pasá, sentate cerca del fuego. Acá están tus personajes, lo que vivieron en Forever, sus fotos y tus anotaciones.",
+    loadDemo: "Ver una mesa de ejemplo",
+    demoNotice: "<strong>Mesa de ejemplo.</strong> Son personajes de prueba. Abrí tu archivo y se sientan los tuyos.",
+    tabJournal: "Diario", tabAlbum: "Retratos", tabNotes: "Tablón", tabImages: "Taller",
+  },
+  en: {
+    tagline: "Come in, sit by the fire. Here are your characters, what they lived through in Forever, their pictures and your notes.",
+    loadDemo: "See an example table",
+    demoNotice: "<strong>Example table.</strong> These are test characters. Open your file and yours take a seat.",
+    tabJournal: "Journal", tabAlbum: "Portraits", tabNotes: "Notice board", tabImages: "Workshop",
+  },
+};
+</script>
+<script>/*__CORE__*/</script>
+<script>/*__DEMO__*/</script>
+<script>/*__APP__*/</script>
