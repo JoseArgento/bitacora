@@ -124,6 +124,26 @@ def main() -> int:
                 continue
             line = text.count("\n", 0, m.start()) + 1
             missing.append(f"{rel}:{line}: method :{method}()")
+    # templates and font objects: CreateFrame(type, name, parent, "Template"), font strings and UI.Label(..., "Font")
+    templates = set(re.findall(r'^\t\["(\w+)"\]', (res / "Templates.lua").read_text(encoding="utf-8"), re.MULTILINE))
+    used = re.compile(
+        r'CreateFrame\([^)]*?,\s*"(\w+)"\s*\)|CreateFontString\([^)]*?"(\w+)"\s*\)|UI\.Label\([^)]*?"(GameFont\w+)"|"(GameFont\w+)"'
+    )
+    for p in files:
+        text = p.read_text(encoding="utf-8")
+        for m in used.finditer(text):
+            name = next(g for g in m.groups() if g)
+            if name not in templates and name not in (
+                "Frame",
+                "Button",
+                "EditBox",
+                "CheckButton",
+                "EventFrame",
+                "OVERLAY",
+                "ARTWORK",
+                "BACKGROUND",
+            ):
+                missing.append(f"{p.relative_to(addon.parent)}:{text.count(chr(10), 0, m.start()) + 1}: template or font {name}")
     for line in sorted(set(missing)):
         print(line)
     print(f"{len(files)} files, {len(set(missing))} names not found in Forever", file=sys.stderr)

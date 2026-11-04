@@ -54,7 +54,7 @@ UI.builders[2] = function(panel)
 	end)
 	view.search = search
 
-	local inset = CreateFrame("Frame", nil, panel, "InsetFrameTemplate")
+	local inset = UI.Inset(panel)
 	inset:SetPoint("TOPLEFT", 0, -30)
 	inset:SetPoint("BOTTOMRIGHT", 0, 18)
 

@@ -23,7 +23,7 @@ UI.builders[1] = function(panel)
 	end)
 
 	-- note list (left) ---------------------------------------------------------------------------
-	local listFrame = CreateFrame("Frame", nil, panel, "InsetFrameTemplate")
+	local listFrame = UI.Inset(panel)
 	listFrame:SetPoint("TOPLEFT", 0, -30)
 	listFrame:SetPoint("BOTTOMLEFT", 0, 30)
 	listFrame:SetWidth(240)
@@ -120,7 +120,7 @@ UI.builders[1] = function(panel)
 	local attachLabel = UI.Label(editor, "", "GameFontDisableSmall")
 	attachLabel:SetPoint("LEFT", scopeLabel, "RIGHT", 12, 0)
 
-	local bodyFrame = CreateFrame("Frame", nil, editor, "InsetFrameTemplate")
+	local bodyFrame = UI.Inset(editor)
 	bodyFrame:SetPoint("TOPLEFT", 0, -44)
 	bodyFrame:SetPoint("BOTTOMRIGHT", 0, 140)
 	local body = CreateFrame("Frame", nil, bodyFrame, "ScrollingEditBoxTemplate")

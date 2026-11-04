@@ -4,11 +4,29 @@ local L = ns.L
 local UI = {}
 ns.UI = UI
 
+-- Widgets the skin recolors (UI/Skin.lua). Weak keys: rows that go away are not kept alive.
+UI.labels = setmetatable({}, { __mode = "k" })
+UI.insets = setmetatable({}, { __mode = "k" })
+
 function UI.Label(parent, text, font, justify)
-	local fs = parent:CreateFontString(nil, "OVERLAY", font or "GameFontNormal")
+	font = font or "GameFontNormal"
+	local fs = parent:CreateFontString(nil, "OVERLAY", font)
 	fs:SetText(text or "")
 	fs:SetJustifyH(justify or "LEFT")
+	UI.labels[fs] = font
+	if UI.SkinLabel then
+		UI.SkinLabel(fs, font)
+	end
 	return fs
+end
+
+function UI.Inset(parent)
+	local f = CreateFrame("Frame", nil, parent, "InsetFrameTemplate")
+	UI.insets[f] = true
+	if UI.SkinInset then
+		UI.SkinInset(f)
+	end
+	return f
 end
 
 function UI.Button(parent, text, width, onClick)

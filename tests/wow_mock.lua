@@ -284,6 +284,38 @@ function Frame:AddLine(text)
 	table.insert(self.lines, text)
 end
 function Frame:SetHyperlinksEnabled() end
+function Frame:GetTextColor()
+	return unpack(self._color or { 1, 1, 1, 1 })
+end
+function Frame:SetTextColor(r, g, b, a)
+	if type(r) == "table" then
+		self._color = { r.r, r.g, r.b, 1 }
+	else
+		self._color = { r, g, b, a or 1 }
+	end
+end
+function Frame:GetFrameLevel()
+	return self._level or 1
+end
+function Frame:CreateAnimationGroup()
+	local ag = newObject("AnimationGroup", nil, self)
+	ag._anims = {}
+	function ag:CreateAnimation(kind)
+		local a = newObject(kind, nil, self)
+		table.insert(self._anims, a)
+		return a
+	end
+	function ag:Play()
+		MOCK.played = (MOCK.played or 0) + 1
+		if self._scripts.OnFinished then
+			self._scripts.OnFinished(self)
+		end
+	end
+	return ag
+end
+function CreateColor(r, g, b)
+	return { r = r, g = g, b = b }
+end
 function Frame:GetXY()
 	return self.x, self.y
 end

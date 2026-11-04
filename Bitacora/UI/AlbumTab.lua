@@ -9,7 +9,7 @@ UI.builders[3] = function(panel)
 	local hint = UI.Label(panel, L.ALBUM_HINT, "GameFontDisableSmall")
 	hint:SetPoint("TOPLEFT", 4, -6)
 
-	local inset = CreateFrame("Frame", nil, panel, "InsetFrameTemplate")
+	local inset = UI.Inset(panel)
 	inset:SetPoint("TOPLEFT", 0, -26)
 	inset:SetPoint("BOTTOMRIGHT", 0, 0)
 

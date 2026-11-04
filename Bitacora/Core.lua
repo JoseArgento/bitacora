@@ -3,6 +3,7 @@ local L = ns.L
 
 ns.DB_VERSION = 1
 ns.IMAGE_FOLDER = "Interface\\AddOns\\BitacoraImagenes\\"
+ns.MEDIA = "Interface\\AddOns\\" .. ADDON .. "\\Media\\" -- the skin's own textures (tools/make_textures.py)
 
 -- Callbacks so the UI refreshes when data changes: ns.Fire("notes"), ns.On("notes", fn)
 local listeners = {}
@@ -97,6 +98,7 @@ ns.DEFAULTS = {
 		zoneNotes = true,
 		screenshotChat = true,
 		skin = "classic",
+		bookIntro = true,
 	},
 	sections = {},
 	notes = {},

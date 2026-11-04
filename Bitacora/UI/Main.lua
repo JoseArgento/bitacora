@@ -75,8 +75,12 @@ function ns.Toggle(tab)
 		f:SetPoint(p[1], UIParent, p[2], p[3], p[4])
 		f.placed = true
 	end
+	local wasShown = f:IsShown()
 	f:Show()
 	UI.SelectTab(tab or ns.db.settings.tab or 1)
+	if not wasShown and UI.OpenBook then
+		UI.OpenBook()
+	end
 end
 
 f:SetScript("OnShow", function()

@@ -9,7 +9,7 @@ UI.builders[4] = function(panel)
 	local view = { kind = "zone", place = "MAIL", wday = 0 }
 
 	-- form -------------------------------------------------------------------------------------------
-	local form = CreateFrame("Frame", nil, panel, "InsetFrameTemplate")
+	local form = UI.Inset(panel)
 	form:SetPoint("TOPLEFT", 0, 0)
 	form:SetPoint("TOPRIGHT", 0, 0)
 	form:SetHeight(96)
@@ -147,7 +147,7 @@ UI.builders[4] = function(panel)
 	end)
 
 	-- list -------------------------------------------------------------------------------------------
-	local inset = CreateFrame("Frame", nil, panel, "InsetFrameTemplate")
+	local inset = UI.Inset(panel)
 	inset:SetPoint("TOPLEFT", form, "BOTTOMLEFT", 0, -8)
 	inset:SetPoint("BOTTOMRIGHT", 0, 0)
 

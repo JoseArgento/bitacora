@@ -544,3 +544,37 @@ def test_journal_search(game):
     assert game.run("return ns.Journal.Matches(MOCK.e, 'murió elwynn')") is False  # English client
     assert game.run("return ns.Journal.Matches(MOCK.e, 'died elwynn')") is True
     game.run("ns.Toggle(2); ns.UI.views[2].search:SetText('level'); ns.UI.views[2].Refresh()")
+
+
+def test_tavern_skin_recolors_and_opens_the_book(game):
+    game.run("ns.Toggle(1); ns.Toggle(); ns.UI.SelectTab(2); ns.UI.frame:Hide()")
+    game.db.settings.skin = "tavern"
+    game.run("ns.Fire('settings', 'skin')")
+    frame = game.lua.globals().BitacoraFrame
+    assert frame.tavern.page._shown and str(frame.tavern.page.texture).endswith("Media\\parchment")
+    # labels on parchment use dark ink; the body editor too
+    inks = game.run(
+        """
+        local n, dark = 0, 0
+        for fs, font in pairs(ns.UI.labels) do
+          n = n + 1
+          local r = fs:GetTextColor()
+          if r < 0.6 then dark = dark + 1 end
+        end
+        return n, dark
+        """
+    )
+    assert inks[0] > 10 and inks[1] >= inks[0] * 0.8
+    game.m.played = 0
+    game.run("ns.Toggle(1)")
+    assert game.m.played == 1 and frame.tavern.cover._shown is False  # played, then hid itself
+    game.db.settings.skin = "classic"
+    game.run("ns.Fire('settings', 'skin')")
+    assert frame.tavern.page._shown is False
+
+
+def test_textures_are_powers_of_two_tga():
+    for name in ["parchment", "wood", "cover"]:
+        data = (ADDON / "Media" / f"{name}.tga").read_bytes()
+        width, height, bpp = int.from_bytes(data[12:14], "little"), int.from_bytes(data[14:16], "little"), data[16]
+        assert data[2] == 2 and bpp == 32 and width == height and width & (width - 1) == 0, name

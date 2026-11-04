@@ -30,9 +30,10 @@ check("tooltipNotes", L.OPT_TOOLTIP, -64)
 check("zoneNotes", L.OPT_ZONE, -92)
 check("screenshotChat", L.OPT_SCREENSHOT, -120)
 check("journalQuests", L.OPT_QUESTS, -148)
+check("bookIntro", L.OPT_BOOK_INTRO, -176)
 
 local lootLabel = UI.Label(panel, L.SETTINGS_LOOT, "GameFontNormal")
-lootLabel:SetPoint("TOPLEFT", 16, -188)
+lootLabel:SetPoint("TOPLEFT", 16, -216)
 local loot = UI.Button(panel, "", 160, nil)
 loot:SetPoint("TOPLEFT", lootLabel, "BOTTOMLEFT", 0, -6)
 
