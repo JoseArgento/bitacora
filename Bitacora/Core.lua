@@ -3,7 +3,8 @@ local L = ns.L
 
 ns.DB_VERSION = 1
 ns.IMAGE_FOLDER = "Interface\\AddOns\\BitacoraImagenes\\"
-ns.MEDIA = "Interface\\AddOns\\" .. ADDON .. "\\Media\\" -- the skin's own textures (tools/make_textures.py)
+-- The data and the skin's textures live in the small Bitacora_Datos addon, shared by every edition.
+ns.MEDIA = "Interface\\AddOns\\Bitacora_Datos\\Media\\"
 
 -- Callbacks so the UI refreshes when data changes: ns.Fire("notes"), ns.On("notes", fn)
 local listeners = {}

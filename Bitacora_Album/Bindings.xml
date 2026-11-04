@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="BITACORA_ALBUM_TOGGLE" header="BITACORA_ALBUM" category="ADDONS">
+		Bitacora_Album_Toggle()
+	</Binding>
+</Bindings>

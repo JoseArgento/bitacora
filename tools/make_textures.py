@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Draws the tavern skin's textures: Bitacora/Media/{parchment,wood,cover}.tga.
+"""Draws the tavern skin's textures: Bitacora_Datos/Media/{parchment,wood,cover}.tga.
 
 Everything is generated here from noise and shapes (no game art). Sizes are powers of 2 and the files are
 32-bit TGA, which every WoW client loads. Needs Pillow. Deterministic: the same seed gives the same files.
@@ -12,7 +12,7 @@ from pathlib import Path
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "Bitacora" / "Media"
+OUT = ROOT / "Bitacora_Datos" / "Media"
 
 
 def noise(size: int, scale: int, seed: int) -> Image.Image:

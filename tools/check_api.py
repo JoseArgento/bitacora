@@ -65,6 +65,7 @@ def main() -> int:
     for p in args.ui.rglob("*.lua"):
         text = p.read_text(encoding="utf-8", errors="replace")
         known_globals |= set(top_assign.findall(text))
+        known_globals |= set(re.findall(r"^_G\.(\w+)\s*=", text, re.M))  # _G.SlashCmdList = {}
         for owner, method in func_def.findall(text):
             known_globals.add(owner.split(".")[0])
             known_globals.add(f"{owner}.{method}")
@@ -81,7 +82,12 @@ def main() -> int:
 
     own_globals: set[str] = set()
     addon = args.addon
-    for toc in addon.glob("*.toc"):
+    tocs = list(addon.glob("*.toc"))
+    for toc in list(tocs):  # SavedVariables of addons it depends on are its globals too (Bitacora_Datos)
+        for dep in re.findall(r"^## (?:Dependencies|RequiredDeps|Dep\w*):\s*(.+)$", toc.read_text(encoding="utf-8"), re.MULTILINE):
+            for name in (d.strip() for d in dep.split(",")):
+                tocs += list((addon.parent / name).glob("*.toc"))
+    for toc in tocs:
         for m in re.finditer(r"^## SavedVariables(?:PerCharacter)?:\s*(.+)$", toc.read_text(encoding="utf-8"), re.M):
             own_globals |= {v.strip() for v in m.group(1).split(",")}
     own_methods: set[str] = set()

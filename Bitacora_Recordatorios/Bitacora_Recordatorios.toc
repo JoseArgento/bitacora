@@ -1,0 +1,25 @@
+## Interface: 16001
+## Title: Bitácora · Recordatorios
+## Notes: Bitácora reminders: by zone, level, login, mailbox, bank, vendor, auction house or day and time.
+## Notes-esES: Recordatorios de Bitácora: por zona, nivel, al entrar, correo, banco, vendedor, subasta o día y hora.
+## Notes-esMX: Recordatorios de Bitácora: por zona, nivel, al entrar, correo, banco, vendedor, subasta o día y hora.
+## Author: José Argento
+## Version: @project-version@
+## Dependencies: Bitacora_Datos
+## IconTexture: Interface\Icons\INV_Misc_PocketWatch_01
+## AddonCompartmentFunc: Bitacora_Recordatorios_OnAddonCompartmentClick
+## AddonCompartmentFuncOnEnter: Bitacora_Recordatorios_OnAddonCompartmentEnter
+## AddonCompartmentFuncOnLeave: Bitacora_Recordatorios_OnAddonCompartmentLeave
+## Category: Roleplay
+
+Edition.lua
+Locales.lua
+Core.lua
+Reminders.lua
+Events.lua
+UI\Widgets.lua
+UI\Main.lua
+UI\RemindersTab.lua
+UI\Options.lua
+UI\Skin.lua
+Bindings.xml

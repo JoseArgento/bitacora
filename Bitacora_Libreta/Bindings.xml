@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="BITACORA_LIBRETA_TOGGLE" header="BITACORA_LIBRETA" category="ADDONS">
+		Bitacora_Libreta_Toggle()
+	</Binding>
+</Bindings>

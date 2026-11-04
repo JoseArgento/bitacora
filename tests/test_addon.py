@@ -16,9 +16,9 @@ ADDON = ROOT / "Bitacora"
 MOCK = Path(__file__).parent / "wow_mock.lua"
 
 
-def toc_files():
+def toc_files(folder="Bitacora"):
     out = []
-    for line in (ADDON / "Bitacora.toc").read_text(encoding="utf-8").splitlines():
+    for line in (ROOT / folder / f"{folder}.toc").read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if line and not line.startswith("#") and line.endswith(".lua"):
             out.append(line.replace("\\", "/"))
@@ -26,17 +26,25 @@ def toc_files():
 
 
 class Game:
-    def __init__(self, locale="enUS", saved=None):
+    """The client with some addons loaded, in order. Bitacora_Datos (the shared saved data) always comes first."""
+
+    def __init__(self, locale="enUS", saved=None, addons=("Bitacora",)):
         self.lua = lupa.LuaRuntime(unpack_returned_tuples=True)
         self.lua.execute(MOCK.read_text(encoding="utf-8"))
         self.m = self.lua.globals().MOCK
         self.m.locale = locale
-        self.ns = self.lua.table()
+        self.addons = ["Bitacora_Datos", *addons]
+        self.m.loaded = self.lua.table_from({name: True for name in self.addons})
+        self.nss = {}
         loader = self.lua.eval("function(src, name) return assert(loadstring(src, '@' .. name)) end")
         if saved is not None:
-            self.lua.execute(saved)  # the SavedVariables file, as the client loads it before the addon
-        for rel in toc_files():
-            loader((ADDON / rel).read_text(encoding="utf-8"), rel)("Bitacora", self.ns)
+            self.lua.execute(saved)  # Bitacora_Datos' SavedVariables file, as the client loads it before the addons
+        for name in self.addons:
+            ns = self.lua.table()
+            self.nss[name] = ns
+            for rel in toc_files(name):
+                loader((ROOT / name / rel).read_text(encoding="utf-8"), f"{name}/{rel}")(name, ns)
+        self.ns = self.nss[self.addons[1]] if len(self.addons) > 1 else self.nss["Bitacora_Datos"]
 
     def run(self, code):
         """Lua with ns and MOCK in scope."""
@@ -46,7 +54,8 @@ class Game:
         self.m.fire(event, *args)
 
     def login(self):
-        self.fire("ADDON_LOADED", "Bitacora")
+        for name in self.addons:
+            self.fire("ADDON_LOADED", name)
         self.fire("PLAYER_LOGIN")
         self.fire("PLAYER_ENTERING_WORLD", True, False)
 
@@ -575,6 +584,86 @@ def test_tavern_skin_recolors_and_opens_the_book(game):
 
 def test_textures_are_powers_of_two_tga():
     for name in ["parchment", "wood", "cover"]:
-        data = (ADDON / "Media" / f"{name}.tga").read_bytes()
+        data = (ROOT / "Bitacora_Datos" / "Media" / f"{name}.tga").read_bytes()
         width, height, bpp = int.from_bytes(data[12:14], "little"), int.from_bytes(data[14:16], "little"), data[16]
         assert data[2] == 2 and bpp == 32 and width == height and width & (width - 1) == 0, name
+
+
+# standalone parts -------------------------------------------------------------------------------------
+
+PARTS = ["Bitacora_Libreta", "Bitacora_Diario", "Bitacora_Album", "Bitacora_Recordatorios"]
+
+
+def test_generated_parts_are_up_to_date(tmp_path):
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("build_editions", ROOT / "tools" / "build_editions.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    mod.build(tmp_path)
+    for part in PARTS:
+        fresh = {p.relative_to(tmp_path / part): p.read_bytes() for p in (tmp_path / part).rglob("*") if p.is_file()}
+        repo = {p.relative_to(ROOT / part): p.read_bytes() for p in (ROOT / part).rglob("*") if p.is_file()}
+        assert fresh == repo, f"{part} is out of date: run tools/build_editions.py"
+
+
+@pytest.mark.parametrize("part", PARTS)
+def test_each_part_loads_alone_with_one_tab(part):
+    g = Game(addons=(part,))
+    g.login()
+    g.m.runTimers()
+    g.run("ns.Toggle()")
+    frame = g.lua.globals()[part + "Frame"]
+    assert frame._shown and len(frame.Tabs) == 1 and frame.Tabs[1]._shown is False
+    assert g.lua.globals()["SLASH_" + part.upper() + "1"].startswith("/")
+    assert g.db.version == 1
+
+
+def test_notebook_alone_keeps_no_journal():
+    g = Game(addons=("Bitacora_Libreta",))
+    g.login()
+    g.lua.globals().SlashCmdList.BITACORA_LIBRETA("nota comprar paño")
+    g.fire("PLAYER_LEVEL_UP", 11)
+    assert len(g.char().journal) == 0
+    assert g.run("return #ns.Notes.Search('paño', nil, ns.CharKey())") == 1
+
+
+def test_two_parts_share_the_data():
+    g = Game(addons=("Bitacora_Diario", "Bitacora_Libreta"))
+    g.login()
+    g.fire("PLAYER_LEVEL_UP", 11)
+    g.lua.globals().SlashCmdList.BITACORA_LIBRETA("nota desde la libreta")
+    assert g.kinds() == ["start", "level"]
+    assert len(list(g.db.notes.values())) == 1
+    # and it survives a reload with the other part alone
+    saved = g.m.savedVariables("BitacoraDB")
+    g2 = Game(saved=saved, addons=("Bitacora_Libreta",))
+    g2.login()
+    assert g2.run("return #ns.Notes.Search('libreta', nil, ns.CharKey())") == 1 and len(g2.char().journal) == 2
+
+
+def test_a_part_steps_aside_when_the_full_addon_is_loaded():
+    g = Game(addons=("Bitacora", "Bitacora_Diario", "Bitacora_Recordatorios"))
+    g.login()
+    assert g.nss["Bitacora_Diario"].disabled is True and g.nss["Bitacora_Recordatorios"].disabled is True
+    g.fire("PLAYER_LEVEL_UP", 11)
+    assert g.kinds() == ["start", "level"]  # written once, by the full addon
+    g.run('ns.Reminders.Create({ text = "x", kind = "place", value = "MAIL" })')
+    g.fire("MAIL_SHOW")
+    assert g.warnings() == ["Reminder: x"]  # one alert, not three
+    g.lua.globals().SlashCmdList.BITACORA_DIARIO("")
+    assert "is off because the full Bitácora is loaded" in g.chat()[-1]
+
+
+def test_all_four_parts_together_do_each_thing_once():
+    g = Game(addons=tuple(PARTS))
+    g.login()
+    g.m.runTimers()
+    g.fire("PLAYER_LEVEL_UP", 11)
+    g.fire("SCREENSHOT_SUCCEEDED")
+    g.lua.globals().SlashCmdList.BITACORA_LIBRETA("nota una")
+    g.nss["Bitacora_Recordatorios"].Reminders.Create(g.lua.table_from({"text": "y", "kind": "place", "value": "BANK"}))
+    g.fire("BANKFRAME_OPENED")
+    assert g.kinds() == ["start", "level"] and len(g.char().album) == 1
+    assert len(list(g.db.notes.values())) == 1 and g.warnings() == ["Reminder: y"]
+    assert g.db.sections[1].name == "General" and len(g.db.sections) == 1  # the first tab is made once

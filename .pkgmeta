@@ -1,5 +1,14 @@
 package-as: Bitacora
 
+# One zip, six addon folders: the full Bitácora, the shared data (Bitacora_Datos) and the four standalone parts.
+move-folders:
+  Bitacora/Bitacora: Bitacora
+  Bitacora/Bitacora_Datos: Bitacora_Datos
+  Bitacora/Bitacora_Libreta: Bitacora_Libreta
+  Bitacora/Bitacora_Diario: Bitacora_Diario
+  Bitacora/Bitacora_Album: Bitacora_Album
+  Bitacora/Bitacora_Recordatorios: Bitacora_Recordatorios
+
 ignore:
   - tests
   - tools

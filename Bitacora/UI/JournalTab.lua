@@ -17,7 +17,7 @@ local KIND_ICON = {
 	note = "Interface\\Icons\\INV_Feather_05",
 }
 
-UI.builders[2] = function(panel)
+UI.RegisterTab("TAB_JOURNAL", "journal", function(panel)
 	local view = { filter = "milestones", char = nil }
 
 	-- the summary goes under the list: the top row holds search, filters, write and the character menu
@@ -129,4 +129,4 @@ UI.builders[2] = function(panel)
 	end
 
 	return view
-end
+end)

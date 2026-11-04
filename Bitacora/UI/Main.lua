@@ -1,11 +1,14 @@
-local _, ns = ...
+local ADDON, ns = ...
 local L = ns.L
 local UI = ns.UI
 
-local TABS = { "TAB_NOTES", "TAB_JOURNAL", "TAB_ALBUM", "TAB_REMINDERS" }
 UI.panels = {}
+UI.tabs = {}
+UI.tabOfTopic = {} -- "notes" -> tab index, for refreshing the visible tab when its data changes
 
-local f = CreateFrame("Frame", "BitacoraFrame", UIParent, "BasicFrameTemplateWithInset")
+-- Global names carry the addon's folder name, so the full Bitácora and its standalone parts can be loaded together.
+local FRAME = ADDON .. "Frame"
+local f = CreateFrame("Frame", FRAME, UIParent, "BasicFrameTemplateWithInset")
 UI.frame = f
 f:SetSize(760, 520)
 f:SetPoint("CENTER")
@@ -16,8 +19,8 @@ f:SetMovable(true)
 f:EnableMouse(true)
 f:RegisterForDrag("LeftButton")
 f:Hide()
-f.TitleText:SetText(L.TITLE)
-tinsert(UISpecialFrames, "BitacoraFrame") -- Escape closes it
+f.TitleText:SetText(ns.edition.title or L.TITLE)
+tinsert(UISpecialFrames, FRAME) -- Escape closes it
 
 f:SetScript("OnDragStart", f.StartMoving)
 f:SetScript("OnDragStop", function(self)
@@ -26,31 +29,43 @@ f:SetScript("OnDragStop", function(self)
 	ns.db.settings.point = { point, relPoint, x, y }
 end)
 
-for i, key in ipairs(TABS) do
-	local tab = CreateFrame("Button", "BitacoraFrameTab" .. i, f, "PanelTabButtonTemplate")
+UI.builders = {} -- [index] = function(panel) ... return { Refresh = fn } end
+UI.views = {}
+
+-- Each tab file of this edition registers itself, in TOC order (notebook, journal, album, reminders).
+function UI.RegisterTab(textKey, topic, builder)
+	local i = #UI.builders + 1
+	UI.builders[i] = builder
+	UI.tabOfTopic[topic] = i
+	local tab = CreateFrame("Button", FRAME .. "Tab" .. i, f, "PanelTabButtonTemplate")
 	tab:SetID(i)
-	tab:SetText(L[key])
+	tab:SetText(L[textKey])
 	if i == 1 then
 		tab:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 8, 2)
 	else
-		tab:SetPoint("LEFT", _G["BitacoraFrameTab" .. (i - 1)], "RIGHT", 3, 0)
+		tab:SetPoint("LEFT", UI.tabs[i - 1], "RIGHT", 3, 0)
 	end
 	tab:SetScript("OnClick", function(self)
 		UI.SelectTab(self:GetID())
 		PlaySound(SOUNDKIT.IG_CHARACTER_INFO_TAB)
 	end)
+	UI.tabs[i] = tab
 	local panel = CreateFrame("Frame", nil, f)
 	panel:SetPoint("TOPLEFT", f, "TOPLEFT", 12, -30)
 	panel:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -12, 10)
 	panel:Hide()
 	UI.panels[i] = panel
+	PanelTemplates_SetNumTabs(f, i)
+	-- a standalone part has a single tab: no tab strip
+	for _, t in ipairs(UI.tabs) do
+		t:SetShown(i > 1)
+	end
 end
-PanelTemplates_SetNumTabs(f, #TABS)
-
-UI.builders = {} -- [index] = function(panel) ... return { Refresh = fn } end
-UI.views = {}
 
 function UI.SelectTab(i)
+	if not UI.builders[i] then
+		i = 1
+	end
 	PanelTemplates_SetTab(f, i)
 	for k, panel in ipairs(UI.panels) do
 		panel:SetShown(k == i)
@@ -91,10 +106,10 @@ f:SetScript("OnHide", function()
 end)
 
 -- Refresh the visible tab when its data changes.
-local topicTab = { notes = 1, journal = 2, album = 3, reminders = 4 }
-for topic, i in pairs(topicTab) do
+for _, topic in ipairs({ "notes", "journal", "album", "reminders" }) do
 	ns.On(topic, function()
-		if f:IsShown() and PanelTemplates_GetSelectedTab(f) == i and UI.views[i] and UI.views[i].Refresh then
+		local i = UI.tabOfTopic[topic]
+		if i and f:IsShown() and PanelTemplates_GetSelectedTab(f) == i and UI.views[i] and UI.views[i].Refresh then
 			UI.views[i].Refresh(true)
 		end
 	end)

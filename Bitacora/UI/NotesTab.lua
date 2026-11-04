@@ -1,11 +1,11 @@
-local _, ns = ...
+local ADDON, ns = ...
 local L = ns.L
 local UI = ns.UI
 local N = ns.Notes
 
 local MAX_THUMBS = 4
 
-UI.builders[1] = function(panel)
+UI.RegisterTab("TAB_NOTES", "notes", function(panel)
 	local view = { section = nil, selected = nil }
 
 	-- tabs of the notebook (sections) ----------------------------------------------------------
@@ -160,7 +160,7 @@ UI.builders[1] = function(panel)
 	end)
 	addImage:SetPoint("LEFT", imagesLabel, "RIGHT", 10, 0)
 
-	local preview = CreateFrame("Frame", "BitacoraImagePreview", UIParent, "BasicFrameTemplateWithInset")
+	local preview = CreateFrame("Frame", ADDON .. "ImagePreview", UIParent, "BasicFrameTemplateWithInset")
 	preview:SetSize(540, 562)
 	preview:SetPoint("CENTER")
 	preview:SetFrameStrata("DIALOG")
@@ -168,7 +168,8 @@ UI.builders[1] = function(panel)
 	preview.tex = preview:CreateTexture(nil, "ARTWORK")
 	preview.tex:SetPoint("TOPLEFT", 14, -36)
 	preview.tex:SetSize(512, 512)
-	tinsert(UISpecialFrames, "BitacoraImagePreview")
+	tinsert(UISpecialFrames, ADDON .. "ImagePreview")
+	UI.imagePreview = preview
 
 	local thumbs = {}
 	for i = 1, MAX_THUMBS do
@@ -424,4 +425,4 @@ UI.builders[1] = function(panel)
 	end
 
 	return view
-end
+end)

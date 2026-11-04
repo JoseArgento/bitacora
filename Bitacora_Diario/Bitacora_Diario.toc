@@ -1,0 +1,25 @@
+## Interface: 16001
+## Title: Bitácora · Diario
+## Notes: Bitácora journal: writes itself as you play (levels, zones, bosses, deaths, loot, gold).
+## Notes-esES: Diario de Bitácora: se escribe solo mientras jugás (niveles, zonas, jefes, muertes, botín, oro).
+## Notes-esMX: Diario de Bitácora: se escribe solo mientras jugás (niveles, zonas, jefes, muertes, botín, oro).
+## Author: José Argento
+## Version: @project-version@
+## Dependencies: Bitacora_Datos
+## IconTexture: Interface\Icons\INV_Misc_Book_09
+## AddonCompartmentFunc: Bitacora_Diario_OnAddonCompartmentClick
+## AddonCompartmentFuncOnEnter: Bitacora_Diario_OnAddonCompartmentEnter
+## AddonCompartmentFuncOnLeave: Bitacora_Diario_OnAddonCompartmentLeave
+## Category: Roleplay
+
+Edition.lua
+Locales.lua
+Core.lua
+Journal.lua
+Events.lua
+UI\Widgets.lua
+UI\Main.lua
+UI\JournalTab.lua
+UI\Options.lua
+UI\Skin.lua
+Bindings.xml

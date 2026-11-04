@@ -5,7 +5,7 @@ local R = ns.Reminders
 
 local KINDS = { { "zone", "R_ZONE" }, { "level", "R_LEVEL" }, { "login", "R_LOGIN" }, { "place", "R_PLACE" }, { "time", "R_TIME" } }
 
-UI.builders[4] = function(panel)
+UI.RegisterTab("TAB_REMINDERS", "reminders", function(panel)
 	local view = { kind = "zone", place = "MAIL", wday = 0 }
 
 	-- form -------------------------------------------------------------------------------------------
@@ -204,4 +204,4 @@ UI.builders[4] = function(panel)
 	end
 
 	return view
-end
+end)

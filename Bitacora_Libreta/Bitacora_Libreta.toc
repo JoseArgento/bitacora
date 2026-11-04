@@ -1,0 +1,26 @@
+## Interface: 16001
+## Title: Bitácora · Libreta
+## Notes: Bitácora notebook: notes with tabs, links, images, and notes attached to NPCs, items and zones.
+## Notes-esES: Libreta de Bitácora: notas con pestañas, links, imágenes y notas pegadas a PNJ, ítems y zonas.
+## Notes-esMX: Libreta de Bitácora: notas con pestañas, links, imágenes y notas pegadas a PNJ, ítems y zonas.
+## Author: José Argento
+## Version: @project-version@
+## Dependencies: Bitacora_Datos
+## IconTexture: Interface\Icons\INV_Misc_Note_01
+## AddonCompartmentFunc: Bitacora_Libreta_OnAddonCompartmentClick
+## AddonCompartmentFuncOnEnter: Bitacora_Libreta_OnAddonCompartmentEnter
+## AddonCompartmentFuncOnLeave: Bitacora_Libreta_OnAddonCompartmentLeave
+## Category: Roleplay
+
+Edition.lua
+Locales.lua
+Core.lua
+Notes.lua
+Events.lua
+UI\Widgets.lua
+UI\Main.lua
+UI\NotesTab.lua
+UI\Tooltip.lua
+UI\Options.lua
+UI\Skin.lua
+Bindings.xml

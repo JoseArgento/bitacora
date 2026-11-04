@@ -3,7 +3,7 @@ local L = ns.L
 local UI = ns.UI
 local A = ns.Album
 
-UI.builders[3] = function(panel)
+UI.RegisterTab("TAB_ALBUM", "album", function(panel)
 	local view = {}
 
 	local hint = UI.Label(panel, L.ALBUM_HINT, "GameFontDisableSmall")
@@ -69,4 +69,4 @@ UI.builders[3] = function(panel)
 	end
 
 	return view
-end
+end)

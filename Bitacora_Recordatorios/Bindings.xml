@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="BITACORA_RECORDATORIOS_TOGGLE" header="BITACORA_RECORDATORIOS" category="ADDONS">
+		Bitacora_Recordatorios_Toggle()
+	</Binding>
+</Bindings>

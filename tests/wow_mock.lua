@@ -562,6 +562,12 @@ LOOT_ITEM_PUSHED_SELF = "You receive item: %s"
 LOOT_ITEM_PUSHED_SELF_MULTIPLE = "You receive item: %sx%d"
 LOOT_ITEM_CREATED_SELF = "You create: %s."
 
+C_AddOns = {
+	IsAddOnLoaded = function(name)
+		return MOCK.loaded and MOCK.loaded[name] == true
+	end,
+}
+
 -- driving -----------------------------------------------------------------------------------------
 function MOCK.fire(event, ...)
 	for _, f in ipairs(MOCK.events[event] or {}) do
@@ -587,7 +593,7 @@ function MOCK.lastChat()
 	return MOCK.chat[#MOCK.chat]
 end
 
--- SavedVariables the way the client writes them on logout (WTF/Account/<ACCOUNT>/SavedVariables/Bitacora.lua):
+-- SavedVariables the way the client writes them on logout (WTF/Account/<ACCOUNT>/SavedVariables/Bitacora_Datos.lua):
 -- one entry per line, ["key"] = value, array entries with a "-- [n]" comment.
 local function quote(s)
 	return '"' .. s:gsub("\\", "\\\\"):gsub('"', '\\"'):gsub("\n", "\\n"):gsub("\r", "\\r") .. '"'

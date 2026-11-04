@@ -24,7 +24,7 @@ end
 
 frame:SetScript("OnEvent", function(_, event, ...)
 	local fn = handlers[event]
-	if fn then
+	if fn and not (ns.disabled and event ~= "ADDON_LOADED") then
 		fn(...)
 	end
 end)
@@ -35,7 +35,7 @@ local function whereCtx()
 end
 
 local function zoneNotes()
-	if not ns.db.settings.zoneNotes then
+	if not ns.Notes or not ns.db.settings.zoneNotes then
 		return
 	end
 	local w = ns.Where()
@@ -60,69 +60,106 @@ on("ADDON_LOADED", function(name)
 	frame:UnregisterEvent("ADDON_LOADED")
 end)
 
+-- A standalone part steps aside when the full Bitácora is loaded too: the full one already does its job,
+-- and both share the same data (Bitacora_Datos).
+local FULL = "Bitacora"
+local function fullLoaded()
+	return ADDON ~= FULL and C_AddOns.IsAddOnLoaded(FULL)
+end
+
 on("PLAYER_LOGIN", function()
+	if fullLoaded() then
+		ns.disabled = true
+		ns.Print(L.STANDALONE_OFF:format(ns.edition.title or ADDON))
+		return
+	end
 	ns.Char() -- creates this character's record on first use
-	ns.Journal.OnLogin()
+	if ns.Journal then
+		ns.Journal.OnLogin()
+	end
 	ns.Fire("login")
 	-- reminders a moment later, so the alert is not lost in the loading screen spam
-	C_Timer.After(5, function()
-		ns.Reminders.Check({ event = "login", level = UnitLevel("player"), now = time() }, ns.CharKey())
-		ns.Reminders.Check(whereCtx(), ns.CharKey())
-	end)
-	C_Timer.NewTicker(30, function()
-		ns.Reminders.Check({ event = "tick", now = time() }, ns.CharKey())
-	end)
+	if ns.Reminders then
+		C_Timer.After(5, function()
+			ns.Reminders.Check({ event = "login", level = UnitLevel("player"), now = time() }, ns.CharKey())
+			ns.Reminders.Check(whereCtx(), ns.CharKey())
+		end)
+		C_Timer.NewTicker(30, function()
+			ns.Reminders.Check({ event = "tick", now = time() }, ns.CharKey())
+		end)
+	end
 end)
 
+local function remind(ctx)
+	if ns.Reminders then
+		ns.Reminders.Check(ctx, ns.CharKey())
+	end
+end
+
 on("ZONE_CHANGED_NEW_AREA", function()
-	ns.Journal.OnZoneChanged(false)
-	ns.Reminders.Check(whereCtx(), ns.CharKey())
+	if ns.Journal then
+		ns.Journal.OnZoneChanged(false)
+	end
+	remind(whereCtx())
 	zoneNotes()
 end)
 
 -- Subzones (an inn, a district of a city) only matter to reminders.
 on("ZONE_CHANGED", function()
-	ns.Reminders.Check(whereCtx(), ns.CharKey())
+	remind(whereCtx())
 end)
 on("ZONE_CHANGED_INDOORS", function()
-	ns.Reminders.Check(whereCtx(), ns.CharKey())
+	remind(whereCtx())
 end)
 
 on("PLAYER_LEVEL_UP", function(level)
-	ns.Journal.OnLevelUp(level)
-	ns.Reminders.Check({ event = "level", level = level }, ns.CharKey())
+	if ns.Journal then
+		ns.Journal.OnLevelUp(level)
+	end
+	remind({ event = "level", level = level })
 end)
 
-on("ENCOUNTER_END", ns.Journal.OnEncounterEnd)
-on("BOSS_KILL", ns.Journal.OnBossKill)
-on("PLAYER_DEAD", ns.Journal.OnDead)
-on("QUEST_TURNED_IN", ns.Journal.OnQuestTurnedIn)
-on("CHAT_MSG_LOOT", ns.Journal.OnLoot)
-on("ACHIEVEMENT_EARNED", ns.Journal.OnAchievement)
-on("PLAYER_MONEY", ns.Journal.OnMoney)
-on("TIME_PLAYED_MSG", ns.Journal.OnTimePlayed)
-on("SCREENSHOT_SUCCEEDED", ns.Album.OnScreenshot)
-
-for event, place in pairs({ MAIL_SHOW = "MAIL", BANKFRAME_OPENED = "BANK", MERCHANT_SHOW = "MERCHANT", AUCTION_HOUSE_SHOW = "AUCTION" }) do
-	on(event, function()
-		ns.Reminders.Check({ event = "place", place = place }, ns.CharKey())
-	end)
+if ns.Journal then
+	on("ENCOUNTER_END", ns.Journal.OnEncounterEnd)
+	on("BOSS_KILL", ns.Journal.OnBossKill)
+	on("PLAYER_DEAD", ns.Journal.OnDead)
+	on("QUEST_TURNED_IN", ns.Journal.OnQuestTurnedIn)
+	on("CHAT_MSG_LOOT", ns.Journal.OnLoot)
+	on("ACHIEVEMENT_EARNED", ns.Journal.OnAchievement)
+	on("PLAYER_MONEY", ns.Journal.OnMoney)
+	on("TIME_PLAYED_MSG", ns.Journal.OnTimePlayed)
+end
+if ns.Album then
+	on("SCREENSHOT_SUCCEEDED", ns.Album.OnScreenshot)
+end
+if ns.Reminders then
+	for event, place in pairs({ MAIL_SHOW = "MAIL", BANKFRAME_OPENED = "BANK", MERCHANT_SHOW = "MERCHANT", AUCTION_HOUSE_SHOW = "AUCTION" }) do
+		on(event, function()
+			remind({ event = "place", place = place })
+		end)
+	end
 end
 
 -- Slash commands ---------------------------------------------------------------------------------
 
-SLASH_BITACORA1 = "/bitacora"
-SLASH_BITACORA2 = "/bita"
-SlashCmdList.BITACORA = function(msg)
+local KEY = string.upper(ADDON)
+for i, command in ipairs(ns.edition.slash) do
+	_G["SLASH_" .. KEY .. i] = command
+end
+SlashCmdList[KEY] = function(msg)
+	if ns.disabled then
+		ns.Print(L.STANDALONE_OFF:format(ns.edition.title or ADDON))
+		return
+	end
 	msg = ns.Trim(msg)
 	local cmd, rest = msg:match("^(%S+)%s*(.*)$")
 	cmd = cmd and string.lower(cmd) or ""
-	if cmd == "nota" or cmd == "note" then
+	if (cmd == "nota" or cmd == "note") and ns.Notes then
 		if rest ~= "" then
 			ns.Notes.Create({ body = rest })
 			ns.Print(L.QUICK_NOTE_SAVED)
 		end
-	elseif cmd == "entrada" or cmd == "entry" then
+	elseif (cmd == "entrada" or cmd == "entry") and ns.Journal then
 		if ns.Journal.AddManual(rest) then
 			ns.Print(L.ENTRY_SAVED)
 		end
@@ -136,21 +173,21 @@ SlashCmdList.BITACORA = function(msg)
 end
 
 -- Key binding (Bindings.xml) and the addon compartment next to the minimap (TOC fields).
-function Bitacora_Toggle()
+local function toggle()
+	if ns.disabled then
+		ns.Print(L.STANDALONE_OFF:format(ns.edition.title or ADDON))
+		return
+	end
 	ns.Toggle()
 end
-
-function Bitacora_OnAddonCompartmentClick()
-	ns.Toggle()
-end
-
-function Bitacora_OnAddonCompartmentEnter(_, button)
+_G[ADDON .. "_Toggle"] = toggle
+_G[ADDON .. "_OnAddonCompartmentClick"] = toggle
+_G[ADDON .. "_OnAddonCompartmentEnter"] = function(_, button)
 	GameTooltip:SetOwner(button or UIParent, "ANCHOR_LEFT")
-	GameTooltip:SetText(L.TITLE)
+	GameTooltip:SetText(ns.edition.title or L.TITLE)
 	GameTooltip:AddLine(L.COMPARTMENT_HINT, 1, 1, 1)
 	GameTooltip:Show()
 end
-
-function Bitacora_OnAddonCompartmentLeave()
+_G[ADDON .. "_OnAddonCompartmentLeave"] = function()
 	GameTooltip:Hide()
 end

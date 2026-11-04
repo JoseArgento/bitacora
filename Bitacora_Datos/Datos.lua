@@ -1,0 +1,3 @@
+-- Bitacora_Datos holds BitacoraDB (one SavedVariables file for every Bitácora addon), so the full Bitácora
+-- and its standalone parts can be installed in any mix without overwriting each other's data.
+-- It has no code of its own.

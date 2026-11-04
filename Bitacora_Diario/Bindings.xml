@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="BITACORA_DIARIO_TOGGLE" header="BITACORA_DIARIO" category="ADDONS">
+		Bitacora_Diario_Toggle()
+	</Binding>
+</Bindings>

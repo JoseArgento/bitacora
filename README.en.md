@@ -7,14 +7,16 @@ A logbook for your **WoW Forever** characters: a notebook, a journal that writes
 - **Album**: every screenshot (Print Screen) is noted with when, where, level and who you were with; add a caption. The web page pairs the notes with the photos.
 - **Reminders**: "when I enter Ironforge", "at level 40", "when I open the mailbox", "when I log in", "Tuesdays at 20:30"; per character or for all, once or repeating. Center-screen alert with sound.
 
-Open it with `/bitacora` (or `/bita`), a key binding, or the addon compartment by the minimap. `/bita note <text>` and `/bita entry <text>` save without opening it.
+Open it with `/bitacora` (or `/bita`), a key binding, or the addon compartment by the minimap. `/bita note <text>` and `/bita entry <text>` save without opening it. `/bita options` opens its settings page, where you can also switch the window to the **Tavern** look: parchment pages, a wooden title bar and a book cover that opens.
+
+**Install**: copy `Bitacora_Datos` (where your data is saved) plus either `Bitacora` (everything) or the parts you want into `Interface\AddOns\`. Each part is also its own addon: `Bitacora_Libreta` (`/libreta`), `Bitacora_Diario` (`/diario`), `Bitacora_Album` (`/album`), `Bitacora_Recordatorios` (`/recordatorios`). They share the same data, so you can mix them; when the full `Bitacora` is installed the parts step aside so nothing is logged twice.
 
 **Images**: the game only loads images from the AddOns folder, as PNG, JPG, TGA or BLP with power-of-2 sides; a new file appears after `/reload`. Put them in `Interface\AddOns\BitacoraImagenes\` (outside the addon's folder, so updates keep them) and type the file name in the note. The web page's Images tab resizes any picture to a power of 2 and tells you the name to type.
 
-**Web page**: `dist/bitacora.html`, one file that works offline. Open `WTF\Account\<ACCOUNT>\SavedVariables\Bitacora.lua` to read the journal day by day, drop your screenshots to build the album, read and copy the notebook. Nothing leaves your computer.
+**Web page**: `dist/bitacora.html` (or `dist/taberna.html`, the same page in a tavern look), one file that works offline. Open `WTF\Account\<ACCOUNT>\SavedVariables\Bitacora_Datos.lua` to read the journal day by day, drop your screenshots to build the album, read and copy the notebook. Nothing leaves your computer.
 
 **Privacy**: the addon sends nothing to anyone (no addon messages, no chat). Group members' names are only noted when the game does not hide them.
 
-**Tested**: every global, event and template it uses was checked against Forever 1.60.1's API dumps and UI source (`tools/check_api.py`); forever-lint and Addon Sentry report nothing; 57 tests run the addon in Lua 5.1 with a small client stand-in and test the page's file reader against Lua. **Not tested in the game** (no Forever client here): how the window looks, PNG loading from `BitacoraImagenes`, Forever's screenshot file names, boss events in Forever dungeons, and the exact Forever folder name.
+**Tested**: every global, event and template it uses was checked against Forever 1.60.1's API dumps and UI source (`tools/check_api.py`); forever-lint and Addon Sentry report nothing; 71 tests run the addon (each part alone, several together, and full plus a part included) in Lua 5.1 with a small client stand-in and test the page's file reader against Lua. **Not tested in the game** (no Forever client here): how the window looks, PNG loading from `BitacoraImagenes`, Forever's screenshot file names, boss events in Forever dungeons, and the exact Forever folder name.
 
 Not affiliated with Blizzard Entertainment. MIT license.

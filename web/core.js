@@ -233,7 +233,7 @@
   function readDB(text) {
     const vars = parseLua(text);
     const db = vars.BitacoraDB;
-    if (!db || typeof db !== "object" || Array.isArray(db)) throw new LuaError("this file has no BitacoraDB: open WTF/Account/<account>/SavedVariables/Bitacora.lua");
+    if (!db || typeof db !== "object" || Array.isArray(db)) throw new LuaError("this file has no BitacoraDB: open WTF/Account/<account>/SavedVariables/Bitacora_Datos.lua");
     const chars = Object.entries(db.chars && !Array.isArray(db.chars) ? db.chars : {}).map(([key, c]) => ({
       key,
       name: c.name || key.split("-")[0],

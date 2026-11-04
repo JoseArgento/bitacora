@@ -1,6 +1,6 @@
 # Bitácora
 
-El diario de a bordo de tus personajes de **WoW Forever**: una libreta, un diario que se escribe solo, un álbum de capturas y recordatorios, en una sola ventana. Tiene además una página web para leer todo eso fuera del juego.
+El diario de a bordo de tus personajes de **WoW Forever**: una libreta, un diario que se escribe solo, un álbum de capturas y recordatorios, en una sola ventana. Si querés solo una parte, cada una viene también como addon aparte. Tiene además una página web para leer todo eso fuera del juego.
 
 [Read in English](README.en.md)
 
@@ -25,15 +25,29 @@ El diario de a bordo de tus personajes de **WoW Forever**: una libreta, un diari
   - Pueden ser de un solo personaje o repetirse.
   - Avisan en el centro de la pantalla, con sonido.
 
+**Aspecto "Taberna":** en las opciones podés cambiar la ventana a un libro de pergamino con barra de madera y tinta oscura. Al abrirla se ve la tapa del libro un instante y se abre (se puede apagar).
+
 Se abre con `/bitacora` (o `/bita`), con una tecla (Opciones → Atajos → Bitácora) o desde el botón de addons junto al minimapa.
 
 - `/bita nota <texto>` guarda una nota rápida.
 - `/bita entrada <texto>` escribe en el diario.
 - `/bita opciones` abre su página en Opciones → AddOns: tooltips, avisos, misiones en el diario, calidad del botín y aspecto de la ventana.
 
+## Las partes sueltas
+
+| Addon | Qué trae | Se abre con |
+|---|---|---|
+| `Bitacora` | todo junto, 4 pestañas | `/bitacora`, `/bita` |
+| `Bitacora_Libreta` | la libreta y las notas pegadas a cosas | `/libreta` |
+| `Bitacora_Diario` | el diario | `/diario` |
+| `Bitacora_Album` | el álbum | `/album` |
+| `Bitacora_Recordatorios` | los recordatorios | `/recordatorios`, `/recordar` |
+
+Todos usan `Bitacora_Datos`, que es donde se guardan tus cosas. Por eso podés mezclarlos como quieras: si hoy usás solo el diario y mañana instalás la libreta, el diario sigue ahí. Si tenés instalado el `Bitacora` completo, las partes sueltas no hacen nada (te avisan en el chat) para que nada se anote dos veces.
+
 ## Instalar
 
-1. Copiá la carpeta `Bitacora` a `Interface\AddOns\`, dentro de la carpeta de Forever del juego.
+1. Copiá a `Interface\AddOns\`, dentro de la carpeta de Forever del juego, la carpeta `Bitacora_Datos` y además `Bitacora` (todo junto) o las partes que quieras.
 2. Si vas a usar imágenes, creá también `Interface\AddOns\BitacoraImagenes\`. Está afuera de la carpeta del addon para que una actualización no te borre las imágenes.
 
 ## Imágenes en la libreta
@@ -54,7 +68,7 @@ La pestaña **Imágenes** de la página web lleva cualquier imagen a potencia de
 - la libreta y los recordatorios, con "Copiar como Markdown";
 - la herramienta de imágenes.
 
-Nada sale de tu compu.
+`dist/taberna.html` es la misma página con otro look: madera, pergamino y cartas con el color de la clase de cada compañero. Nada sale de tu compu.
 
 ## Privacidad
 
@@ -65,13 +79,13 @@ El addon no manda nada a nadie: no usa mensajes de addon ni chat, solo escribe e
 **Probado:**
 - ✅ **Cada función, evento y template existe en Forever 1.60.1.** Lo revisa `tools/check_api.py` contra los dumps de [Ketho/BlizzardInterfaceResources](https://github.com/Ketho/BlizzardInterfaceResources) y el código de la UI de [Gethe/wow-ui-source](https://github.com/Gethe/wow-ui-source), rama `forever`. Ejemplos: `ChatFrameUtil.InsertLink` (Forever no tiene `ChatEdit_InsertLink`), `RaidWarningUtil.AddMessage` (`RaidNotice_AddMessage` solo existe con los alias viejos), `TooltipDataProcessor`, `ScrollingEditBoxTemplate`, el compartimento de addons de Forever. El script encuentra nombres inventados o mal escritos.
 - ✅ [forever-lint](https://github.com/JoseArgento/forever-lint) no encuentra problemas. [Addon Sentry](https://github.com/JoseArgento/addon-sentry) da "Sin señales de riesgo".
-- ✅ **61 tests.**
-  - 49 corren el addon en Lua 5.1 (el Lua de WoW), con un reemplazo chico del cliente (`tests/wow_mock.lua`): eventos, datos guardados y recargados, recordatorios (incluido el semanal), tooltips, links con shift-click, nombres de imágenes, patrones de botín en varios idiomas, valores secretos, y cada pestaña armándose sin errores de Lua.
+- ✅ **71 tests.**
+  - 62 corren el addon en Lua 5.1 (el Lua de WoW), con un reemplazo chico del cliente (`tests/wow_mock.lua`): eventos, datos guardados y recargados, recordatorios (incluido el semanal), tooltips, links con shift-click, nombres de imágenes, patrones de botín en varios idiomas, valores secretos, cada pestaña armándose sin errores de Lua, el aspecto Taberna, y las partes sueltas: cada una sola, varias juntas compartiendo los datos, y el completo con una parte (la parte se hace a un lado).
   - El resto prueban la página: lee el archivo igual que Lua 5.1, empareja capturas y arma los textos.
-- ✅ La página probada en Chromium: cada pestaña, capturas y PNG reales, escritorio y celular, claro y oscuro.
+- ✅ Las dos páginas probadas en Chromium: cada pestaña, capturas y PNG reales, escritorio y celular, claro y oscuro, y que no aparezca ningún "null" ni "undefined" en pantalla.
 
 **Sin probar ⏳.** Todo esto se prueba dentro del juego, y yo no tengo Forever:
-- **La ventana:** que se vea bien (tamaños, anclas, pestañas, listas, menús, ventanas de texto).
+- **La ventana:** que se vea bien (tamaños, anclas, pestañas, listas, menús, ventanas de texto), y el aspecto Taberna con su animación de tapa.
 - **Las imágenes:** que el juego cargue PNG desde `BitacoraImagenes`, una carpeta sin `.toc`.
 - **Los nombres de archivo:** que las capturas de Forever se llamen `WoWScrnShot_MMDDYY_HHMMSS`.
 - **Los eventos:** que `ENCOUNTER_END` o `BOSS_KILL` salten en las mazmorras de Forever.
@@ -88,10 +102,12 @@ El addon no manda nada a nadie: no usa mensajes de addon ni chat, solo escribe e
 pip install pytest lupa
 pytest                                        # addon en Lua 5.1 + página
 python tools/make_demo_db.py                  # regenera el ejemplo (tests/fixtures/BitacoraDB.lua) jugando con el addon real
-python tools/build_web.py                     # dist/bitacora.html
-python tools/check_api.py --bir ../BlizzardInterfaceResources --ui ../wow-ui-source --scanner ../addon-sentry/src
+python tools/build_editions.py                # rearma las partes sueltas desde Bitacora/ (un test avisa si te olvidaste)
+python tools/make_textures.py                 # texturas del aspecto Taberna (Bitacora_Datos/Media)
+python tools/build_web.py                     # dist/bitacora.html y dist/taberna.html
+python tools/check_api.py --bir ../BlizzardInterfaceResources --ui ../wow-ui-source --scanner ../addon-sentry/src --addon Bitacora_Diario
 ```
 
-Un tag `v*` empaqueta el addon con el packager de BigWigs (`.github/workflows/release.yml`).
+Las partes sueltas se generan: el código se edita solo en `Bitacora/`. Un tag `v*` empaqueta las seis carpetas en un zip con el packager de BigWigs (`.github/workflows/release.yml`).
 
 Sin relación con Blizzard Entertainment. World of Warcraft es marca registrada de Blizzard Entertainment, Inc. Licencia MIT.

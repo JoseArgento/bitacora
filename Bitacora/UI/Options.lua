@@ -11,7 +11,7 @@ local panel = CreateFrame("Frame")
 panel:Hide()
 UI.options = panel
 
-local title = UI.Label(panel, L.TITLE, "GameFontNormalLarge")
+local title = UI.Label(panel, ns.edition.title or L.TITLE, "GameFontNormalLarge")
 title:SetPoint("TOPLEFT", 16, -16)
 local sub = UI.Label(panel, L.OPTIONS_INTRO, "GameFontHighlightSmall")
 sub:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
@@ -26,19 +26,29 @@ local function check(key, text, y)
 	checks[key] = c
 	return c
 end
-check("tooltipNotes", L.OPT_TOOLTIP, -64)
-check("zoneNotes", L.OPT_ZONE, -92)
-check("screenshotChat", L.OPT_SCREENSHOT, -120)
-check("journalQuests", L.OPT_QUESTS, -148)
-check("bookIntro", L.OPT_BOOK_INTRO, -176)
+-- only the options of the parts this edition has
+local y = -64
+local function add(key, text, part)
+	if part then
+		check(key, text, y)
+		y = y - 28
+	end
+end
+add("tooltipNotes", L.OPT_TOOLTIP, ns.Notes)
+add("zoneNotes", L.OPT_ZONE, ns.Notes)
+add("screenshotChat", L.OPT_SCREENSHOT, ns.Album)
+add("journalQuests", L.OPT_QUESTS, ns.Journal)
+add("bookIntro", L.OPT_BOOK_INTRO, true)
 
 local lootLabel = UI.Label(panel, L.SETTINGS_LOOT, "GameFontNormal")
-lootLabel:SetPoint("TOPLEFT", 16, -216)
+lootLabel:SetPoint("TOPLEFT", 16, y - 12)
 local loot = UI.Button(panel, "", 160, nil)
 loot:SetPoint("TOPLEFT", lootLabel, "BOTTOMLEFT", 0, -6)
+lootLabel:SetShown(ns.Journal ~= nil)
+loot:SetShown(ns.Journal ~= nil)
 
 local skinLabel = UI.Label(panel, L.OPT_SKIN, "GameFontNormal")
-skinLabel:SetPoint("TOPLEFT", loot, "BOTTOMLEFT", 0, -18)
+skinLabel:SetPoint("TOPLEFT", ns.Journal and loot or lootLabel, ns.Journal and "BOTTOMLEFT" or "TOPLEFT", 0, ns.Journal and -18 or 0)
 local skin = UI.Button(panel, "", 160, nil)
 skin:SetPoint("TOPLEFT", skinLabel, "BOTTOMLEFT", 0, -6)
 
@@ -93,7 +103,10 @@ function UI.RegisterOptions()
 	if UI.optionsCategory or not (Settings and Settings.RegisterCanvasLayoutCategory) then
 		return
 	end
-	local category = Settings.RegisterCanvasLayoutCategory(panel, L.TITLE)
+	if ns.disabled then
+		return
+	end
+	local category = Settings.RegisterCanvasLayoutCategory(panel, ns.edition.title or L.TITLE)
 	Settings.RegisterAddOnCategory(category)
 	UI.optionsCategory = category
 end

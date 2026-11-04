@@ -5,13 +5,14 @@
 ## Notes-esMX: Libreta, diario, álbum de capturas y recordatorios para tus personajes.
 ## Author: José Argento
 ## Version: @project-version@
-## SavedVariables: BitacoraDB
+## Dependencies: Bitacora_Datos
 ## IconTexture: Interface\Icons\INV_Misc_Book_09
 ## AddonCompartmentFunc: Bitacora_OnAddonCompartmentClick
 ## AddonCompartmentFuncOnEnter: Bitacora_OnAddonCompartmentEnter
 ## AddonCompartmentFuncOnLeave: Bitacora_OnAddonCompartmentLeave
 ## Category: Roleplay
 
+Edition.lua
 Locales.lua
 Core.lua
 Notes.lua

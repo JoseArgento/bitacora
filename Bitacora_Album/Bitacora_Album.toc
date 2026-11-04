@@ -1,0 +1,25 @@
+## Interface: 16001
+## Title: Bitácora · Álbum
+## Notes: Bitácora album: notes when, where and with whom you took each screenshot.
+## Notes-esES: Álbum de Bitácora: anota cuándo, dónde y con quién sacaste cada captura.
+## Notes-esMX: Álbum de Bitácora: anota cuándo, dónde y con quién sacaste cada captura.
+## Author: José Argento
+## Version: @project-version@
+## Dependencies: Bitacora_Datos
+## IconTexture: Interface\Icons\INV_Misc_Spyglass_03
+## AddonCompartmentFunc: Bitacora_Album_OnAddonCompartmentClick
+## AddonCompartmentFuncOnEnter: Bitacora_Album_OnAddonCompartmentEnter
+## AddonCompartmentFuncOnLeave: Bitacora_Album_OnAddonCompartmentLeave
+## Category: Roleplay
+
+Edition.lua
+Locales.lua
+Core.lua
+Album.lua
+Events.lua
+UI\Widgets.lua
+UI\Main.lua
+UI\AlbumTab.lua
+UI\Options.lua
+UI\Skin.lua
+Bindings.xml
