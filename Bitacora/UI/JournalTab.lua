@@ -20,8 +20,9 @@ local KIND_ICON = {
 UI.builders[2] = function(panel)
 	local view = { filter = "milestones", char = nil }
 
-	local summary = UI.Label(panel, "", "GameFontHighlight")
-	summary:SetPoint("TOPLEFT", 4, -4)
+	-- the summary goes under the list: the top row holds search, filters, write and the character menu
+	local summary = UI.Label(panel, "", "GameFontHighlightSmall")
+	summary:SetPoint("BOTTOMLEFT", 4, 2)
 
 	local charButton = UI.Button(panel, "", 160, nil)
 	charButton:SetPoint("TOPRIGHT", -4, 0)
@@ -45,9 +46,17 @@ UI.builders[2] = function(panel)
 	end)
 	filterAll:SetPoint("RIGHT", filterMilestones, "LEFT", -4, 0)
 
+	local search = CreateFrame("EditBox", nil, panel, "SearchBoxTemplate")
+	search:SetSize(170, 20)
+	search:SetPoint("TOPLEFT", 8, -2)
+	search:HookScript("OnTextChanged", function()
+		view.Refresh()
+	end)
+	view.search = search
+
 	local inset = CreateFrame("Frame", nil, panel, "InsetFrameTemplate")
 	inset:SetPoint("TOPLEFT", 0, -30)
-	inset:SetPoint("BOTTOMRIGHT", 0, 0)
+	inset:SetPoint("BOTTOMRIGHT", 0, 18)
 
 	local list = UI.List(inset, 26, function(row, e)
 		if not row.icon then
@@ -95,10 +104,14 @@ UI.builders[2] = function(panel)
 	function view.Refresh()
 		local key = view.char or ns.CharKey()
 		local entries = J.Entries(key, view.filter)
+		local query = ns.Lower(search:GetText())
 		-- newest first
 		local items = {}
 		for i = #entries, 1, -1 do
-			table.insert(items, entries[i])
+			local e = entries[i]
+			if query == "" or J.Matches(e, query) then
+				table.insert(items, e)
+			end
 		end
 		list:SetData(items)
 		empty:SetShown(#items == 0)

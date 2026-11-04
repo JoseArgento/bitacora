@@ -126,6 +126,8 @@ SlashCmdList.BITACORA = function(msg)
 		if ns.Journal.AddManual(rest) then
 			ns.Print(L.ENTRY_SAVED)
 		end
+	elseif cmd == "opciones" or cmd == "options" or cmd == "config" then
+		ns.OpenOptions()
 	elseif cmd == "help" or cmd == "ayuda" or cmd == "?" then
 		ns.Print(L.HELP)
 	else

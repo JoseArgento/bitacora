@@ -216,13 +216,24 @@ BitacoraDB = {
 					["zone"] = "Las Minas de la Muerte",
 				}, -- [16]
 				{
+					["d"] = "2026-11-05 22:10",
+					["item"] = 2244,
+					["kind"] = "loot",
+					["level"] = 18,
+					["link"] = "|cff0070dd|Hitem:2244::::::::25:::::|h[Krol Blade]|h|r",
+					["name"] = "[Krol Blade]",
+					["quality"] = 3,
+					["t"] = 1793916600,
+					["zone"] = "Las Minas de la Muerte",
+				}, -- [17]
+				{
 					["d"] = "2026-11-05 23:00",
 					["kind"] = "played",
 					["level"] = 18,
 					["t"] = 1793919600,
 					["total"] = 23400,
 					["zone"] = "Las Minas de la Muerte",
-				}, -- [17]
+				}, -- [18]
 			},
 			["level"] = 18,
 			["money"] = {
@@ -332,6 +343,7 @@ BitacoraDB = {
 		["journalQuests"] = true,
 		["lootQuality"] = 3,
 		["screenshotChat"] = true,
+		["skin"] = "classic",
 		["tooltipNotes"] = true,
 		["zoneNotes"] = true,
 	},

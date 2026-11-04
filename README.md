@@ -29,6 +29,7 @@ Se abre con `/bitacora` (o `/bita`), con una tecla (Opciones → Atajos → Bit�
 
 - `/bita nota <texto>` guarda una nota rápida.
 - `/bita entrada <texto>` escribe en el diario.
+- `/bita opciones` abre su página en Opciones → AddOns: tooltips, avisos, misiones en el diario, calidad del botín y aspecto de la ventana.
 
 ## Instalar
 
@@ -48,7 +49,7 @@ La pestaña **Imágenes** de la página web lleva cualquier imagen a potencia de
 ## La página web
 
 `dist/bitacora.html` (se arma con `python tools/build_web.py`) es un solo archivo que funciona sin internet. Le das el archivo que el juego guarda al salir, `WTF\Account\<TU_CUENTA>\SavedVariables\Bitacora.lua`, y muestra:
-- el diario como un libro de a bordo, día por día;
+- el diario como un libro de a bordo, día por día, con buscador, un gráfico de niveles en el tiempo y un resumen (jefes, dónde más moriste, botín);
 - el álbum con tus capturas: las soltás y se emparejan por la hora del nombre del archivo (`WoWScrnShot_MMDDYY_HHMMSS.jpg`);
 - la libreta y los recordatorios, con "Copiar como Markdown";
 - la herramienta de imágenes.
@@ -64,7 +65,7 @@ El addon no manda nada a nadie: no usa mensajes de addon ni chat, solo escribe e
 **Probado:**
 - ✅ **Cada función, evento y template existe en Forever 1.60.1.** Lo revisa `tools/check_api.py` contra los dumps de [Ketho/BlizzardInterfaceResources](https://github.com/Ketho/BlizzardInterfaceResources) y el código de la UI de [Gethe/wow-ui-source](https://github.com/Gethe/wow-ui-source), rama `forever`. Ejemplos: `ChatFrameUtil.InsertLink` (Forever no tiene `ChatEdit_InsertLink`), `RaidWarningUtil.AddMessage` (`RaidNotice_AddMessage` solo existe con los alias viejos), `TooltipDataProcessor`, `ScrollingEditBoxTemplate`, el compartimento de addons de Forever. El script encuentra nombres inventados o mal escritos.
 - ✅ [forever-lint](https://github.com/JoseArgento/forever-lint) no encuentra problemas. [Addon Sentry](https://github.com/JoseArgento/addon-sentry) da "Sin señales de riesgo".
-- ✅ **57 tests.**
+- ✅ **61 tests.**
   - 49 corren el addon en Lua 5.1 (el Lua de WoW), con un reemplazo chico del cliente (`tests/wow_mock.lua`): eventos, datos guardados y recargados, recordatorios (incluido el semanal), tooltips, links con shift-click, nombres de imágenes, patrones de botín en varios idiomas, valores secretos, y cada pestaña armándose sin errores de Lua.
   - El resto prueban la página: lee el archivo igual que Lua 5.1, empareja capturas y arma los textos.
 - ✅ La página probada en Chromium: cada pestaña, capturas y PNG reales, escritorio y celular, claro y oscuro.

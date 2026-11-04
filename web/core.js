@@ -375,6 +375,46 @@
     return { level: c.level, bosses, deaths, loot, zones: c.visited, played: c.played ? c.played.total : null, since: c.journal.length ? c.journal[0].t : c.created };
   }
 
+  // Level over time: the journal's start and every level-up, never going down (a re-rolled journal could).
+  function levelSeries(c) {
+    const pts = [];
+    for (const e of c.journal) {
+      if ((e.kind === "start" || e.kind === "level") && e.level != null && e.t) {
+        if (!pts.length || e.level > pts[pts.length - 1].level) pts.push({ t: e.t, level: e.level, d: e.d });
+      }
+    }
+    return pts;
+  }
+
+  // The trip in a few lists: where you died most, bosses (first kill, times), loot.
+  function tripStats(c) {
+    const deaths = new Map(), bosses = new Map(), loot = [];
+    for (const e of c.journal) {
+      if (e.kind === "death") {
+        const z = e.zone || "?";
+        deaths.set(z, (deaths.get(z) || 0) + 1);
+      } else if (e.kind === "boss") {
+        const b = bosses.get(e.name) || { name: e.name, first: e.d, count: 0 };
+        b.count++;
+        bosses.set(e.name, b);
+      } else if (e.kind === "loot") loot.push({ link: e.link || e.name, d: e.d, quality: e.quality });
+    }
+    return {
+      deaths: [...deaths].map(([zone, count]) => ({ zone, count })).sort((a, b) => b.count - a.count || a.zone.localeCompare(b.zone)),
+      bosses: [...bosses.values()].sort((a, b) => (a.first < b.first ? -1 : 1)),
+      loot,
+    };
+  }
+
+  function searchEntries(entries, query, lang) {
+    const words = String(query || "").toLowerCase().split(/\s+/).filter(Boolean);
+    if (!words.length) return entries;
+    return entries.filter((e) => {
+      const hay = plain(`${entryText(e, lang)} ${e.zone || ""} ${e.sub || ""}`).toLowerCase();
+      return words.every((w) => hay.includes(w));
+    });
+  }
+
   // Days in local time of the entries (the "d" field the addon wrote, "YYYY-MM-DD HH:MM").
   function groupByDay(entries) {
     const days = [];
@@ -426,5 +466,5 @@
     return out.join("\n") + "\n";
   }
 
-  return { LuaError, parseLua, readDB, stampSeconds, shotStamp, matchShots, markupToHtml, plain, entryText, isMilestone, duration, summary, groupByDay, powerOfTwoAtMost, imageName, notesMarkdown, journalMarkdown };
+  return { levelSeries, tripStats, searchEntries, LuaError, parseLua, readDB, stampSeconds, shotStamp, matchShots, markupToHtml, plain, entryText, isMilestone, duration, summary, groupByDay, powerOfTwoAtMost, imageName, notesMarkdown, journalMarkdown };
 });

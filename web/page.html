@@ -119,6 +119,25 @@ tr.note .entry { font-style: italic; }
 .q5 { color: var(--q5); } .q6 { color: var(--q6); } .q7 { color: var(--q7); } .qq { color: var(--qq); } .qx { color: inherit; }
 .link { font-weight: 600; }
 
+/* overview: level chart + trip lists */
+.overview { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 18px 26px; align-items: start; margin-top: 18px; }
+@media (max-width: 720px) { .overview { grid-template-columns: 1fr; } }
+figure.chart { margin: 0; min-width: 0; }
+.chart-title { font: 500 11px var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+svg.levels { width: 100%; height: auto; display: block; overflow: visible; }
+svg.levels .grid { stroke: var(--rule); stroke-width: 1; }
+svg.levels .axis { stroke: var(--ink); stroke-width: 1; }
+svg.levels .tick { fill: var(--muted); font: 11px var(--mono); }
+svg.levels .line { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; }
+svg.levels .dot { fill: var(--accent); stroke: var(--paper); stroke-width: 2; }
+svg.levels .dot.end { fill: var(--mark); }
+svg.levels .endlabel { fill: var(--ink); font: 500 12px var(--mono); }
+.trip { display: grid; gap: 14px; min-width: 0; }
+.trip h3 { font: 500 11px var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 0 0 4px; }
+.trip ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.trip li { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--rule); padding: 3px 0; font-size: 15px; min-width: 0; }
+.trip li .n { font: 12px var(--mono); color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
 /* album */
 .drop { border: 2px dashed var(--rule); border-radius: 6px; padding: 14px 16px; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; }
 .drop.over { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 7%, transparent); }
@@ -233,6 +252,11 @@ code, .mono { font: 13px var(--mono); overflow-wrap: anywhere; }
       colHour: "Hora", colLevel: "Nv.", colEntry: "Anotación", colPlace: "Lugar",
       kinds: { start: "inicio", level: "nivel", zone: "zona", boss: "jefe", death: "muerte", quest: "misión", loot: "botín", achievement: "logro", money: "oro", played: "tiempo", note: "nota" },
       journalEmpty: "Todavía no hay nada anotado para este personaje.",
+      noMatches: "Nada coincide con la búsqueda.",
+      searchJournal: "Buscar en el diario",
+      levelChart: "Niveles en el tiempo",
+      hoursLater: (h) => `${h} h después`,
+      tripBosses: "Jefes", tripDeaths: "Dónde más moriste", tripLoot: "Botín",
       dropShots: "Soltá acá tus capturas (la carpeta Screenshots del juego) o elegilas. Las juntamos con lo que anotó el addon por la hora del nombre del archivo.",
       chooseShots: "Elegir capturas",
       missing: (f) => `${f}`,
@@ -280,6 +304,11 @@ code, .mono { font: 13px var(--mono); overflow-wrap: anywhere; }
       colHour: "Time", colLevel: "Lv.", colEntry: "Entry", colPlace: "Place",
       kinds: { start: "start", level: "level", zone: "zone", boss: "boss", death: "death", quest: "quest", loot: "loot", achievement: "achievement", money: "gold", played: "played", note: "note" },
       journalEmpty: "Nothing written down for this character yet.",
+      noMatches: "Nothing matches the search.",
+      searchJournal: "Search the journal",
+      levelChart: "Levels over time",
+      hoursLater: (h) => `${h} h later`,
+      tripBosses: "Bosses", tripDeaths: "Where you died most", tripLoot: "Loot",
       dropShots: "Drop your screenshots here (the game's Screenshots folder) or pick them. They are matched to the addon's notes by the time in the file name.",
       chooseShots: "Choose screenshots",
       missing: (f) => `${f}`,
@@ -392,31 +421,102 @@ code, .mono { font: 13px var(--mono); overflow-wrap: anywhere; }
     const c = current();
     const root = el("div", { class: "journal" });
     const copy = el("button", { type: "button", class: "btn quiet", text: L().copyJournal, onclick: () => copyText(C.journalMarkdown(c, lang), copy, L().copyJournal) });
+    const search = el("input", { type: "search", id: "jq", placeholder: L().searchJournal, "aria-label": L().searchJournal, value: state.jquery || "" });
     root.append(el("div", { class: "bar" },
-      el("div", { class: "seg", role: "group" },
-        el("button", { type: "button", "aria-pressed": String(state.filter === "milestones"), text: L().milestones, onclick: () => { state.filter = "milestones"; render(); } }),
-        el("button", { type: "button", "aria-pressed": String(state.filter === "all"), text: L().all, onclick: () => { state.filter = "all"; render(); } })),
+      el("div", { class: "copy-row" },
+        el("div", { class: "seg", role: "group" },
+          el("button", { type: "button", "aria-pressed": String(state.filter === "milestones"), text: L().milestones, onclick: () => { state.filter = "milestones"; render(); } }),
+          el("button", { type: "button", "aria-pressed": String(state.filter === "all"), text: L().all, onclick: () => { state.filter = "all"; render(); } })),
+        search),
       c ? copy : null));
-    const entries = c ? c.journal.filter((e) => state.filter === "all" || C.isMilestone(e)) : [];
-    if (!entries.length) {
-      root.append(el("p", { class: "empty", text: L().journalEmpty }));
-      return root;
+    if (c) {
+      const chart = levelChart(c);
+      const trip = tripSummary(c);
+      if (chart || trip) root.append(el("div", { class: "overview" }, chart, trip));
     }
-    for (const g of C.groupByDay(entries).reverse()) {
-      const rows = g.entries.slice().reverse().map((e) =>
-        el("tr", { class: e.kind === "note" ? "note" : "" },
-          el("td", { class: "t", text: (e.d || "").slice(11, 16) }),
-          el("td", { class: "lv", text: e.level != null ? String(e.level) : "" }),
-          el("td", { class: "entry" }, el("span", { class: `kind k-${e.kind}`, text: L().kinds[e.kind] || e.kind }), el("span", { html: C.markupToHtml(C.entryText(e, lang)) }),
-            el("span", { class: "inline-place", text: [e.sub, e.zone].filter(Boolean).join(", ") })),
-          el("td", { class: "place", text: [e.sub, e.zone].filter(Boolean).join(", ") })));
-      root.append(el("section", { class: "day" },
-        el("h2", {}, fmtDay(g.day), el("small", { text: g.day })),
-        el("div", { class: "ledger-wrap" }, el("table", { class: "ledger" },
-          el("thead", {}, el("tr", {}, el("th", { text: L().colHour }), el("th", { text: L().colLevel }), el("th", { text: L().colEntry }), el("th", { class: "place", text: L().colPlace }))),
-          el("tbody", {}, rows)))));
+    const holder = el("div");
+    root.append(holder);
+    function draw() {
+      const all = c ? c.journal.filter((e) => state.filter === "all" || C.isMilestone(e)) : [];
+      const entries = C.searchEntries(all, state.jquery, lang);
+      if (!entries.length) {
+        put(holder, el("p", { class: "empty", text: all.length ? L().noMatches : L().journalEmpty }));
+        return;
+      }
+      put(holder, C.groupByDay(entries).reverse().map((g) => {
+        const rows = g.entries.slice().reverse().map((e) =>
+          el("tr", { class: e.kind === "note" ? "note" : "" },
+            el("td", { class: "t", text: (e.d || "").slice(11, 16) }),
+            el("td", { class: "lv", text: e.level != null ? String(e.level) : "" }),
+            el("td", { class: "entry" }, el("span", { class: `kind k-${e.kind}`, text: L().kinds[e.kind] || e.kind }), el("span", { html: C.markupToHtml(C.entryText(e, lang)) }),
+              el("span", { class: "inline-place", text: [e.sub, e.zone].filter(Boolean).join(", ") })),
+            el("td", { class: "place", text: [e.sub, e.zone].filter(Boolean).join(", ") })));
+        return el("section", { class: "day" },
+          el("h2", {}, fmtDay(g.day), el("small", { text: g.day })),
+          el("div", { class: "ledger-wrap" }, el("table", { class: "ledger" },
+            el("thead", {}, el("tr", {}, el("th", { text: L().colHour }), el("th", { text: L().colLevel }), el("th", { text: L().colEntry }), el("th", { class: "place", text: L().colPlace }))),
+            el("tbody", {}, rows))));
+      }));
     }
+    search.addEventListener("input", () => { state.jquery = search.value; draw(); });
+    draw();
     return root;
+  }
+
+  // Level over time, drawn to scale: x = days since the journal started, y = level. One series, so no legend.
+  function levelChart(c) {
+    const pts = C.levelSeries(c);
+    if (pts.length < 2) return null;
+    const W = 640, H = 170, padL = 34, padR = 14, padT = 12, padB = 26;
+    const t0 = pts[0].t, t1 = Math.max(pts[pts.length - 1].t, t0 + 3600);
+    const maxLevel = Math.max(10, Math.ceil(pts[pts.length - 1].level / 10) * 10);
+    const x = (t) => padL + ((t - t0) / (t1 - t0)) * (W - padL - padR);
+    const y = (lv) => padT + (1 - (lv - 1) / (maxLevel - 1)) * (H - padT - padB);
+    const ns = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    svg.setAttribute("class", "levels");
+    svg.setAttribute("role", "img");
+    svg.setAttribute("aria-label", L().levelChart);
+    const add = (tag, attrs, text) => {
+      const n = document.createElementNS(ns, tag);
+      for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+      if (text != null) n.textContent = text;
+      svg.append(n);
+      return n;
+    };
+    const step = maxLevel <= 20 ? 5 : 10;
+    for (let lv = step; lv <= maxLevel; lv += step) {
+      add("line", { x1: padL, x2: W - padR, y1: y(lv), y2: y(lv), class: "grid" });
+      add("text", { x: padL - 6, y: y(lv) + 4, class: "tick", "text-anchor": "end" }, String(lv));
+    }
+    add("text", { x: padL - 6, y: y(1) + 4, class: "tick", "text-anchor": "end" }, "1");
+    add("line", { x1: padL, x2: W - padR, y1: y(1), y2: y(1), class: "axis" });
+    const days = (t1 - t0) / 86400;
+    add("text", { x: padL, y: H - 6, class: "tick" }, fmtDate(t0));
+    add("text", { x: W - padR, y: H - 6, class: "tick", "text-anchor": "end" }, days >= 1 ? fmtDate(t1) : L().hoursLater(Math.round((t1 - t0) / 3600)));
+    let d = `M${x(pts[0].t)},${y(pts[0].level)}`;
+    for (let i = 1; i < pts.length; i++) d += ` H${x(pts[i].t)} V${y(pts[i].level)}`;
+    add("path", { d, class: "line" });
+    pts.forEach((p, i) => {
+      const dot = add("circle", { cx: x(p.t), cy: y(p.level), r: i === pts.length - 1 ? 5 : 3.5, class: i === pts.length - 1 ? "dot end" : "dot" });
+      const tip = document.createElementNS(ns, "title");
+      tip.textContent = `${L().level} ${p.level} · ${p.d || ""}`;
+      dot.append(tip);
+    });
+    const last = pts[pts.length - 1];
+    add("text", { x: Math.min(x(last.t), W - padR) - 8, y: y(last.level) - 9, class: "endlabel", "text-anchor": "end" }, `${L().level} ${last.level}`);
+    return el("figure", { class: "chart" }, el("figcaption", { class: "chart-title", text: L().levelChart }), svg);
+  }
+
+  function tripSummary(c) {
+    const s = C.tripStats(c);
+    if (!s.deaths.length && !s.bosses.length && !s.loot.length) return null;
+    const block = (title, items) => (items.length ? el("div", {}, el("h3", { text: title }), el("ul", {}, items)) : null);
+    return el("div", { class: "trip" },
+      block(L().tripBosses, s.bosses.map((b) => el("li", {}, el("span", { text: b.name }), el("span", { class: "n", text: b.count > 1 ? `×${b.count}` : (b.first || "").slice(0, 10) })))),
+      block(L().tripDeaths, s.deaths.slice(0, 5).map((d) => el("li", {}, el("span", { text: d.zone }), el("span", { class: "n", text: `×${d.count}` })))),
+      block(L().tripLoot, s.loot.slice(-5).reverse().map((l) => el("li", {}, el("span", { html: C.markupToHtml(l.link) }), el("span", { class: "n", text: (l.d || "").slice(0, 10) })))));
   }
 
   // ------------------------------------------------------------ album

@@ -25,5 +25,6 @@ UI\NotesTab.lua
 UI\JournalTab.lua
 UI\AlbumTab.lua
 UI\RemindersTab.lua
+UI\Options.lua
 UI\Tooltip.lua
 Bindings.xml

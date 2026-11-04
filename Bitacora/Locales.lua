@@ -104,12 +104,25 @@ local en = {
 	EVERY_DAY = "Every day",
 
 	-- misc
-	HELP = "/bitacora (or /bita): open · /bita note <text>: quick note · /bita entry <text>: write in the journal",
+	HELP = "/bitacora (or /bita): open · /bita note <text>: quick note · /bita entry <text>: write in the journal · /bita options",
 	QUICK_NOTE_SAVED = "note saved.",
 	ENTRY_SAVED = "written in the journal.",
 	COMPARTMENT_HINT = "Click to open",
 	BINDING_TOGGLE = "Open / close",
 	SETTINGS_LOOT = "Journal loot of this quality or better",
+	OPTIONS_INTRO = "Notebook, journal, album and reminders. Open the window with /bita.",
+	OPT_TOOLTIP = "Show notes in NPC and item tooltips",
+	OPT_ZONE = "Tell me in chat about notes for the zone I enter",
+	OPT_SCREENSHOT = "Chat line when a screenshot is noted",
+	OPT_QUESTS = "Write completed quests in the journal",
+	OPT_SKIN = "Look of the window",
+	SKIN_CLASSIC = "Logbook",
+	SKIN_TAVERN = "Tavern book",
+	QUALITY_UNCOMMON = "Uncommon (green)",
+	QUALITY_RARE = "Rare (blue)",
+	QUALITY_EPIC = "Epic (purple)",
+	QUALITY_LEGENDARY = "Legendary (orange)",
+	SEARCH_JOURNAL = "Search the journal",
 }
 
 local es = {
@@ -208,12 +221,25 @@ local es = {
 	WEEKDAYS = { "Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado" },
 	EVERY_DAY = "Todos los días",
 
-	HELP = "/bitacora (o /bita): abrir · /bita nota <texto>: nota rápida · /bita entrada <texto>: escribir en el diario",
+	HELP = "/bitacora (o /bita): abrir · /bita nota <texto>: nota rápida · /bita entrada <texto>: escribir en el diario · /bita opciones",
 	QUICK_NOTE_SAVED = "nota guardada.",
 	ENTRY_SAVED = "escrito en el diario.",
 	COMPARTMENT_HINT = "Click para abrir",
 	BINDING_TOGGLE = "Abrir / cerrar",
 	SETTINGS_LOOT = "Anotar en el diario botín de esta calidad o mejor",
+	OPTIONS_INTRO = "Libreta, diario, álbum y recordatorios. La ventana se abre con /bita.",
+	OPT_TOOLTIP = "Mostrar notas en el tooltip de PNJ e ítems",
+	OPT_ZONE = "Avisarme en el chat si tengo notas de la zona a la que entro",
+	OPT_SCREENSHOT = "Aviso en el chat cuando se anota una captura",
+	OPT_QUESTS = "Anotar en el diario las misiones completadas",
+	OPT_SKIN = "Aspecto de la ventana",
+	SKIN_CLASSIC = "Libro de a bordo",
+	SKIN_TAVERN = "Libro de la taberna",
+	QUALITY_UNCOMMON = "Poco común (verde)",
+	QUALITY_RARE = "Raro (azul)",
+	QUALITY_EPIC = "Épico (violeta)",
+	QUALITY_LEGENDARY = "Legendario (naranja)",
+	SEARCH_JOURNAL = "Buscar en el diario",
 }
 
 local locale = GetLocale()

@@ -32,6 +32,10 @@ def main() -> None:
     m.quests[176] = "Se busca: Hogger"
     m.quests[184] = "Las tierras de Furlbrow"
     m["items"][17078], m["items"][2244] = 4, 3
+    # the client's own Spanish loot lines (GlobalStrings esMX)
+    gl = g.lua.globals()
+    gl.LOOT_ITEM_SELF, gl.LOOT_ITEM_SELF_MULTIPLE = "Recibes botín: %s", "Recibes botín: %sx%d"
+    gl.LOOT_ITEM_PUSHED_SELF, gl.LOOT_ITEM_PUSHED_SELF_MULTIPLE = "Recibes: %s", "Recibes: %sx%d"
     t(g, 4, 15, 10)
     g.login()
     g.db.settings.lootQuality = 3

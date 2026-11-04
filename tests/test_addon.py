@@ -511,3 +511,36 @@ def test_loot_patterns_from_global_strings(game, fmt, sample, want):
     got = game.run("return MOCK.s:match(MOCK.p)")
     got = got if isinstance(got, tuple) else (got,)
     assert got == want
+
+
+def test_options_panel_registers_and_changes_settings(game):
+    calls = []
+    game.lua.globals().Settings = game.lua.table_from(
+        {
+            "RegisterCanvasLayoutCategory": lambda frame, name: (
+                calls.append(("canvas", name)) or game.lua.eval("{ GetID = function() return 7 end }")
+            ),
+            "RegisterAddOnCategory": lambda cat: calls.append(("addon",)),
+            "OpenToCategory": lambda cid: calls.append(("open", cid)),
+        }
+    )
+    game.lua.globals().SlashCmdList.BITACORA("opciones")
+    assert calls == [("canvas", "Bitácora"), ("addon",), ("open", 7)]
+    game.run("ns.UI.options:Show()")
+    game.run("ns.UI.options.loot:GetScript('OnClick')(ns.UI.options.loot)")
+    game.m.clickMenu("Rare (blue)")
+    assert game.db.settings.lootQuality == 3
+    game.run("ns.UI.options.skin:GetScript('OnClick')(ns.UI.options.skin)")
+    game.m.clickMenu("Tavern book")
+    assert game.db.settings.skin == "tavern"
+    game.run("local c = ns.UI.options.checks.zoneNotes; c:SetChecked(false); c:GetScript('OnClick')(c)")
+    assert game.db.settings.zoneNotes is False
+
+
+def test_journal_search(game):
+    game.fire("PLAYER_LEVEL_UP", 11)
+    game.fire("PLAYER_DEAD")
+    game.m.e = game.journal()[-1]
+    assert game.run("return ns.Journal.Matches(MOCK.e, 'murió elwynn')") is False  # English client
+    assert game.run("return ns.Journal.Matches(MOCK.e, 'died elwynn')") is True
+    game.run("ns.Toggle(2); ns.UI.views[2].search:SetText('level'); ns.UI.views[2].Refresh()")

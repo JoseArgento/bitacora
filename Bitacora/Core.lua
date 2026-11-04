@@ -96,6 +96,7 @@ ns.DEFAULTS = {
 		tooltipNotes = true,
 		zoneNotes = true,
 		screenshotChat = true,
+		skin = "classic",
 	},
 	sections = {},
 	notes = {},

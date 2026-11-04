@@ -73,6 +73,17 @@ function J.Text(e)
 	return k
 end
 
+-- Every word of the query (already lower case) in the entry's text or place.
+function J.Matches(e, query)
+	local hay = string.lower(ns.PlainText(J.Text(e) .. " " .. (e.zone or "") .. " " .. (e.sub or "")))
+	for w in query:gmatch("%S+") do
+		if not hay:find(w, 1, true) then
+			return false
+		end
+	end
+	return true
+end
+
 function J.Summary(charKey)
 	local c = ns.Char(charKey)
 	local s = { entries = 0, bosses = 0, deaths = 0, level = UnitLevel("player") or 0 }
