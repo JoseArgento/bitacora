@@ -50,7 +50,9 @@ Se abre con `/bitacora` (o `/bita`), con una tecla (Opciones → Atajos → Bit�
 | `Bitacora_Album` | el álbum | `/album` |
 | `Bitacora_Recordatorios` | los recordatorios | `/recordatorios`, `/recordar` |
 
-Todos usan `Bitacora_Datos`, que es donde se guardan tus cosas. Por eso podés mezclarlos como quieras: si hoy usás solo el diario y mañana instalás la libreta, el diario sigue ahí. Si tenés instalado el `Bitacora` completo, las partes sueltas no hacen nada (te avisan en el chat) para que nada se anote dos veces.
+**Recordame** es aparte: son los recordatorios como addon propio, con sus datos y sin `Bitacora_Datos`, para quien quiere solo eso ([RECORDAME.md](RECORDAME.md)). Sale en su propio zip.
+
+Las partes de arriba usan `Bitacora_Datos`, que es donde se guardan tus cosas. Por eso podés mezclarlos como quieras: si hoy usás solo el diario y mañana instalás la libreta, el diario sigue ahí. Si tenés instalado el `Bitacora` completo, las partes sueltas no hacen nada (te avisan en el chat) para que nada se anote dos veces.
 
 ## Instalar
 
@@ -90,8 +92,8 @@ El addon no manda nada tuyo a nadie si no prendés la crónica de la guild. Lo �
 **Probado:**
 - ✅ **Cada función, evento y template existe en Forever 1.60.1.** Lo revisa `tools/check_api.py` contra los dumps de [Ketho/BlizzardInterfaceResources](https://github.com/Ketho/BlizzardInterfaceResources) y el código de la UI de [Gethe/wow-ui-source](https://github.com/Gethe/wow-ui-source), rama `forever`. Ejemplos: `ChatFrameUtil.InsertLink` (Forever no tiene `ChatEdit_InsertLink`), `RaidWarningUtil.AddMessage` (`RaidNotice_AddMessage` solo existe con los alias viejos), `TooltipDataProcessor`, `ScrollingEditBoxTemplate`, el compartimento de addons de Forever. El script encuentra nombres inventados o mal escritos.
 - ✅ [forever-lint](https://github.com/JoseArgento/forever-lint): solo la nota FL012 (las cuentas de prueba no pueden mandar mensajes de addon), que la crónica ya maneja. [Addon Sentry](https://github.com/JoseArgento/addon-sentry) da "Sin señales de riesgo".
-- ✅ **128 tests.**
-  - 117 corren el addon en Lua 5.1 (el Lua de WoW), con un reemplazo chico del cliente (`tests/wow_mock.lua`): eventos, datos guardados y recargados, recordatorios (incluido el semanal), tooltips, links con shift-click, nombres de imágenes, patrones de botín en varios idiomas, valores secretos, cada pestaña armándose sin errores de Lua, el progreso contra una guía de aventuras de prueba, la crónica (mensajes malos, con códigos de color o con código adentro, inundación, tope de 300, dos jugadores pasándose hitos), los reportes de la beta (muertes dobles, zona vieja al llegar), el aspecto Taberna, y las partes sueltas: cada una sola, varias juntas compartiendo los datos, y el completo con una parte (la parte se hace a un lado).
+- ✅ **134 tests.**
+  - 123 corren el addon en Lua 5.1 (el Lua de WoW), con un reemplazo chico del cliente (`tests/wow_mock.lua`): eventos, datos guardados y recargados, recordatorios (incluido el semanal), tooltips, links con shift-click, nombres de imágenes, patrones de botín en varios idiomas, valores secretos, cada pestaña armándose sin errores de Lua, el progreso contra una guía de aventuras de prueba, la crónica (mensajes malos, con códigos de color o con código adentro, inundación, tope de 300, dos jugadores pasándose hitos), los reportes de la beta (muertes dobles, zona vieja al llegar), el aspecto Taberna, y las partes sueltas: cada una sola, varias juntas compartiendo los datos, y el completo con una parte (la parte se hace a un lado).
   - El resto prueban la página: lee el archivo igual que Lua 5.1, empareja capturas y arma los textos.
 - ✅ Las dos páginas probadas en Chromium: cada pestaña, capturas y PNG reales, escritorio y celular, claro y oscuro, y que no aparezca ningún "null" ni "undefined" en pantalla.
 
@@ -120,6 +122,6 @@ python tools/build_web.py                     # dist/bitacora.html y dist/tabern
 python tools/check_api.py --bir ../BlizzardInterfaceResources --ui ../wow-ui-source --scanner ../addon-sentry/src --addon Bitacora_Diario
 ```
 
-Las partes sueltas se generan: el código se edita solo en `Bitacora/`. Un tag `v*` empaqueta las seis carpetas en un zip con el packager de BigWigs (`.github/workflows/release.yml`).
+Las partes sueltas y Recordame se generan: el código se edita solo en `Bitacora/`. Un tag `v*` arma dos zips con el packager de BigWigs (las seis carpetas de Bitácora, y Recordame con `.pkgmeta-recordame`) (`.github/workflows/release.yml`).
 
 Sin relación con Blizzard Entertainment. World of Warcraft es marca registrada de Blizzard Entertainment, Inc. Licencia MIT.

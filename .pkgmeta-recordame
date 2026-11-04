@@ -1,0 +1,23 @@
+package-as: Recordame
+
+# Recordame is its own addon with its own CurseForge page: this zip holds only its folder.
+#   release.sh -m .pkgmeta-recordame
+move-folders:
+  Recordame/Recordame: Recordame
+
+ignore:
+  - Bitacora
+  - Bitacora_Datos
+  - Bitacora_Libreta
+  - Bitacora_Diario
+  - Bitacora_Album
+  - Bitacora_Recordatorios
+  - tests
+  - tools
+  - web
+  - dist
+  - pyproject.toml
+  - README.md
+  - README.en.md
+  - CHANGELOG.md
+  - .pkgmeta

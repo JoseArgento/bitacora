@@ -28,13 +28,13 @@ def toc_files(folder="Bitacora"):
 class Game:
     """The client with some addons loaded, in order. Bitacora_Datos (the shared saved data) always comes first."""
 
-    def __init__(self, locale="enUS", saved=None, addons=("Bitacora",)):
+    def __init__(self, locale="enUS", saved=None, addons=("Bitacora",), datos=True):
         self.lua = lupa.LuaRuntime(unpack_returned_tuples=True)
         self.lua.execute(MOCK.read_text(encoding="utf-8"))
         self.lua.execute((MOCK.parent / "guild_mock.lua").read_text(encoding="utf-8"))
         self.m = self.lua.globals().MOCK
         self.m.locale = locale
-        self.addons = ["Bitacora_Datos", *addons]
+        self.addons = ["Bitacora_Datos", *addons] if datos else list(addons)
         self.m.loaded = self.lua.table_from({name: True for name in self.addons})
         self.nss = {}
         loader = self.lua.eval("function(src, name) return assert(loadstring(src, '@' .. name)) end")
@@ -45,7 +45,7 @@ class Game:
             self.nss[name] = ns
             for rel in toc_files(name):
                 loader((ROOT / name / rel).read_text(encoding="utf-8"), f"{name}/{rel}")(name, ns)
-        self.ns = self.nss[self.addons[1]] if len(self.addons) > 1 else self.nss["Bitacora_Datos"]
+        self.ns = self.nss[self.addons[1]] if datos and len(self.addons) > 1 else self.nss[self.addons[0]]
 
     def run(self, code):
         """Lua with ns and MOCK in scope."""
@@ -647,7 +647,7 @@ def test_generated_parts_are_up_to_date(tmp_path):
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     mod.build(tmp_path)
-    for part in PARTS:
+    for part in [*PARTS, "Recordame"]:
         fresh = {p.relative_to(tmp_path / part): p.read_bytes() for p in (tmp_path / part).rglob("*") if p.is_file()}
         repo = {p.relative_to(ROOT / part): p.read_bytes() for p in (ROOT / part).rglob("*") if p.is_file()}
         assert fresh == repo, f"{part} is out of date: run tools/build_editions.py"

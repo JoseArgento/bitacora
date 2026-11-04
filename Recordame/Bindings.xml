@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="RECORDAME_TOGGLE" header="RECORDAME" category="ADDONS">
+		Recordame_Toggle()
+	</Binding>
+</Bindings>

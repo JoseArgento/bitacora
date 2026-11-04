@@ -1,0 +1,26 @@
+## Interface: 16001
+## Title: Recordame
+## Notes: Reminders that pop up when it matters: by zone, level, login, mailbox, bank, vendor, auction house, day and time or before the weekly reset, plus your officers' guild reminders.
+## Notes-esES: Recordatorios que saltan cuando importa: por zona, nivel, al entrar, correo, banco, vendedor, subasta, día y hora o antes del reinicio semanal, y los recordatorios de guild de tus oficiales.
+## Notes-esMX: Recordatorios que saltan cuando importa: por zona, nivel, al entrar, correo, banco, vendedor, subasta, día y hora o antes del reinicio semanal, y los recordatorios de guild de tus oficiales.
+## Author: José Argento
+## Version: @project-version@
+## SavedVariables: RecordameDB
+## IconTexture: Interface\Icons\INV_Misc_PocketWatch_01
+## AddonCompartmentFunc: Recordame_OnAddonCompartmentClick
+## AddonCompartmentFuncOnEnter: Recordame_OnAddonCompartmentEnter
+## AddonCompartmentFuncOnLeave: Recordame_OnAddonCompartmentLeave
+## Category: Roleplay
+
+Edition.lua
+Locales.lua
+Core.lua
+Reminders.lua
+GuildReminders.lua
+Events.lua
+UI\Widgets.lua
+UI\Main.lua
+UI\RemindersTab.lua
+UI\Options.lua
+UI\Skin.lua
+Bindings.xml

@@ -59,6 +59,18 @@ EDITIONS = {
         "ui": ["UI/RemindersTab.lua"],
         "icon": "Interface\\Icons\\INV_Misc_PocketWatch_01",
     },
+    # A truly standalone addon: its own saved data and textures, no Bitacora_Datos. Packaged in its own zip
+    # (.pkgmeta-recordame) for its own CurseForge page.
+    "Recordame": {
+        "title": "Recordame",
+        "en": "Reminders that pop up when it matters: by zone, level, login, mailbox, bank, vendor, auction house, day and time or before the weekly reset, plus your officers' guild reminders.",
+        "es": "Recordatorios que saltan cuando importa: por zona, nivel, al entrar, correo, banco, vendedor, subasta, día y hora o antes del reinicio semanal, y los recordatorios de guild de tus oficiales.",
+        "slash": ["/recordame"],
+        "logic": ["Reminders.lua", "GuildReminders.lua"],
+        "ui": ["UI/RemindersTab.lua"],
+        "icon": "Interface\\Icons\\INV_Misc_PocketWatch_01",
+        "standalone": True,
+    },
 }
 
 
@@ -66,12 +78,15 @@ def lua_string(s: str) -> str:
     return '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 
-def edition_lua(e: dict) -> str:
+def edition_lua(name: str, e: dict) -> str:
     slash = ", ".join(lua_string(x) for x in e["slash"])
+    extra = ""
+    if e.get("standalone"):
+        extra = f"\tstandalone = true,\n\tdb = {lua_string(name + 'DB')},\n\tmedia = {lua_string(name)},\n"
     return (
         "local _, ns = ...\n\n"
         "-- Written by tools/build_editions.py: which part of Bitácora this addon is.\n"
-        f"ns.edition = {{\n\ttitle = {lua_string(e['title'])},\n\tslash = {{ {slash} }},\n}}\n"
+        f"ns.edition = {{\n\ttitle = {lua_string(e['title'])},\n\tslash = {{ {slash} }},\n{extra}}}\n"
     )
 
 
@@ -84,7 +99,7 @@ def toc(name: str, e: dict, files: list[str]) -> str:
         f"## Notes-esMX: {e['es']}",
         "## Author: José Argento",
         "## Version: @project-version@",
-        "## Dependencies: Bitacora_Datos",
+        *([f"## SavedVariables: {name}DB"] if e.get("standalone") else ["## Dependencies: Bitacora_Datos"]),
         f"## IconTexture: {e['icon']}",
         f"## AddonCompartmentFunc: {name}_OnAddonCompartmentClick",
         f"## AddonCompartmentFuncOnEnter: {name}_OnAddonCompartmentEnter",
@@ -113,7 +128,9 @@ def build(out_root: Path = ROOT) -> list[Path]:
         files = ["Edition.lua", *CORE_BEFORE, *e["logic"], *CORE_AFTER, *e["ui"], *CORE_END]
         for f in files[1:]:
             shutil.copyfile(SRC / f, dest / f)
-        (dest / "Edition.lua").write_text(edition_lua(e), encoding="utf-8")
+        (dest / "Edition.lua").write_text(edition_lua(name, e), encoding="utf-8")
+        if e.get("standalone"):  # its own copy of the tavern look's textures
+            shutil.copytree(ROOT / "Bitacora_Datos" / "Media", dest / "Media")
         (dest / f"{name}.toc").write_text(toc(name, e, files), encoding="utf-8")
         (dest / "Bindings.xml").write_text(bindings(name), encoding="utf-8")
         written.append(dest)

@@ -10,6 +10,9 @@ move-folders:
   Bitacora/Bitacora_Recordatorios: Bitacora_Recordatorios
 
 ignore:
+  - Recordame
+  - .pkgmeta-recordame
+  - RECORDAME.md
   - tests
   - tools
   - web

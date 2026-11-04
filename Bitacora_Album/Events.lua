@@ -64,7 +64,8 @@ end)
 -- and both share the same data (Bitacora_Datos).
 local FULL = "Bitacora"
 local function fullLoaded()
-	return ADDON ~= FULL and C_AddOns.IsAddOnLoaded(FULL)
+	-- a standalone edition (Recordame) has its own data: it never steps aside
+	return ADDON ~= FULL and not ns.edition.standalone and C_AddOns.IsAddOnLoaded(FULL)
 end
 
 on("PLAYER_LOGIN", function()

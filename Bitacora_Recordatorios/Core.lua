@@ -3,8 +3,10 @@ local L = ns.L
 
 ns.DB_VERSION = 1
 ns.IMAGE_FOLDER = "Interface\\AddOns\\BitacoraImagenes\\"
--- The data and the skin's textures live in the small Bitacora_Datos addon, shared by every edition.
-ns.MEDIA = "Interface\\AddOns\\Bitacora_Datos\\Media\\"
+-- The data and the skin's textures live in the small Bitacora_Datos addon, shared by every edition. A truly
+-- standalone edition (Recordame) brings its own: its saved variable and its Media folder (ns.edition.db, .media).
+ns.MEDIA = "Interface\\AddOns\\" .. (ns.edition.media or "Bitacora_Datos") .. "\\Media\\"
+local DBNAME = ns.edition.db or "BitacoraDB"
 
 -- Callbacks so the UI refreshes when data changes: ns.Fire("notes"), ns.On("notes", fn)
 local listeners = {}
@@ -19,7 +21,7 @@ function ns.Fire(topic, ...)
 end
 
 function ns.Print(msg)
-	DEFAULT_CHAT_FRAME:AddMessage("|cff8fd1c4" .. L.TITLE .. "|r: " .. msg)
+	DEFAULT_CHAT_FRAME:AddMessage("|cff8fd1c4" .. (ns.edition.title or L.TITLE) .. "|r: " .. msg)
 end
 
 -- Midnight-era APIs can hand back "secret" values that addons may not read; treat them as missing.
@@ -110,11 +112,11 @@ ns.DEFAULTS = {
 }
 
 function ns.InitDB()
-	if type(BitacoraDB) ~= "table" then
-		BitacoraDB = {}
+	if type(_G[DBNAME]) ~= "table" then
+		_G[DBNAME] = {}
 	end
-	copyDefaults(BitacoraDB, ns.DEFAULTS)
-	ns.db = BitacoraDB
+	copyDefaults(_G[DBNAME], ns.DEFAULTS)
+	ns.db = _G[DBNAME]
 	if #ns.db.sections == 0 then
 		table.insert(ns.db.sections, { id = ns.NewID("s"), name = L.GENERAL })
 	end
