@@ -24,6 +24,12 @@ El diario de a bordo de tus personajes de **WoW Forever**: una libreta, un diari
   - "Cuando entre a Forjaz, vender el paño", "al llegar a 40, la montura", "al abrir el correo", "al entrar al juego", "los martes a las 20:30".
   - Pueden ser de un solo personaje o repetirse.
   - Avisan en el centro de la pantalla, con sonido.
+- **Progreso**
+  - Tus números: días jugados, zonas pisadas, misiones, jefes distintos, primeras muertes de jefes, botín, muertes y dónde más moriste.
+  - Cada mazmorra y banda de la guía de aventuras del juego, con cuántos jefes mataste ("Minas de la Muerte: 2 de 3").
+  - Logros por categoría.
+- **Guild** (la crónica, apagada si no la prendés)
+  - Si la prendés en las opciones, tus hitos (cada 10 niveles y el último, primeros jefes, logros, botín) les llegan a los de tu guild que tengan Bitácora, y ves los de ellos.
 
 **Aspecto "Taberna":** en las opciones podés cambiar la ventana a un libro de pergamino con barra de madera y tinta oscura. Al abrirla se ve la tapa del libro un instante y se abre (se puede apagar).
 
@@ -37,9 +43,9 @@ Se abre con `/bitacora` (o `/bita`), con una tecla (Opciones → Atajos → Bit�
 
 | Addon | Qué trae | Se abre con |
 |---|---|---|
-| `Bitacora` | todo junto, 4 pestañas | `/bitacora`, `/bita` |
+| `Bitacora` | todo junto, 6 pestañas | `/bitacora`, `/bita` |
 | `Bitacora_Libreta` | la libreta y las notas pegadas a cosas | `/libreta` |
-| `Bitacora_Diario` | el diario | `/diario` |
+| `Bitacora_Diario` | el diario, con Progreso y la crónica de la guild | `/diario` |
 | `Bitacora_Album` | el álbum | `/album` |
 | `Bitacora_Recordatorios` | los recordatorios | `/recordatorios`, `/recordar` |
 
@@ -72,15 +78,17 @@ La pestaña **Imágenes** de la página web lleva cualquier imagen a potencia de
 
 ## Privacidad
 
-El addon no manda nada a nadie: no usa mensajes de addon ni chat, solo escribe en tu propia ventana. Lo único que guarda está en tu `SavedVariables`. Los nombres de tu grupo en el álbum son los que el juego muestra; si el juego los oculta (valores "secretos" de Forever), no se anotan.
+Si no prendés la crónica de la guild, el addon no manda nada a nadie: solo escribe en tu propia ventana, y lo único que guarda está en tu `SavedVariables`.
+
+**La crónica** viene apagada. Si la prendés, manda por el canal de la guild, y nada más, un texto corto por hito: `M|1|level|20` o `M|1|boss|2746|Edwin VanCleef`. Lo que recibe se lee con patrones y se arma con textos propios: los nombres de logros y objetos se buscan en tu juego a partir del número, y el único texto libre (el nombre de un jefe) se guarda sin el carácter `|`, que es el que usa el juego para colores y links, y cortado a 40 letras. Nunca ejecuta nada de lo que llega. Acepta hasta 5 mensajes cada 10 segundos por persona y guarda los últimos 300. Las cuentas de prueba no pueden mandar mensajes de addon: ven la crónica pero no mandan la suya. Los nombres de tu grupo en el álbum son los que el juego muestra; si el juego los oculta (valores "secretos" de Forever), no se anotan.
 
 ## Cómo se probó
 
 **Probado:**
 - ✅ **Cada función, evento y template existe en Forever 1.60.1.** Lo revisa `tools/check_api.py` contra los dumps de [Ketho/BlizzardInterfaceResources](https://github.com/Ketho/BlizzardInterfaceResources) y el código de la UI de [Gethe/wow-ui-source](https://github.com/Gethe/wow-ui-source), rama `forever`. Ejemplos: `ChatFrameUtil.InsertLink` (Forever no tiene `ChatEdit_InsertLink`), `RaidWarningUtil.AddMessage` (`RaidNotice_AddMessage` solo existe con los alias viejos), `TooltipDataProcessor`, `ScrollingEditBoxTemplate`, el compartimento de addons de Forever. El script encuentra nombres inventados o mal escritos.
 - ✅ [forever-lint](https://github.com/JoseArgento/forever-lint) no encuentra problemas. [Addon Sentry](https://github.com/JoseArgento/addon-sentry) da "Sin señales de riesgo".
-- ✅ **71 tests.**
-  - 62 corren el addon en Lua 5.1 (el Lua de WoW), con un reemplazo chico del cliente (`tests/wow_mock.lua`): eventos, datos guardados y recargados, recordatorios (incluido el semanal), tooltips, links con shift-click, nombres de imágenes, patrones de botín en varios idiomas, valores secretos, cada pestaña armándose sin errores de Lua, el aspecto Taberna, y las partes sueltas: cada una sola, varias juntas compartiendo los datos, y el completo con una parte (la parte se hace a un lado).
+- ✅ **105 tests.**
+  - 95 corren el addon en Lua 5.1 (el Lua de WoW), con un reemplazo chico del cliente (`tests/wow_mock.lua`): eventos, datos guardados y recargados, recordatorios (incluido el semanal), tooltips, links con shift-click, nombres de imágenes, patrones de botín en varios idiomas, valores secretos, cada pestaña armándose sin errores de Lua, el progreso contra una guía de aventuras de prueba, la crónica (mensajes malos, con códigos de color o con código adentro, inundación, tope de 300, dos jugadores pasándose hitos), los reportes de la beta (muertes dobles, zona vieja al llegar), el aspecto Taberna, y las partes sueltas: cada una sola, varias juntas compartiendo los datos, y el completo con una parte (la parte se hace a un lado).
   - El resto prueban la página: lee el archivo igual que Lua 5.1, empareja capturas y arma los textos.
 - ✅ Las dos páginas probadas en Chromium: cada pestaña, capturas y PNG reales, escritorio y celular, claro y oscuro, y que no aparezca ningún "null" ni "undefined" en pantalla.
 
@@ -89,12 +97,13 @@ El addon no manda nada a nadie: no usa mensajes de addon ni chat, solo escribe e
 - **Las imágenes:** que el juego cargue PNG desde `BitacoraImagenes`, una carpeta sin `.toc`.
 - **Los nombres de archivo:** que las capturas de Forever se llamen `WoWScrnShot_MMDDYY_HHMMSS`.
 - **Los eventos:** que `ENCOUNTER_END` o `BOSS_KILL` salten en las mazmorras de Forever.
+- **La guía de aventuras:** que Forever liste sus mazmorras y bandas en `EJ_GetInstanceByIndex` (el orden de lo que devuelve `EJ_GetEncounterInfo` sí está verificado en el código de Blizzard).
 - **La ruta:** la carpeta exacta de Forever donde queda `WTF`.
 
 ## Límites
 
 - No sabe qué te mató: en Forever el combat log está restringido para los addons.
-- Las notas no se comparten entre jugadores. Sería con mensajes de addon, y las cuentas de prueba no pueden mandarlos.
+- Las notas no se comparten entre jugadores; solo los hitos de la crónica, si la prendés.
 
 ## Desarrollo
 

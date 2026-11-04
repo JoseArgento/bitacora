@@ -19,6 +19,8 @@ Notes.lua
 Journal.lua
 Album.lua
 Reminders.lua
+Progress.lua
+Chronicle.lua
 Events.lua
 UI\Widgets.lua
 UI\Main.lua
@@ -26,6 +28,8 @@ UI\NotesTab.lua
 UI\JournalTab.lua
 UI\AlbumTab.lua
 UI\RemindersTab.lua
+UI\ProgressTab.lua
+UI\ChronicleTab.lua
 UI\Options.lua
 UI\Skin.lua
 UI\Tooltip.lua

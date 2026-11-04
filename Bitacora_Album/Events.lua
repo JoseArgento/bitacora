@@ -152,6 +152,9 @@ end
 if ns.Album then
 	on("SCREENSHOT_SUCCEEDED", ns.Album.OnScreenshot)
 end
+if ns.Chronicle then
+	on("CHAT_MSG_ADDON", ns.Chronicle.OnAddonMessage)
+end
 if ns.Reminders then
 	for event, place in pairs({ MAIL_SHOW = "MAIL", BANKFRAME_OPENED = "BANK", MERCHANT_SHOW = "MERCHANT", AUCTION_HOUSE_SHOW = "AUCTION" }) do
 		local last

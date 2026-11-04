@@ -100,6 +100,7 @@ ns.DEFAULTS = {
 		screenshotChat = true,
 		skin = "classic",
 		bookIntro = true,
+		chronicle = false, -- the guild chronicle sends addon messages: only if you turn it on
 	},
 	sections = {},
 	notes = {},

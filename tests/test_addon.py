@@ -31,6 +31,7 @@ class Game:
     def __init__(self, locale="enUS", saved=None, addons=("Bitacora",)):
         self.lua = lupa.LuaRuntime(unpack_returned_tuples=True)
         self.lua.execute(MOCK.read_text(encoding="utf-8"))
+        self.lua.execute((MOCK.parent / "guild_mock.lua").read_text(encoding="utf-8"))
         self.m = self.lua.globals().MOCK
         self.m.locale = locale
         self.addons = ["Bitacora_Datos", *addons]
@@ -486,7 +487,7 @@ def test_plain_text_and_preview(game):
 def test_window_tabs_and_typing_a_note(game):
     game.run("ns.Toggle(); for i = 1, 4 do ns.UI.SelectTab(i) end; ns.UI.SelectTab(1)")
     frame = game.lua.globals().BitacoraFrame
-    assert frame._shown and frame.selectedTab == 1 and len(frame.Tabs) == 4
+    assert frame._shown and frame.selectedTab == 1 and len(frame.Tabs) == 6
     game.run(
         """
         local view = ns.UI.views[1]
@@ -653,13 +654,16 @@ def test_generated_parts_are_up_to_date(tmp_path):
 
 
 @pytest.mark.parametrize("part", PARTS)
-def test_each_part_loads_alone_with_one_tab(part):
+def test_each_part_loads_alone(part):
     g = Game(addons=(part,))
     g.login()
     g.m.runTimers()
     g.run("ns.Toggle()")
     frame = g.lua.globals()[part + "Frame"]
-    assert frame._shown and len(frame.Tabs) == 1 and frame.Tabs[1]._shown is False
+    if part == "Bitacora_Diario":  # the journal comes with its progress and the guild chronicle
+        assert frame._shown and len(frame.Tabs) == 3 and frame.Tabs[1]._shown is True
+    else:  # a single tab: no tab strip
+        assert frame._shown and len(frame.Tabs) == 1 and frame.Tabs[1]._shown is False
     assert g.lua.globals()["SLASH_" + part.upper() + "1"].startswith("/")
     assert g.db.version == 1
 
