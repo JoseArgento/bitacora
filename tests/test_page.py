@@ -23,8 +23,8 @@ def test_no_stray_null_in_any_view(pages):
         browser = p.chromium.launch()
         for page_file in pages:
             pg = browser.new_page()
-            errors = []
-            pg.on("pageerror", lambda e: errors.append(str(e)))
+            errors: list[str] = []
+            pg.on("pageerror", lambda e, errors=errors: errors.append(str(e)))
             pg.goto(page_file.as_uri())
             pg.wait_for_selector("#particulars li")
             bad = []
