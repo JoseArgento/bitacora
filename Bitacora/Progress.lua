@@ -65,6 +65,8 @@ function P.Instances()
 		return {}
 	end
 	local tier = EJ_GetCurrentTier and EJ_GetCurrentTier()
+	-- the Adventure Guide keeps the instance it shows here (Blizzard_EncounterJournal); put it back after
+	local shown = EncounterJournal and EncounterJournal.instanceID
 	local out = {}
 	for _, raid in ipairs({ false, true }) do
 		local i = 1
@@ -95,7 +97,13 @@ function P.Instances()
 	if tier and EJ_SelectTier then
 		EJ_SelectTier(tier)
 	end
-	instances = out
+	if shown then
+		EJ_SelectInstance(shown)
+	end
+	-- right after login the journal can still be empty: only keep a list that has something in it
+	if #out > 0 then
+		instances = out
+	end
 	return out
 end
 

@@ -225,3 +225,20 @@ def test_saved_with_the_rest(game):
     g2 = Game(saved=game.m.savedVariables("BitacoraDB"))
     g2.login()
     assert entries(g2) == ["Ana reached level 40"]
+
+
+def test_an_empty_journal_is_read_again_later():
+    g = Game()
+    g.run("MOCK.ej.saved = MOCK.ej.dungeons; MOCK.ej.dungeons = {}; MOCK.ej.raids_saved = MOCK.ej.raids; MOCK.ej.raids = {}")
+    g.login()
+    assert len(g.ns.Progress.Instances()) == 0
+    g.run("MOCK.ej.dungeons = MOCK.ej.saved; MOCK.ej.raids = MOCK.ej.raids_saved")
+    assert len(g.ns.Progress.Instances()) == 3
+
+
+def test_the_guides_own_instance_is_put_back():
+    g = Game()
+    g.run("EncounterJournal = CreateFrame('Frame'); EncounterJournal:Hide(); EncounterJournal.instanceID = 64")
+    g.login()
+    g.ns.Progress.Instances()
+    assert g.m.ej.selected == 64
