@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="BITACORA_TOGGLE" header="BITACORA" category="ADDONS">
+		Bitacora_Toggle()
+	</Binding>
+</Bindings>

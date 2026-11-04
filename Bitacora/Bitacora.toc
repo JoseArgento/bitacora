@@ -1,0 +1,29 @@
+## Interface: 16001
+## Title: Bitácora
+## Notes: Notebook, journal, screenshot album and reminders for your characters.
+## Notes-esES: Libreta, diario, álbum de capturas y recordatorios para tus personajes.
+## Notes-esMX: Libreta, diario, álbum de capturas y recordatorios para tus personajes.
+## Author: José Argento
+## Version: @project-version@
+## SavedVariables: BitacoraDB
+## IconTexture: Interface\Icons\INV_Misc_Book_09
+## AddonCompartmentFunc: Bitacora_OnAddonCompartmentClick
+## AddonCompartmentFuncOnEnter: Bitacora_OnAddonCompartmentEnter
+## AddonCompartmentFuncOnLeave: Bitacora_OnAddonCompartmentLeave
+## Category: Roleplay
+
+Locales.lua
+Core.lua
+Notes.lua
+Journal.lua
+Album.lua
+Reminders.lua
+Events.lua
+UI\Widgets.lua
+UI\Main.lua
+UI\NotesTab.lua
+UI\JournalTab.lua
+UI\AlbumTab.lua
+UI\RemindersTab.lua
+UI\Tooltip.lua
+Bindings.xml
