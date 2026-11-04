@@ -17,7 +17,7 @@
       level: "Nivel", played: "jugado", bosses: (n) => `${n} jefe${n === 1 ? "" : "s"}`, deaths: (n) => `${n} muerte${n === 1 ? "" : "s"}`,
       zones: (n) => `${n} zona${n === 1 ? "" : "s"}`, loot: (n) => `${n} botín`, since: "desde",
       milestones: "Hitos", all: "Todo",
-      copyJournal: "Copiar el diario", copied: "Copiado", copyFail: "No se pudo copiar: seleccioná el texto",
+      copyJournal: "Copiar el diario", downloadJournal: "Bajar .md", postcard: "Postal", postcardSaved: "Postal guardada", postcardLevel: (a, b) => (a === b ? `Nivel ${a}` : `Nivel ${a} → ${b}`), postcardMore: (n) => `y ${n} más`, copied: "Copiado", copyFail: "No se pudo copiar: seleccioná el texto",
       colHour: "Hora", colLevel: "Nv.", colEntry: "Anotación", colPlace: "Lugar",
       kinds: { start: "inicio", level: "nivel", zone: "zona", boss: "jefe", death: "muerte", quest: "misión", loot: "botín", achievement: "logro", money: "oro", played: "tiempo", note: "nota" },
       journalEmpty: "Todavía no hay nada anotado para este personaje.",
@@ -69,7 +69,7 @@
       level: "Level", played: "played", bosses: (n) => `${n} boss${n === 1 ? "" : "es"}`, deaths: (n) => `${n} death${n === 1 ? "" : "s"}`,
       zones: (n) => `${n} zone${n === 1 ? "" : "s"}`, loot: (n) => `${n} loot`, since: "since",
       milestones: "Milestones", all: "All",
-      copyJournal: "Copy the journal", copied: "Copied", copyFail: "Could not copy: select the text",
+      copyJournal: "Copy the journal", downloadJournal: "Download .md", postcard: "Postcard", postcardSaved: "Postcard saved", postcardLevel: (a, b) => (a === b ? `Level ${a}` : `Level ${a} → ${b}`), postcardMore: (n) => `and ${n} more`, copied: "Copied", copyFail: "Could not copy: select the text",
       colHour: "Time", colLevel: "Lv.", colEntry: "Entry", colPlace: "Place",
       kinds: { start: "start", level: "level", zone: "zone", boss: "boss", death: "death", quest: "quest", loot: "loot", achievement: "achievement", money: "gold", played: "played", note: "note" },
       journalEmpty: "Nothing written down for this character yet.",
@@ -194,6 +194,8 @@
     const c = current();
     const root = el("div", { class: "journal" });
     const copy = el("button", { type: "button", class: "btn quiet", text: L().copyJournal, onclick: () => copyText(C.journalMarkdown(c, lang), copy, L().copyJournal) });
+    const download = el("button", { type: "button", class: "btn quiet", text: L().downloadJournal, onclick: () =>
+      saveFile(`bitacora-${c.name}.md`, new Blob([C.journalMarkdown(c, lang)], { type: "text/markdown" })) });
     const search = el("input", { type: "search", id: "jq", placeholder: L().searchJournal, "aria-label": L().searchJournal, value: state.jquery || "" });
     root.append(el("div", { class: "bar" },
       el("div", { class: "copy-row" },
@@ -201,7 +203,7 @@
           el("button", { type: "button", "aria-pressed": String(state.filter === "milestones"), text: L().milestones, onclick: () => { state.filter = "milestones"; render(); } }),
           el("button", { type: "button", "aria-pressed": String(state.filter === "all"), text: L().all, onclick: () => { state.filter = "all"; render(); } })),
         search),
-      c ? copy : null));
+      c ? el("div", { class: "copy-row" }, copy, download) : null));
     if (c) {
       const chart = levelChart(c);
       const trip = tripSummary(c);
@@ -225,7 +227,8 @@
               el("span", { class: "inline-place", text: [e.sub, e.zone].filter(Boolean).join(", ") })),
             el("td", { class: "place", text: [e.sub, e.zone].filter(Boolean).join(", ") })));
         return el("section", { class: "day" },
-          el("h2", {}, fmtDay(g.day), el("small", { text: g.day })),
+          el("h2", {}, fmtDay(g.day), el("small", { text: g.day }),
+            el("button", { type: "button", class: "btn quiet postcard-btn", "data-day": g.day, text: L().postcard, onclick: (ev) => postcard(c, g.day, ev.target) })),
           el("div", { class: "ledger-wrap" }, el("table", { class: "ledger" },
             el("thead", {}, el("tr", {}, el("th", { text: L().colHour }), el("th", { text: L().colLevel }), el("th", { text: L().colEntry }), el("th", { class: "place", text: L().colPlace }))),
             el("tbody", {}, rows))));
@@ -234,6 +237,76 @@
     search.addEventListener("input", () => { state.jquery = search.value; draw(); });
     draw();
     return root;
+  }
+
+  // A postcard of one day, 1200x630 (the size Discord and most sites preview well), in the page's own colors
+  // and fonts. With a screenshot of that day (from the album), the photo takes the right side.
+  async function postcard(c, day, button) {
+    const p = C.postcardData(c, day, lang);
+    const css = getComputedStyle(document.documentElement);
+    const v = (name, fallback) => (css.getPropertyValue(name) || "").trim() || fallback;
+    const ink = v("--ink", "#222"), muted = v("--muted", "#666"), mark = v("--mark", "#9a6b17"), rule = v("--rule", "#ccc");
+    const sheet = v("--sheet", "#f5f5f0"), paper = v("--paper", "#e8e8e0");
+    const display = v("--display", "Georgia, serif"), body = v("--body", "Georgia, serif"), mono = v("--mono", "monospace");
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    const W = 1200, H = 630, canvas = el("canvas", { width: W, height: H }), g = canvas.getContext("2d");
+    g.fillStyle = paper; g.fillRect(0, 0, W, H);
+    g.fillStyle = sheet; g.fillRect(24, 24, W - 48, H - 48);
+    g.strokeStyle = rule; g.lineWidth = 2; g.strokeRect(36, 36, W - 72, H - 72);
+    let textW = W - 160;
+    const pair = p.shotStamp && C.matchShots([{ stamp: p.shotStamp }], state.shots).pairs[0];
+    if (pair && pair.file) {
+      try {
+        const img = await loadImage(pair.file);
+        const pw = 500, ph = H - 120, px = W - 60 - pw, py = 60;
+        const scale = Math.max(pw / img.width, ph / img.height);
+        const sw = pw / scale, sh = ph / scale;
+        g.drawImage(img, (img.width - sw) / 2, (img.height - sh) / 2, sw, sh, px, py, pw, ph);
+        g.strokeStyle = rule; g.strokeRect(px, py, pw, ph);
+        textW = px - 80 - 40;
+      } catch (e) { /* no photo, then */ }
+    }
+    const wrap = (text, x, y, max, lineH, maxLines) => {
+      const words = String(text).split(/\s+/);
+      let line = "", n = 0;
+      for (const w of words) {
+        const test = line ? line + " " + w : w;
+        if (g.measureText(test).width > max && line) {
+          g.fillText(line, x, y); y += lineH; n += 1; line = w;
+          if (n >= maxLines) return y;
+        } else line = test;
+      }
+      if (line) { g.fillText(line, x, y); y += lineH; }
+      return y;
+    };
+    g.textBaseline = "alphabetic";
+    g.fillStyle = mark; g.font = `500 22px ${mono}`;
+    g.fillText(p.name.toUpperCase(), 80, 104);
+    g.fillStyle = ink; g.font = `400 56px ${display}`;
+    let y = wrap(fmtDay(day), 80, 168, textW, 62, 2);
+    const sub = [p.levelFrom != null ? L().postcardLevel(p.levelFrom, p.levelTo) : null, p.zones.join(", ")].filter(Boolean).join("  ·  ");
+    g.fillStyle = muted; g.font = `400 26px ${body}`;
+    y = wrap(sub, 80, y + 6, textW, 32, 2);
+    g.fillStyle = mark; g.fillRect(80, y + 4, 120, 3);
+    y += 50;
+    g.fillStyle = ink; g.font = `400 27px ${body}`;
+    for (const line of p.lines) {
+      if (y > H - 130) break;
+      y = wrap("·  " + line, 80, y, textW, 36, 2) + 4;
+    }
+    if (p.more) { g.fillStyle = muted; g.fillText(L().postcardMore(p.more), 80, Math.min(y, H - 110)); }
+    const counts = [p.deaths ? L().deaths(p.deaths) : null, p.bosses ? L().bosses(p.bosses) : null].filter(Boolean).join("  ·  ");
+    g.fillStyle = muted; g.font = `400 20px ${mono}`;
+    g.fillText(["Bitácora · WoW Forever", counts].filter(Boolean).join("   ·   "), 80, H - 72);
+    const blob = await new Promise((res) => canvas.toBlob(res, "image/png"));
+    const section = button.closest("section");
+    const old = section.querySelector("figure.postcard");
+    if (old) old.remove();
+    section.append(el("figure", { class: "postcard" }, el("img", { src: URL.createObjectURL(blob), alt: `${L().postcard}: ${fmtDay(day)}`, style: "max-width:100%;height:auto;display:block;border:1px solid var(--rule)" })));
+    try {
+      if (await saveFile(`postal-${p.name}-${day}.png`, blob)) button.textContent = L().postcardSaved;
+    } catch (e) { /* declined: the preview stays */ }
+    setTimeout(() => { button.textContent = L().postcard; }, 2500);
   }
 
   // Level over time, drawn to scale: x = days since the journal started, y = level. One series, so no legend.

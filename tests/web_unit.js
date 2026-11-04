@@ -42,3 +42,16 @@ assert.strictEqual(trip.loot.length, 1);
 assert.strictEqual(core.searchEntries(jose.journal, "murloc", "es").length, 1);
 assert.strictEqual(core.searchEntries(jose.journal, "  ", "es").length, jose.journal.length);
 process.stdout.write("ok");
+
+// a postcard of one day
+{
+  const day = jose.journal[0].d.slice(0, 10);
+  const p = core.postcardData(jose, day, "es");
+  assert.strictEqual(p.name, "Josecito");
+  assert.strictEqual(p.day, day);
+  assert.ok(p.lines.length >= 1 && p.lines.length <= 6);
+  assert.ok(p.lines.every((l) => typeof l === "string" && !l.includes("|c")));
+  assert.ok(p.levelFrom === null || p.levelFrom <= p.levelTo);
+  const none = core.postcardData(jose, "1999-01-01", "es");
+  assert.deepStrictEqual([none.lines, none.levelFrom, none.shotStamp], [[], null, null]);
+}

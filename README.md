@@ -70,6 +70,8 @@ La pestaña **Imágenes** de la página web lleva cualquier imagen a potencia de
 
 `dist/bitacora.html` (se arma con `python tools/build_web.py`) es un solo archivo que funciona sin internet. Le das el archivo que el juego guarda al salir, `WTF\Account\<TU_CUENTA>\SavedVariables\Bitacora.lua`, y muestra:
 - el diario como un libro de a bordo, día por día, con buscador, un gráfico de niveles en el tiempo y un resumen (jefes, dónde más moriste, botín);
+- **postales:** cada día tiene un botón "Postal" que arma una imagen de 1200×630 (el tamaño que Discord muestra bien) con el día, los niveles, las zonas y lo más importante, y la captura de ese día si la soltaste en el álbum;
+- el diario entero para copiar o bajar como Markdown (`.md`), para un blog o un Discord;
 - el álbum con tus capturas: las soltás y se emparejan por la hora del nombre del archivo (`WoWScrnShot_MMDDYY_HHMMSS.jpg`);
 - la libreta y los recordatorios, con "Copiar como Markdown";
 - la herramienta de imágenes.

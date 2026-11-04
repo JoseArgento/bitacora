@@ -15,7 +15,7 @@ Open it with `/bitacora` (or `/bita`), a key binding, or the addon compartment b
 
 **Images**: the game only loads images from the AddOns folder, as PNG, JPG, TGA or BLP with power-of-2 sides; a new file appears after `/reload`. Put them in `Interface\AddOns\BitacoraImagenes\` (outside the addon's folder, so updates keep them) and type the file name in the note. The web page's Images tab resizes any picture to a power of 2 and tells you the name to type.
 
-**Web page**: `dist/bitacora.html` (or `dist/taberna.html`, the same page in a tavern look), one file that works offline. Open `WTF\Account\<ACCOUNT>\SavedVariables\Bitacora_Datos.lua` to read the journal day by day, drop your screenshots to build the album, read and copy the notebook. Nothing leaves your computer.
+**Web page**: `dist/bitacora.html` (or `dist/taberna.html`, the same page in a tavern look), one file that works offline. Open `WTF\Account\<ACCOUNT>\SavedVariables\Bitacora_Datos.lua` to read the journal day by day (each day can become a 1200×630 postcard image, with that day's screenshot if you dropped it in; the whole journal copies or downloads as Markdown), drop your screenshots to build the album, read and copy the notebook. Nothing leaves your computer.
 
 **Privacy**: unless you turn on the guild chronicle, the addon sends nothing to anyone. The chronicle (off by default) sends one short line per milestone on the GUILD channel only; what arrives is parsed with patterns, turned into text with the addon's own strings (achievement and item names are looked up in your own client), and never run. Group members' names are only noted when the game does not hide them.
 

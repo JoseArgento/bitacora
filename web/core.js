@@ -466,5 +466,30 @@
     return out.join("\n") + "\n";
   }
 
-  return { levelSeries, tripStats, searchEntries, LuaError, parseLua, readDB, stampSeconds, shotStamp, matchShots, markupToHtml, plain, entryText, isMilestone, duration, summary, groupByDay, powerOfTwoAtMost, imageName, notesMarkdown, journalMarkdown };
+  // One day of the journal as a postcard: what to write on it. The page draws it (app.js).
+  function postcardData(c, day, lang) {
+    const entries = c.journal.filter((e) => (e.d || "").slice(0, 10) === day);
+    const levels = entries.map((e) => e.level).filter((l) => typeof l === "number");
+    const zones = [];
+    for (const e of entries) if (e.zone && !zones.includes(e.zone)) zones.push(e.zone);
+    const count = (kind) => entries.filter((e) => e.kind === kind).length;
+    const picked = entries.filter(isMilestone);
+    const lines = (picked.length ? picked : entries).slice(0, 6).map((e) => plain(entryText(e, lang)));
+    const shot = c.album.find((a) => (a.d || "").slice(0, 10) === day);
+    return {
+      name: c.name,
+      day,
+      levelFrom: levels.length ? Math.min(...levels) : null,
+      levelTo: levels.length ? Math.max(...levels) : null,
+      zones: zones.slice(0, 3),
+      deaths: count("death"),
+      bosses: count("boss"),
+      quests: count("quest"),
+      lines,
+      more: Math.max(0, (picked.length ? picked : entries).length - lines.length),
+      shotStamp: shot ? shot.stamp : null,
+    };
+  }
+
+  return { postcardData, levelSeries, tripStats, searchEntries, LuaError, parseLua, readDB, stampSeconds, shotStamp, matchShots, markupToHtml, plain, entryText, isMilestone, duration, summary, groupByDay, powerOfTwoAtMost, imageName, notesMarkdown, journalMarkdown };
 });

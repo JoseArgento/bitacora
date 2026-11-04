@@ -59,3 +59,28 @@ def test_no_sideways_scroll_on_a_phone(pages):
             pg.close()
         browser.close()
         assert not wide, wide
+
+
+def test_a_postcard_of_a_day(pages):
+    with sync_api.sync_playwright() as p:
+        browser = p.chromium.launch()
+        for page_file in pages:
+            pg = browser.new_page(accept_downloads=True)
+            errors: list[str] = []
+            pg.on("pageerror", lambda e, errors=errors: errors.append(str(e)))
+            pg.goto(page_file.as_uri())
+            pg.wait_for_selector(".postcard-btn")
+            with pg.expect_download() as dl:
+                pg.click(".postcard-btn >> nth=0")
+            assert dl.value.suggested_filename.startswith("postal-") and dl.value.suggested_filename.endswith(".png")
+            pg.wait_for_selector("figure.postcard img")
+            size = pg.evaluate(
+                "(() => { const i = document.querySelector('figure.postcard img'); return [i.naturalWidth, i.naturalHeight]; })()"
+            )
+            assert size == [1200, 630]
+            with pg.expect_download() as md:
+                pg.click("text=Bajar .md")
+            assert md.value.suggested_filename.endswith(".md")
+            assert not errors, errors
+            pg.close()
+        browser.close()
