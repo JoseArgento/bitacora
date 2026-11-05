@@ -20,4 +20,7 @@ ignore:
   - README.md
   - README.en.md
   - CHANGELOG.md
+  - RECORDAME.md
+  - docs
   - .pkgmeta
+  - .pkgmeta-recordame
