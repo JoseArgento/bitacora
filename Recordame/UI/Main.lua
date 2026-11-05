@@ -86,20 +86,25 @@ function UI.SelectedTab()
 end
 
 -- A small bookmark under the others that opens the options (there was no visible way to get there).
+UI.OPTIONS_TAB_W = 160
 local function optionsBookmark()
 	if UI.optionsTab or ns.edition.single or #UI.tabs == 0 then
 		return UI.optionsTab
 	end
 	local last = UI.tabs[#UI.tabs]
-	local w, h = last:GetSize()
+	local _, h = last:GetSize()
 	local t = CreateFrame("Button", nil, f)
-	t:SetSize(w, math.max(20, (h or 30) - 6))
+	-- a normal bookmark, a little shorter and narrower, 12 px below the last one
+	t:SetSize(UI.OPTIONS_TAB_W, math.max(20, (h or 30) - 6))
 	t:SetFrameLevel(last:GetFrameLevel())
-	t:SetPoint("TOPLEFT", last, "BOTTOMLEFT", 0, -16)
+	t:SetPoint("TOPLEFT", last, "BOTTOMLEFT", 0, -12)
 	local cloth = t:CreateTexture(nil, "ARTWORK")
 	cloth:SetAllPoints()
 	cloth:SetTexture(P.MEDIA .. "ribbon")
+	-- the ribbon texture holds two bookmarks stacked (normal on top, active below): only the top one
+	cloth:SetTexCoord(0, 1, 0, 0.5)
 	cloth:SetVertexColor(0.8, 0.8, 0.8)
+	t.cloth = cloth
 	local hl = t:CreateTexture(nil, "HIGHLIGHT")
 	hl:SetAllPoints()
 	hl:SetColorTexture(1, 0.9, 0.6, 0.1)
@@ -110,8 +115,9 @@ local function optionsBookmark()
 		local lfs = last:GetFontString()
 		local _, _, _, x = lfs and lfs:GetPoint(1)
 		fs:SetPoint("LEFT", t, "LEFT", x or 50, 0)
-		fs:SetPoint("RIGHT", t, "RIGHT", -18, 0)
+		fs:SetPoint("RIGHT", t, "RIGHT", -14, 0)
 		fs:SetJustifyH("LEFT")
+		fs:SetWordWrap(false)
 	end
 	t:SetScript("OnClick", function()
 		ns.OpenOptions()

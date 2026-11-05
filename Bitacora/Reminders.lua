@@ -435,11 +435,32 @@ R.CAMP_BUFF_NAMES = { ["campsite"] = true, ["campfire"] = true, ["well rested"] 
 R.CAMP_WARN = 5 * 60
 local campWarned = {} -- auraInstanceID -> true
 
-function R.CheckCampBuff(now)
-	if ns.db.settings.campBuff == false or not (C_UnitAuras and C_UnitAuras.GetAuraDataByIndex) then
-		return nil
+-- In Forever, reading auras while they are secret is not just a secret value: the call itself errors
+-- ("Auras cannot be accessed when secret while tainted"). So: never in combat or under an addon
+-- restriction, always inside pcall, and after one failure the check stays off for the session.
+local RESTRICTIONS = { "Combat", "Encounter", "ChallengeMode", "PvPMatch", "Map" }
+local campOff = false
+
+local function aurasRestricted()
+	if InCombatLockdown and InCombatLockdown() then
+		return true
 	end
-	now = now or GetTime()
+	local ra, types = C_RestrictedActions, Enum and Enum.AddOnRestrictionType
+	if ra and ra.IsAddOnRestrictionActive and types then
+		for _, name in ipairs(RESTRICTIONS) do
+			local t = types[name]
+			if t ~= nil then
+				local ok, active = pcall(ra.IsAddOnRestrictionActive, t)
+				if not ok or active then
+					return true
+				end
+			end
+		end
+	end
+	return false
+end
+
+local function scanCamp(now)
 	for i = 1, 40 do
 		local a = C_UnitAuras.GetAuraDataByIndex("player", i, "HELPFUL")
 		if not a then
@@ -458,4 +479,24 @@ function R.CheckCampBuff(now)
 		end
 	end
 	return nil
+end
+
+function R.CheckCampBuff(now)
+	if campOff or ns.db.settings.campBuff == false or not (C_UnitAuras and C_UnitAuras.GetAuraDataByIndex) then
+		return nil
+	end
+	if aurasRestricted() then
+		return nil
+	end
+	local ok, key = pcall(scanCamp, now or GetTime())
+	if not ok then
+		campOff = true
+		return nil
+	end
+	return key
+end
+
+-- for the tests
+function R.CampCheckOff()
+	return campOff
 end

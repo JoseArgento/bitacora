@@ -329,7 +329,7 @@
   const TEXT = {
     es: {
       start: (e) => (e.zone ? `Empezó el diario en nivel ${e.level || 1}, en ${e.zone}.` : `Empezó el diario en nivel ${e.level || 1}.`),
-      level: (e) => (e.group ? `Niveles ${e.from} a ${e.level}.` : `Llegó a nivel ${e.level}.`),
+      level: (e) => (e.group ? `Niveles ${e.from} a ${e.level}` : `Llegó a nivel ${e.level}.`),
       zone: (e) => `Llegó por primera vez a ${e.name || e.zone}.`,
       boss: (e) => (e.first ? `¡Derrotó a ${e.name} por primera vez!` : `Derrotó a ${e.name}.`),
       death: (e) => `Murió en ${e.zone || "?"}.`,
@@ -344,7 +344,7 @@
     },
     en: {
       start: (e) => (e.zone ? `Started the journal at level ${e.level || 1} in ${e.zone}.` : `Started the journal at level ${e.level || 1}.`),
-      level: (e) => (e.group ? `Levels ${e.from} to ${e.level}.` : `Reached level ${e.level}.`),
+      level: (e) => (e.group ? `Levels ${e.from} to ${e.level}` : `Reached level ${e.level}.`),
       zone: (e) => `Arrived in ${e.name || e.zone} for the first time.`,
       boss: (e) => (e.first ? `Defeated ${e.name} for the first time!` : `Defeated ${e.name}.`),
       death: (e) => `Died in ${e.zone || "?"}.`,

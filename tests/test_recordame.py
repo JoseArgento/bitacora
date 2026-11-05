@@ -98,3 +98,24 @@ def test_recordame_has_its_own_minimap_button_with_the_bell():
     # next to the full Bitácora each has its own button, in a different place
     g2 = recordame(also=("Bitacora",))
     assert g2.run("return BitacoraMinimapButton.angle") != g2.run("return RecordameMinimapButton.angle")
+
+
+def test_recordame_options_say_what_recordame_is():
+    g = recordame()
+    g.run("ns.UI.options.Build()")
+    assert g.run("return ns.UI.options.intro._text") == "Reminders. Open the window with /recordame."
+
+
+def test_the_zone_help_goes_under_the_field_and_stays_on_the_page():
+    # in the game "Zone or subzone name (empty: the current one)" ran past the page's edge
+    plain = Game()
+    plain.login()
+    for g in (recordame(), plain):
+        g.run("ns.Toggle(); ns.UI.SelectTab('reminders')")
+        i = g.run("return ns.UI.tabOfTopic.reminders")
+        got = g.run(
+            f"local v = ns.UI.views[{i}]; local hint = v.onlyChar._points[1][2];"
+            " local a, b = hint._points[1], hint._points[2];"
+            " return hint._text .. '|' .. a[1] .. ':' .. a[3] .. '|' .. b[1] .. ':' .. tostring(b[2] == v.form)"
+        )
+        assert got == "Zone or subzone (empty: where you are now)|TOPLEFT:BOTTOMLEFT|RIGHT:true"

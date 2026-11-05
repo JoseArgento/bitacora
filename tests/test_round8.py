@@ -310,3 +310,43 @@ def test_camp_buff_warning_can_be_turned_off(game):
     game.m.gametime = 1000
     game.m.tick()
     assert warnings(game) == []
+
+
+def test_camp_buff_read_that_errors_is_caught_and_not_tried_again(game):
+    # Forever: "GetAuraDataByIndex(): Auras cannot be accessed when secret while tainted by 'Bitacora'"
+    game.run(
+        "MOCK.auraCalls = 0; local real = C_UnitAuras.GetAuraDataByIndex;"
+        " C_UnitAuras.GetAuraDataByIndex = function(...) MOCK.auraCalls = MOCK.auraCalls + 1;"
+        " error('Auras cannot be accessed when secret while tainted by Bitacora') end"
+    )
+    game.m.gametime = 1000
+    game.m.tick()
+    assert game.ns.Reminders.CampCheckOff()
+    calls = game.m.auraCalls
+    assert calls == 1
+    game.m.tick()
+    game.m.tick()
+    assert game.m.auraCalls == calls
+    assert warnings(game) == []
+
+
+def test_camp_buff_is_not_read_in_combat_or_under_a_restriction(game):
+    game.run("MOCK.auraCalls = 0; local real = C_UnitAuras.GetAuraDataByIndex;"
+             " C_UnitAuras.GetAuraDataByIndex = function(...) MOCK.auraCalls = MOCK.auraCalls + 1; return real(...) end")
+    game.m.auras[1] = game.lua.table("Campsite", 91200, 1000 + 60, 7)
+    game.m.gametime = 1000
+    game.run("InCombatLockdown = function() return true end")
+    game.m.tick()
+    assert game.m.auraCalls == 0
+    game.run(
+        "InCombatLockdown = function() return false end;"
+        " Enum.AddOnRestrictionType = { Combat = 0, Encounter = 1, ChallengeMode = 2, PvPMatch = 3, Map = 4 };"
+        " C_RestrictedActions = { IsAddOnRestrictionActive = function(t) return t == 4 end }"
+    )
+    game.m.tick()
+    assert game.m.auraCalls == 0
+    assert warnings(game) == []
+    game.run("C_RestrictedActions = nil")
+    game.m.tick()
+    assert game.m.auraCalls >= 1
+    assert warnings(game) == ["Your camp ends in 1 min."]

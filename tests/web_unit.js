@@ -90,6 +90,6 @@ assert.strictEqual(core.entryText({ kind: "start", level: 1, zone: "Elwynn" }, "
 const lv = (n, d, zone = "Elwynn") => ({ kind: "level", level: n, t: n, d, zone });
 const folded = core.groupLevels([{ kind: "start", level: 1, d: "2026-11-04 15:10" }, lv(2, "2026-11-04 15:25"), lv(3, "2026-11-04 15:33"), lv(4, "2026-11-04 15:44"), { kind: "zone", name: "Westfall", d: "2026-11-04 16:00" }, lv(5, "2026-11-04 16:10"), lv(6, "2026-11-05 10:00"), lv(7, "2026-11-05 10:30")]);
 assert.deepStrictEqual(folded.map((e) => (e.group ? `${e.from}-${e.level}` : e.kind)), ["start", "2-4", "zone", "level", "6-7"]);
-assert.strictEqual(core.entryText(folded[1], "es"), "Niveles 2 a 4.");
+assert.strictEqual(core.entryText(folded[1], "es"), "Niveles 2 a 4");
 assert.strictEqual(folded[1].d, "2026-11-04 15:44");
 assert.strictEqual(core.groupLevels([lv(2, "2026-11-04 15:25")]).length, 1);

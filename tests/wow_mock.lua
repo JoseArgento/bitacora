@@ -111,6 +111,9 @@ local function newObject(kind, name, parent, template)
 		rawset(parent, "Tabs", rawget(parent, "Tabs") or {})
 		table.insert(rawget(parent, "Tabs"), o)
 	end
+	if template == "UICheckButtonTemplate" then
+		o.Text = newObject("FontString", nil, o)
+	end
 	if template == "UIPanelButtonTemplate" or kind == "Button" or kind == "CheckButton" then
 		o.fontString = newObject("FontString", nil, o)
 	end
@@ -340,8 +343,10 @@ end
 function Frame:GetPoint()
 	return "CENTER", nil, "CENTER", 10, 20
 end
-function Frame:CreateFontString()
-	return newObject("FontString", nil, self)
+function Frame:CreateFontString(name, layer, template)
+	local fs = newObject("FontString", name, self)
+	fs._fontObject = template
+	return fs
 end
 function Frame:CreateTexture()
 	return newObject("Texture", nil, self)

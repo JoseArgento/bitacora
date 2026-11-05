@@ -16,6 +16,58 @@ panel:Hide()
 UI.options = panel
 panel.checks = {}
 
+-- The page lives in the game's own Options window, which is dark: so it uses the game's fonts and check boxes
+-- (white and gold), not the book's ink, which is unreadable there. Only the leather buttons stay ours.
+local function settingsLabel(parent, text, font)
+	local fs = parent:CreateFontString(nil, "OVERLAY", font or "GameFontHighlight")
+	fs:SetText(text or "")
+	fs:SetJustifyH("LEFT")
+	return fs
+end
+
+local function settingsCheck(parent, text, onClick)
+	local c = CreateFrame("CheckButton", nil, parent, "UICheckButtonTemplate")
+	c:SetSize(24, 24)
+	local label = c.Text or c.text
+	if not label then
+		label = c:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+		label:SetPoint("LEFT", c, "RIGHT", 4, 0)
+	end
+	label:SetFontObject("GameFontHighlight")
+	label:SetText(text or "")
+	c.label = label
+	if onClick then
+		c:SetScript("OnClick", onClick)
+	end
+	return c
+end
+UI.SettingsLabel, UI.SettingsCheck = settingsLabel, settingsCheck
+
+-- "Libreta, Diario y Recordatorios. La ventana se abre con /bita." from the parts this edition has.
+function UI.OptionsIntro()
+	local parts = {}
+	if ns.Notes then
+		parts[#parts + 1] = L.TAB_NOTES
+	end
+	if ns.Journal then
+		parts[#parts + 1] = L.TAB_JOURNAL
+	end
+	if ns.Album then
+		parts[#parts + 1] = L.TAB_ALBUM
+	end
+	if ns.Reminders then
+		parts[#parts + 1] = L.TAB_REMINDERS
+	end
+	local list
+	if #parts <= 1 then
+		list = parts[1] or ""
+	else
+		list = table.concat(parts, ", ", 1, #parts - 1) .. L.LIST_AND .. parts[#parts]
+	end
+	local slash = ns.edition.slash and ns.edition.slash[#ns.edition.slash] or "/bita"
+	return L.OPTIONS_INTRO:format(list, slash)
+end
+
 local function labelOf(pairs_, value)
 	for _, pair in ipairs(pairs_) do
 		if pair[1] == value then
@@ -53,17 +105,18 @@ function panel.Build()
 		return
 	end
 	panel.built = true
-	local title = UI.Label(panel, ns.edition.title or L.TITLE, "GameFontNormalLarge")
+	local title = settingsLabel(panel, ns.edition.title or L.TITLE, "GameFontNormalLarge")
 	title:SetPoint("TOPLEFT", 16, -16)
-	local sub = UI.Label(panel, L.OPTIONS_INTRO, "GameFontHighlightSmall")
+	local sub = settingsLabel(panel, UI.OptionsIntro(), "GameFontHighlightSmall")
 	sub:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
+	panel.title, panel.intro = title, sub
 
 	local y = -64
 	local function add(key, text, part)
 		if not part then
 			return
 		end
-		local c = UI.Check(panel, text, function(self)
+		local c = settingsCheck(panel, text, function(self)
 			ns.db.settings[key] = self:GetChecked() and true or false
 			ns.Fire("settings", key)
 		end)
@@ -87,7 +140,7 @@ function panel.Build()
 	-- the pickers: a label and a button each, one under the other
 	local last
 	local function picker(labelKey, button, shown)
-		local label = UI.Label(panel, L[labelKey], "GameFontNormal")
+		local label = settingsLabel(panel, L[labelKey], "GameFontNormal")
 		if last then
 			label:SetPoint("TOPLEFT", last, "BOTTOMLEFT", 0, -18)
 		else

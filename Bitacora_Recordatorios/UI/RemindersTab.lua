@@ -40,6 +40,8 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(page)
 
 	local value = UI.Input(form, 150, nil, "")
 	local valueHint = UI.Label(form, "", "small")
+	valueHint:SetJustifyH("LEFT")
+	valueHint:SetWordWrap(true)
 	local optionButton = UI.Button(form, "", 140, nil) -- place or weekday
 	optionButton:SetPoint("TOPLEFT", whenLabel, "BOTTOMLEFT", 0, -12)
 	local minute = UI.Input(form, 40, nil, "00")
@@ -71,18 +73,27 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(page)
 			value:SetPoint("LEFT", optionButton, "RIGHT", 10, 0)
 			minute:ClearAllPoints()
 			minute:SetPoint("LEFT", value, "RIGHT", 6, 0)
-			valueHint:SetPoint("LEFT", minute, "RIGHT", 8, 0)
+			-- the help goes under the line, page-wide: to the right it ran past the page (seen in the client)
+			valueHint:SetPoint("TOPLEFT", optionButton, "BOTTOMLEFT", 0, -4)
+			valueHint:SetPoint("RIGHT", form, "RIGHT", 0, 0)
 			valueHint:SetText(L.R_TIME_HINT)
-			anchor = optionButton
+			anchor = valueHint
 		elseif k == "place" then
 			optionButton:SetText(L[R.PLACE_LABEL[view.place]])
 			anchor = optionButton
 		else
 			value:SetWidth((k == "level" or k == "reset") and 50 or 220)
 			value:SetPoint("TOPLEFT", whenLabel, "BOTTOMLEFT", 0, -12)
-			valueHint:SetPoint("LEFT", value, "RIGHT", 8, 0)
 			valueHint:SetText(k == "zone" and L.R_ZONE_HINT or k == "level" and L.R_LEVEL_HINT or k == "reset" and L.R_RESET_HINT or "")
-			anchor = value
+			if k == "zone" then
+				-- a wide field: its help goes under it, page-wide, never past the page's edge
+				valueHint:SetPoint("TOPLEFT", value, "BOTTOMLEFT", 0, -4)
+				valueHint:SetPoint("RIGHT", form, "RIGHT", 0, 0)
+				anchor = valueHint
+			else
+				valueHint:SetPoint("LEFT", value, "RIGHT", 8, 0)
+				anchor = value
+			end
 		end
 		if k == "login" then
 			anchor = kindButton
@@ -125,6 +136,9 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(page)
 		local rows = 20 + 10 + 24 + 14 + 26 -- heading, text, "when" line
 		if anchor ~= kindButton then
 			rows = rows + 12 + 26 -- the value line
+		end
+		if anchor == valueHint then
+			rows = rows + 4 + math.max(14, valueHint:GetStringHeight() or 14) -- its help, under it
 		end
 		if prev then
 			rows = rows + 14 + 18 -- the checks

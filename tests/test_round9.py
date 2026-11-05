@@ -47,7 +47,7 @@ def test_consecutive_level_ups_of_a_day_fold_into_one_milestone_row(game):
     assert [(r.kind, bool(r.group)) for r in rows] == [("start", False), ("level", True), ("zone", False), ("level", False)]
     folded = rows[1]
     assert (folded["from"], folded.level, len(folded.entries)) == (11, 13, 3)
-    assert game.run("return ns.Journal.Text(ns.Journal.Grouped(ns.Journal.Entries(nil, 'milestones'))[2])") == "Levels 11 to 13."
+    assert game.run("return ns.Journal.Text(ns.Journal.Grouped(ns.Journal.Entries(nil, 'milestones'))[2])") == "Levels 11 to 13"
     # the "all" view keeps every entry
     assert game.run("return #ns.Journal.Entries(nil, 'all')") == 6
     # and the window's milestones list shows the folded row
@@ -186,8 +186,12 @@ def test_an_options_bookmark_opens_the_options(game):
     assert tab is not None and tab.fontString._text == "Options"
     opened = game.run("local hit = false; local real = ns.OpenOptions; ns.OpenOptions = function() hit = true end; ns.UI.optionsTab:GetScript('OnClick')(ns.UI.optionsTab); ns.OpenOptions = real; return hit")
     assert opened is True
-    # it hangs under the last bookmark
-    assert game.run("local p = ns.UI.optionsTab._points[1]; return p[2] == ns.UI.tabs[#ns.UI.tabs]") is True
+    # it hangs 12 px under the last bookmark
+    assert game.run("local p = ns.UI.optionsTab._points[1]; return p[2] == ns.UI.tabs[#ns.UI.tabs] and p[5] == -12") is True
+    # only the top half of the ribbon texture (the normal bookmark), not both stacked into a thin line
+    assert game.run("return table.concat(ns.UI.optionsTab.cloth._texCoord, ',')") == "0,1,0,0.5"
+    assert game.run("return ns.UI.optionsTab:GetWidth()") == 160
+    assert game.run("return ns.UI.optionsTab:GetHeight()") >= 20
 
 
 def test_no_options_bookmark_on_a_single_page_part():
@@ -244,3 +248,17 @@ def test_the_album_says_where_pictures_for_notes_go(game):
     game.run("ns.Toggle('album')")
     text = game.run("return ns.UI.views[ns.UI.tabOfTopic.album].folder:GetText()")
     assert "BitacoraImagenes" in text and "cannot create folders" in text
+
+
+def test_the_game_options_page_uses_the_games_fonts_not_ink(game):
+    # the Options window of the game is dark: ink on it could not be read (seen in the client on 5/11)
+    game.run("ns.UI.options.Build()")
+    fonts = game.run(
+        "local out = {}; out[1] = ns.UI.options.title._fontObject; out[2] = ns.UI.options.intro._fontObject;"
+        " for _, c in pairs(ns.UI.options.checks) do out[#out + 1] = c.label._fontObject end; return table.concat(out, ',')"
+    )
+    for f in fonts.split(","):
+        assert f.startswith("GameFont"), fonts
+    assert game.run("local c = ns.UI.options.checks.minimap; return c._template") == "UICheckButtonTemplate"
+    intro = game.run("return ns.UI.options.intro._text")
+    assert intro == "Notebook, Journal, Album and Reminders. Open the window with /bita."
