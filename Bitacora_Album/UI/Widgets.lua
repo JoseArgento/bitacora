@@ -81,6 +81,17 @@ function UI.EnableLinks(frame)
 	end)
 end
 
+-- Hover and selection colors of a list row: pale on the dark default, ink and gold on parchment.
+function UI.TintRow(row)
+	if UI.IsTavern and UI.IsTavern() then
+		row.highlight:SetColorTexture(0.23, 0.14, 0.07, 0.08)
+		row.selected:SetColorTexture(0.85, 0.66, 0.27, 0.28)
+	else
+		row.highlight:SetColorTexture(1, 1, 1, 0.08)
+		row.selected:SetColorTexture(0.56, 0.82, 0.77, 0.15)
+	end
+end
+
 -- A scrolling list with the modern ScrollBox. init(row, item) fills a row; rows are plain Buttons.
 function UI.List(parent, rowHeight, init, onClick)
 	local box = CreateFrame("Frame", nil, parent, "WowScrollBoxList")

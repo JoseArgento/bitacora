@@ -79,34 +79,43 @@ def wood() -> Image.Image:
     return tint(img, (48, 28, 14), (120, 76, 42)).convert("RGBA")
 
 
+# The window is 760x520, so the cover is drawn for that shape: a 1024-square texture whose art sits in the
+# middle band of the same proportion. Skin.lua shows only that band (SetTexCoord), so the compass stays round.
+COVER_RATIO = 520 / 760
+
+
 def cover() -> Image.Image:
-    size = 512
+    size = 1024
     leather = tint(fractal(size, 41), (58, 26, 18), (118, 52, 34))
     leather = Image.composite(Image.new("RGB", (size, size), (30, 12, 8)), leather, vignette(size, 0.9))
     d = ImageDraw.Draw(leather)
     gold, gold_dark = (222, 176, 76), (140, 100, 30)
-    for inset, width in [(22, 6), (40, 2)]:
-        d.rectangle((inset, inset, size - 1 - inset, size - 1 - inset), outline=gold_dark, width=width + 2)
-        d.rectangle((inset, inset, size - 1 - inset, size - 1 - inset), outline=gold, width=width)
+    band = int(size * COVER_RATIO)
+    top = (size - band) // 2
+    bottom = top + band - 1
+    for inset, width in [(40, 10), (72, 4)]:
+        box = (inset, top + inset, size - 1 - inset, bottom - inset)
+        d.rectangle(box, outline=gold_dark, width=width + 4)
+        d.rectangle(box, outline=gold, width=width)
     # corner ornaments: a diamond with a ring
-    for cx, cy in [(40, 40), (size - 41, 40), (40, size - 41), (size - 41, size - 41)]:
-        d.polygon([(cx, cy - 20), (cx + 20, cy), (cx, cy + 20), (cx - 20, cy)], fill=gold, outline=gold_dark)
-        d.ellipse((cx - 7, cy - 7, cx + 7, cy + 7), fill=(90, 30, 22), outline=gold_dark, width=2)
-    # center: a compass rose (a logbook's mark)
+    for cx, cy in [(72, top + 72), (size - 73, top + 72), (72, bottom - 72), (size - 73, bottom - 72)]:
+        d.polygon([(cx, cy - 34), (cx + 34, cy), (cx, cy + 34), (cx - 34, cy)], fill=gold, outline=gold_dark)
+        d.ellipse((cx - 12, cy - 12, cx + 12, cy + 12), fill=(90, 30, 22), outline=gold_dark, width=3)
+    # center: a compass rose (a logbook's mark), sized to leave room for the title above it
     c = size / 2
-    for r, col in [(92, gold_dark), (88, gold), (80, (80, 34, 22))]:
+    for r, col in [(150, gold_dark), (143, gold), (130, (80, 34, 22))]:
         d.ellipse((c - r, c - r, c + r, c + r), fill=col)
     for k in range(8):
         a = k * math.pi / 4
-        long_ = 74 if k % 2 == 0 else 46
+        long_ = 120 if k % 2 == 0 else 74
         tip = (c + long_ * math.sin(a), c - long_ * math.cos(a))
-        left = (c + 12 * math.sin(a - math.pi / 2), c - 12 * math.cos(a - math.pi / 2))
-        right = (c + 12 * math.sin(a + math.pi / 2), c - 12 * math.cos(a + math.pi / 2))
+        left = (c + 20 * math.sin(a - math.pi / 2), c - 20 * math.cos(a - math.pi / 2))
+        right = (c + 20 * math.sin(a + math.pi / 2), c - 20 * math.cos(a + math.pi / 2))
         d.polygon([tip, left, (c, c), right], fill=gold if k % 2 == 0 else (196, 150, 60), outline=gold_dark)
-    d.ellipse((c - 10, c - 10, c + 10, c + 10), fill=gold, outline=gold_dark, width=2)
+    d.ellipse((c - 16, c - 16, c + 16, c + 16), fill=gold, outline=gold_dark, width=3)
     # a strap with a clasp on the right edge
-    d.rectangle((size - 70, c - 26, size, c + 26), fill=(70, 30, 18), outline=(30, 12, 8), width=2)
-    d.rounded_rectangle((size - 92, c - 20, size - 52, c + 20), radius=6, fill=gold, outline=gold_dark, width=3)
+    d.rectangle((size - 120, c - 44, size, c + 44), fill=(70, 30, 18), outline=(30, 12, 8), width=3)
+    d.rounded_rectangle((size - 156, c - 34, size - 90, c + 34), radius=10, fill=gold, outline=gold_dark, width=5)
     return leather.filter(ImageFilter.SMOOTH).convert("RGBA")
 
 

@@ -5,6 +5,7 @@
 - **Progress**: time per level, with the account's fastest character for each level (the count follows the addon's own sessions and re-anchors to `/played`); **companions**, who you grouped with (class, groups shared, last seen where), account-wide and capped at 500.
 - **Reminders**: snooze 5/10/15 min from a small popup (optional); day-and-time reminders that came due while you were logged out fire at login, once, looking back up to 30 days; a setting to follow the realm's clock instead of your computer's. Same in Recordame.
 - Web: time per level and companions in the journal overview, both looks.
+- Look: the book cover is drawn for the window's shape (the compass rose no longer stretches); list rows take ink and gold on the tavern skin instead of the default teal; on the tavern web page the open ribbon and the main button are gold and crimson rather than blue, a pushpin that floated beside the notes is gone, and on a phone the tabs fit and the level chart keeps readable labels.
 
 ## 0.1.0 (unreleased)
 

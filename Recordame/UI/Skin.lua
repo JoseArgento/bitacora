@@ -24,6 +24,7 @@ local ROLE = {
 local function tavern()
 	return ns.db and ns.db.settings.skin == "tavern"
 end
+UI.IsTavern = tavern
 
 local original = setmetatable({}, { __mode = "k" }) -- font string -> { r, g, b, a } before the skin
 
@@ -84,8 +85,12 @@ local function frameParts(f)
 	local tex = cover:CreateTexture(nil, "ARTWORK")
 	tex:SetAllPoints()
 	tex:SetTexture(ns.MEDIA .. "cover")
+	-- the texture is square; its art is drawn for the window's shape, so show only that middle band
+	local w, h = f:GetSize()
+	local pad = (1 - h / w) / 2
+	tex:SetTexCoord(0, 1, pad, 1 - pad)
 	local title = cover:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
-	title:SetPoint("BOTTOM", cover, "CENTER", 0, 112)
+	title:SetPoint("BOTTOM", cover, "CENTER", 0, 126)
 	title:SetText(ns.edition.title or L.TITLE)
 	title:SetTextColor(GOLD[1], GOLD[2], GOLD[3])
 	local ag = cover:CreateAnimationGroup()
@@ -129,6 +134,9 @@ function UI.ApplySkin()
 		if view.body and view.body.SetTextColor and CreateColor then
 			local c = on and INK or { 1, 1, 1 }
 			view.body:SetTextColor(CreateColor(c[1], c[2], c[3]))
+		end
+		if view.Refresh then
+			view.Refresh(true) -- list rows pick up the skin's hover and selection colors
 		end
 	end
 end

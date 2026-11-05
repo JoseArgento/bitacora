@@ -164,8 +164,8 @@ figcaption .meta { font: 12px/1.5 var(--mono); color: var(--muted); overflow-wra
 .chips button { border: 1px solid var(--rule); background: transparent; border-radius: 999px; padding: 3px 12px; cursor: pointer; font-size: 14px; }
 .chips button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 input[type="search"], input[type="text"], select { background: var(--sheet); border: 1px solid var(--rule); border-radius: 4px; padding: 6px 10px; min-width: 0; }
-.notes { columns: 2 300px; column-gap: 22px; }
-article.note { break-inside: avoid; background: var(--sheet); border: 1px solid var(--rule); padding: 14px 16px; margin: 0 0 22px; display: grid; gap: 6px; }
+.notes { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 22px; align-items: start; }
+article.note { background: var(--sheet); border: 1px solid var(--rule); padding: 14px 16px; margin: 0; display: grid; gap: 6px; }
 article.note h3 { font: 400 22px/1.2 var(--display); margin: 0; text-wrap: balance; }
 article.note .pin { color: var(--mark); font: 500 11px var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
 article.note .body { margin: 0; overflow-wrap: anywhere; }

@@ -319,7 +319,9 @@
   function levelChart(c) {
     const pts = C.levelSeries(c);
     if (pts.length < 2) return null;
-    const W = 640, H = 170, padL = 34, padR = 14, padT = 12, padB = 26;
+    // on a phone the figure is drawn narrower so its labels keep a readable size
+    const narrow = window.innerWidth < 600;
+    const W = narrow ? 340 : 640, H = narrow ? 150 : 170, padL = 34, padR = 14, padT = 12, padB = 26;
     const t0 = pts[0].t, t1 = Math.max(pts[pts.length - 1].t, t0 + 3600);
     const maxLevel = Math.max(10, Math.ceil(pts[pts.length - 1].level / 10) * 10);
     const x = (t) => padL + ((t - t0) / (t1 - t0)) * (W - padL - padR);
