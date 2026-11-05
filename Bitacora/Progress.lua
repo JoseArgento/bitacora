@@ -141,7 +141,8 @@ function P.Instances()
 			i = i + 1
 		end
 	end
-	if tier and EJ_SelectTier then
+	-- EJ_GetCurrentTier gives 0 before the Adventure Guide was ever opened; EJ_SelectTier(0) is an error
+	if tier and tier > 0 and EJ_SelectTier then
 		EJ_SelectTier(tier)
 	end
 	if shown then

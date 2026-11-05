@@ -242,3 +242,11 @@ def test_the_guides_own_instance_is_put_back():
     g.login()
     g.ns.Progress.Instances()
     assert g.m.ej.selected == 64
+
+
+def test_a_guide_never_opened_has_tier_zero_and_is_not_selected():
+    # In the game EJ_GetCurrentTier() is 0 until the Adventure Guide was opened once; EJ_SelectTier(0) errors
+    g = Game()
+    g.run("MOCK.ej.tier = 0; local real = EJ_SelectTier; EJ_SelectTier = function(t) assert(t > 0, 'Invalid index 0'); real(t) end")
+    g.login()
+    assert len(g.ns.Progress.Instances()) == 3
