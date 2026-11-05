@@ -30,8 +30,26 @@ function UI.RegisterTab(textKey, topic, builder)
 	UI.keys[i] = topic
 	local tab = f:AddTab(topic, L[textKey])
 	tab:SetID(i)
+	tab.textKey = textKey
 	UI.tabs[i] = tab
 	f.Tabs[i] = tab
+	-- a line about the page under the mouse, and the key that opens the book
+	tab:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:SetText(L[textKey])
+		local tip = L["TIP_" .. textKey:gsub("^TAB_", "")]
+		if tip then
+			GameTooltip:AddLine(tip, 1, 1, 1, true)
+		end
+		local key = GetBindingKey and GetBindingKey(string.upper(ADDON) .. "_TOGGLE")
+		if key then
+			GameTooltip:AddLine(L.TIP_KEY:format(key), 0.7, 0.7, 0.7)
+		end
+		GameTooltip:Show()
+	end)
+	tab:SetScript("OnLeave", function()
+		GameTooltip:Hide()
+	end)
 	UI.pages[i] = f:AddPage(topic)
 	-- a standalone part has a single tab: no bookmarks
 	f:SetTabsShown(i > 1)
@@ -84,6 +102,50 @@ function ns.Toggle(tab)
 	if not wasShown and UI.OpenBook then
 		UI.OpenBook()
 	end
+	if not wasShown then
+		UI.Welcome()
+	end
+end
+
+-- The language changed (settings): the book's own texts follow; the pages re-read theirs when rebuilt.
+ns.On("locale", function()
+	f:SetTitle(ns.edition.title or L.TITLE)
+	for _, tab in ipairs(UI.tabs) do
+		tab:SetText(L[tab.textKey])
+	end
+end)
+
+-- The first time the book opens after installing: a card with what each bookmark holds.
+function UI.Welcome()
+	if ns.db.settings.welcomed or ns.edition.single then
+		return
+	end
+	ns.db.settings.welcomed = true
+	local card = UI.welcomeCard
+	if not card then
+		card = P.Card(ADDON .. "Welcome", 420, 300, ns.edition.title or L.TITLE)
+		local body = UI.Label(card.body, "", "body")
+		body:SetPoint("TOPLEFT")
+		body:SetPoint("RIGHT")
+		body:SetWordWrap(true)
+		body:SetSpacing(4)
+		card.text = body
+		local ok = UI.Button(card, L.WELCOME_OK, 120, function()
+			card:Hide()
+		end)
+		ok:SetPoint("BOTTOM", 0, 18)
+		UI.welcomeCard = card
+	end
+	local lines = {}
+	for _, tab in ipairs(UI.tabs) do
+		local tip = L["TIP_" .. tab.textKey:gsub("^TAB_", "")]
+		if tip then
+			table.insert(lines, "|cff8f2a1d" .. L[tab.textKey] .. "|r: " .. tip)
+		end
+	end
+	table.insert(lines, L.WELCOME_SLASH:format(ns.edition.slash[1]))
+	card.text:SetText(L.WELCOME_INTRO .. "\n\n" .. table.concat(lines, "\n"))
+	card:Show()
 end
 
 -- Refresh the visible tab when its data changes.

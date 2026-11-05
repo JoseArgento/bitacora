@@ -24,6 +24,25 @@ function ns.Print(msg)
 	DEFAULT_CHAT_FRAME:AddMessage("|cff8fd1c4" .. (ns.edition.title or L.TITLE) .. "|r: " .. msg)
 end
 
+-- Chat lines that are not an answer to a command go through here, so they can be measured:
+-- settings.chat "never" (none), "important" (a line of each kind once per session) or "all" (every time).
+-- kind: a short key ("screenshot", "zoneNotes"…); important: it still shows under "important".
+local said = {}
+function ns.Say(kind, msg, important)
+	local mode = ns.db and ns.db.settings.chat or "important"
+	if mode == "never" then
+		return false
+	end
+	if mode == "important" then
+		if not important and said[kind] then
+			return false
+		end
+		said[kind] = true
+	end
+	ns.Print(msg)
+	return true
+end
+
 -- Midnight-era APIs can hand back "secret" values that addons may not read; treat them as missing.
 function ns.Plain(value)
 	if issecretvalue and issecretvalue(value) then
@@ -99,7 +118,8 @@ ns.DEFAULTS = {
 		journalQuests = true,
 		tooltipNotes = true,
 		zoneNotes = true,
-		screenshotChat = true,
+		chat = "important", -- what goes to the chat: "never", "important" (once per session each) or "all"
+		lang = "auto", -- "auto" follows the client; "es" or "en" force a language
 		bookIntro = true,
 		chronicle = false, -- the guild chronicle sends addon messages: only if you turn it on
 		guildReminders = true, -- officers' guild reminders: asks the guild for them at login (an empty "Q|1")
@@ -123,6 +143,11 @@ function ns.InitDB()
 	end
 	copyDefaults(_G[DBNAME], ns.DEFAULTS)
 	ns.db = _G[DBNAME]
+	-- 0.1: "screenshotChat = false" meant "quiet"
+	if ns.db.settings.screenshotChat == false then
+		ns.db.settings.chat = "never"
+	end
+	ns.db.settings.screenshotChat = nil
 	if #ns.db.sections == 0 then
 		table.insert(ns.db.sections, { id = ns.NewID("s"), name = L.GENERAL })
 	end

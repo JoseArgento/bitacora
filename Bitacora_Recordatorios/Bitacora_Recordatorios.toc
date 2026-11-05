@@ -6,7 +6,7 @@
 ## Author: José Argento
 ## Version: @project-version@
 ## Dependencies: Bitacora_Datos
-## IconTexture: Interface\Icons\INV_Misc_PocketWatch_01
+## IconTexture: Interface\AddOns\Bitacora_Datos\Media\icon_bell
 ## AddonCompartmentFunc: Bitacora_Recordatorios_OnAddonCompartmentClick
 ## AddonCompartmentFuncOnEnter: Bitacora_Recordatorios_OnAddonCompartmentEnter
 ## AddonCompartmentFuncOnLeave: Bitacora_Recordatorios_OnAddonCompartmentLeave

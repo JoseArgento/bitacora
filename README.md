@@ -64,7 +64,11 @@ Se abre con `/bitacora` (o `/bita`), con una tecla (Opciones → Atajos → Bit�
 - `/bita nota <texto>` guarda una nota rápida.
 - `/bita entrada <texto>` escribe en el diario.
 - `/bita a Nombre: texto` le manda un recordatorio a alguien de la guild o amigo.
-- `/bita opciones` abre su página en Opciones → AddOns: tooltips, avisos, misiones en el diario, calidad del botín, el reloj y la tapa del libro.
+- `/bita chat nunca|importante|todo` mide lo que va al chat: nada, lo importante una vez por sesión (una captura anotada, las notas de una zona, "dónde estaba"), o todo. Las respuestas a comandos siempre salen.
+- `/bita idioma es|en|auto` elige el idioma del addon, aunque el cliente esté en inglés (casi toda LatAm juega así). Lo mismo en Opciones.
+- `/bita opciones` abre su página en Opciones → AddOns: tooltips, avisos, misiones en el diario, calidad del botín, el reloj, el chat, el idioma y la tapa del libro.
+
+La primera vez que se abre el libro, una tarjeta cuenta qué hay en cada marcador; después, cada marcador lo dice al pasar el mouse (con la tecla que abre el libro, si la asignaste). En el diario, los niveles seguidos de un mismo día se pliegan en una línea ("Niveles 2 a 9") en la vista de hitos; en "Todo" está cada uno.
 
 ## Las partes sueltas
 

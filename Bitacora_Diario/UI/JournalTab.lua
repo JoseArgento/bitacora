@@ -44,7 +44,8 @@ UI.RegisterTab("TAB_JOURNAL", "journal", function(page)
 		end
 		row.tag:Set(L.KINDS and L.KINDS[e.kind] or e.kind, e.kind)
 		row.date:SetText(UI.FormatDate(e))
-		local where = (e.kind ~= "zone" and e.kind ~= "death" and e.kind ~= "start" and e.zone and e.zone ~= "") and ("  |cff6c4e31" .. e.zone .. "|r") or ""
+		-- one line: the entry, then the place in muted ink ("Llegó a nivel 11. · Bosque de Elwynn")
+		local where = (e.kind ~= "zone" and e.kind ~= "death" and e.kind ~= "start" and e.zone and e.zone ~= "") and (" |cff6c4e31· " .. e.zone .. "|r") or ""
 		row.text:SetText(J.Text(e) .. where)
 		row.selected:SetShown(view.selected == e)
 	end, function(e)
@@ -144,6 +145,9 @@ UI.RegisterTab("TAB_JOURNAL", "journal", function(page)
 	function view.Refresh()
 		local key = view.char or ns.CharKey()
 		local entries = J.Entries(key, view.filter)
+		if view.filter == "milestones" then
+			entries = J.Grouped(entries)
+		end
 		local query = ns.Lower(search:GetText())
 		-- newest first
 		local items = {}

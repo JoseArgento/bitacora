@@ -83,3 +83,13 @@ const week = core.guildWeek(db.guilds[0].entries, last);
 assert.strictEqual(week.entries.length, 6);
 assert.deepStrictEqual(week.people[0], { who: "Ana", n: 3 });
 assert.strictEqual(core.guildWeek(db.guilds[0].entries, last - 7 * 86400).entries.length, 0);
+
+// round 9: the start entry without a zone, and consecutive level-ups of one day folded into one row
+assert.strictEqual(core.entryText({ kind: "start", level: 1, zone: "" }, "es"), "Empezó el diario en nivel 1.");
+assert.strictEqual(core.entryText({ kind: "start", level: 1, zone: "Elwynn" }, "en"), "Started the journal at level 1 in Elwynn.");
+const lv = (n, d, zone = "Elwynn") => ({ kind: "level", level: n, t: n, d, zone });
+const folded = core.groupLevels([{ kind: "start", level: 1, d: "2026-11-04 15:10" }, lv(2, "2026-11-04 15:25"), lv(3, "2026-11-04 15:33"), lv(4, "2026-11-04 15:44"), { kind: "zone", name: "Westfall", d: "2026-11-04 16:00" }, lv(5, "2026-11-04 16:10"), lv(6, "2026-11-05 10:00"), lv(7, "2026-11-05 10:30")]);
+assert.deepStrictEqual(folded.map((e) => (e.group ? `${e.from}-${e.level}` : e.kind)), ["start", "2-4", "zone", "level", "6-7"]);
+assert.strictEqual(core.entryText(folded[1], "es"), "Niveles 2 a 4.");
+assert.strictEqual(folded[1].d, "2026-11-04 15:44");
+assert.strictEqual(core.groupLevels([lv(2, "2026-11-04 15:25")]).length, 1);

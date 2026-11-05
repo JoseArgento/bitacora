@@ -39,9 +39,8 @@ function A.OnScreenshot()
 	}
 	table.insert(c.album, shot)
 	ns.Fire("album", shot)
-	if ns.db.settings.screenshotChat then
-		ns.Print(L.SCREENSHOT_SAVED:format(shot.sub and (shot.sub .. ", " .. shot.zone) or shot.zone))
-	end
+	-- once per session under "important", every time under "all", never under "never"
+	ns.Say("screenshot", L.SCREENSHOT_SAVED:format(shot.sub and (shot.sub .. ", " .. shot.zone) or shot.zone))
 	return shot
 end
 

@@ -6,7 +6,7 @@
 ## Author: José Argento
 ## Version: @project-version@
 ## Dependencies: Bitacora_Datos
-## IconTexture: Interface\Icons\INV_Misc_Spyglass_03
+## IconTexture: Interface\AddOns\Bitacora_Datos\Media\icon
 ## AddonCompartmentFunc: Bitacora_Album_OnAddonCompartmentClick
 ## AddonCompartmentFuncOnEnter: Bitacora_Album_OnAddonCompartmentEnter
 ## AddonCompartmentFuncOnLeave: Bitacora_Album_OnAddonCompartmentLeave

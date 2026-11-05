@@ -328,8 +328,8 @@
 
   const TEXT = {
     es: {
-      start: (e) => `Empezó el diario en nivel ${e.level || 1}, en ${e.zone || "?"}.`,
-      level: (e) => `Llegó a nivel ${e.level}.`,
+      start: (e) => (e.zone ? `Empezó el diario en nivel ${e.level || 1}, en ${e.zone}.` : `Empezó el diario en nivel ${e.level || 1}.`),
+      level: (e) => (e.group ? `Niveles ${e.from} a ${e.level}.` : `Llegó a nivel ${e.level}.`),
       zone: (e) => `Llegó por primera vez a ${e.name || e.zone}.`,
       boss: (e) => (e.first ? `¡Derrotó a ${e.name} por primera vez!` : `Derrotó a ${e.name}.`),
       death: (e) => `Murió en ${e.zone || "?"}.`,
@@ -343,8 +343,8 @@
       blueprint: (e) => `Aprendió el plano de ${e.name} (${e.profession}).`,
     },
     en: {
-      start: (e) => `Started the journal at level ${e.level || 1} in ${e.zone || "?"}.`,
-      level: (e) => `Reached level ${e.level}.`,
+      start: (e) => (e.zone ? `Started the journal at level ${e.level || 1} in ${e.zone}.` : `Started the journal at level ${e.level || 1}.`),
+      level: (e) => (e.group ? `Levels ${e.from} to ${e.level}.` : `Reached level ${e.level}.`),
       zone: (e) => `Arrived in ${e.name || e.zone} for the first time.`,
       boss: (e) => (e.first ? `Defeated ${e.name} for the first time!` : `Defeated ${e.name}.`),
       death: (e) => `Died in ${e.zone || "?"}.`,
@@ -365,6 +365,26 @@
   }
   function isMilestone(e) {
     return MILESTONES.has(e.kind) && !(e.kind === "boss" && !e.first);
+  }
+  // The milestones view: consecutive level-ups of one day fold into a single row ("Niveles 2 a 9"),
+  // which keeps the last level-up's time and place. Same rule as the addon's J.Grouped.
+  function groupLevels(entries) {
+    const out = [];
+    let run = null;
+    const flush = () => { if (run) { out.push(run.entries.length > 1 ? run : run.entries[0]); run = null; } };
+    for (const e of entries) {
+      const day = (e.d || "").slice(0, 10);
+      if (e.kind === "level" && run && run.day === day && (e.level || 0) === (run.level || 0) + 1) {
+        run.level = e.level; run.t = e.t; run.d = e.d; run.zone = e.zone; run.sub = e.sub;
+        run.entries.push(e);
+      } else {
+        flush();
+        if (e.kind === "level") run = { kind: "level", group: true, day, from: e.level, level: e.level, t: e.t, d: e.d, zone: e.zone, sub: e.sub, entries: [e] };
+        else out.push(e);
+      }
+    }
+    flush();
+    return out;
   }
   function duration(seconds, lang) {
     const s = Math.max(0, Math.floor(seconds || 0));
@@ -569,5 +589,5 @@
     };
   }
 
-  return { compareChars, chronicleText, guildWeek, splits, bestSplits, postcardData, levelSeries, tripStats, searchEntries, LuaError, parseLua, readDB, stampSeconds, shotStamp, matchShots, markupToHtml, plain, entryText, isMilestone, duration, summary, groupByDay, powerOfTwoAtMost, imageName, notesMarkdown, journalMarkdown };
+  return { compareChars, chronicleText, guildWeek, splits, bestSplits, postcardData, levelSeries, tripStats, searchEntries, LuaError, parseLua, readDB, stampSeconds, shotStamp, matchShots, markupToHtml, plain, entryText, isMilestone, groupLevels, duration, summary, groupByDay, powerOfTwoAtMost, imageName, notesMarkdown, journalMarkdown };
 });

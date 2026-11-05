@@ -42,11 +42,13 @@ local en = {
 	DELETE_SECTION_CONFIRM = "Delete the tab \"%s\"? Its notes move to %s.",
 	ZONE_NOTES = "%d note(s) for %s: %s",
 	TOOLTIP_HEADER = "Bitácora",
-	NO_NOTES = "No notes yet. Click \"New note\".",
+	NO_NOTES = "Your first note goes here. \"New note\", and shift-click an item or a quest to link it.",
 
 	-- journal
-	JOURNAL_EMPTY = "Nothing yet. Level up, explore, beat a boss.",
+	JOURNAL_EMPTY = "The journal writes itself. Level up, set foot in a new zone or beat a boss and it shows up here.",
 	J_START = "Started the journal at level %d in %s.",
+	J_START_NOWHERE = "Started the journal at level %d.",
+	J_LEVELS = "Levels %d to %d.",
 	J_LEVEL = "Reached level %d.",
 	J_ZONE = "Arrived in %s for the first time.",
 	J_BOSS = "Defeated %s.",
@@ -101,7 +103,7 @@ local en = {
 	ONLY_THIS_CHAR = "Only this character",
 	DONE = "done",
 	REACTIVATE = "Reactivate",
-	REMINDERS_EMPTY = "No reminders. \"When I enter Ironforge, sell the cloth\".",
+	REMINDERS_EMPTY = "No reminders yet. Try one: \"when I enter Ironforge, sell the cloth\", or \"at 40, the mount\".",
 	R_DESC_ZONE = "when entering %s",
 	R_DESC_LEVEL = "at level %d",
 	R_DESC_LOGIN = "when logging in",
@@ -112,7 +114,7 @@ local en = {
 	EVERY_DAY = "Every day",
 
 	-- misc
-	HELP = "/bitacora (or /bita): open · /bita note <text>: quick note · /bita entry <text>: write in the journal · /bita to Name: text: whisper a reminder · /bita options",
+	HELP = "/bitacora (or /bita): open · /bita note <text>: quick note · /bita entry <text>: write in the journal · /bita to Name: text: whisper a reminder · /bita chat never|important|all · /bita language es|en|auto · /bita options",
 	QUICK_NOTE_SAVED = "note saved.",
 	ENTRY_SAVED = "written in the journal.",
 	COMPARTMENT_HINT = "Click to open",
@@ -121,7 +123,27 @@ local en = {
 	OPTIONS_INTRO = "Notebook, journal, album and reminders. Open the window with /bita.",
 	OPT_TOOLTIP = "Show notes in NPC and item tooltips",
 	OPT_ZONE = "Tell me in chat about notes for the zone I enter",
-	OPT_SCREENSHOT = "Chat line when a screenshot is noted",
+	-- bookmarks, welcome, chat and language
+	TIP_NOTES = "Notes with tabs, links and images; attach one to an NPC, an item or a zone.",
+	TIP_JOURNAL = "Writes itself: levels, zones, bosses, deaths, loot, quests, Legacy.",
+	TIP_ALBUM = "When, where and with whom you took each screenshot.",
+	TIP_REMINDERS = "By zone, level, mailbox, bank, day and time, before the reset, from the guild.",
+	TIP_PROGRESS = "Your numbers, time per level, companions, dungeons and raids.",
+	TIP_CHRONICLE = "The guild's milestones, shared by guildmates with Bitácora.",
+	TIP_KEY = "Key: %s",
+	WELCOME_INTRO = "A book for your Forever characters. The bookmarks on the right:",
+	WELCOME_SLASH = "Opens with %s, the key binding or the addon button by the minimap.",
+	WELCOME_OK = "Got it",
+	OPT_CHAT = "In the chat",
+	CHAT_NEVER = "Nothing",
+	CHAT_IMPORTANT = "The important bits, once per session",
+	CHAT_ALL = "Everything",
+	OPT_LANG = "Language",
+	LANG_AUTO = "Same as the game",
+	LANG_ES = "Castellano",
+	LANG_EN = "English",
+	LANG_SET = "Language: %s. Open pages re-read their texts after /reload.",
+	CHAT_SET = "Chat: %s.",
 	OPT_QUESTS = "Write completed quests in the journal",
 	OPT_BOOK_INTRO = "Open the cover when the book opens",
 	PINNED = "pinned",
@@ -245,10 +267,12 @@ local es = {
 	DELETE_NOTE_CONFIRM = "¿Borrar la nota \"%s\"?",
 	DELETE_SECTION_CONFIRM = "¿Borrar la pestaña \"%s\"? Sus notas pasan a %s.",
 	ZONE_NOTES = "%d nota(s) de %s: %s",
-	NO_NOTES = "Todavía no hay notas. Tocá \"Nota nueva\".",
+	NO_NOTES = "Tu primera nota va acá. \"Nota nueva\", y shift-clic en un ítem o una misión para linkearlo.",
 
-	JOURNAL_EMPTY = "Todavía nada. Subí de nivel, explorá, matá un jefe.",
+	JOURNAL_EMPTY = "El diario se escribe solo. Subí de nivel, pisá una zona nueva o matá un jefe y aparece acá.",
 	J_START = "Empezó el diario en nivel %d, en %s.",
+	J_START_NOWHERE = "Empezó el diario en nivel %d.",
+	J_LEVELS = "Niveles %d a %d.",
 	J_LEVEL = "Llegó a nivel %d.",
 	J_ZONE = "Llegó por primera vez a %s.",
 	J_BOSS = "Derrotó a %s.",
@@ -301,7 +325,7 @@ local es = {
 	ONLY_THIS_CHAR = "Solo este personaje",
 	DONE = "hecho",
 	REACTIVATE = "Reactivar",
-	REMINDERS_EMPTY = "No hay recordatorios. \"Cuando entre a Forjaz, vender el paño\".",
+	REMINDERS_EMPTY = "Todavía no hay recordatorios. Probá uno: \"cuando entre a Forjaz, vender el paño\", o \"al 40, la montura\".",
 	R_DESC_ZONE = "al entrar a %s",
 	R_DESC_LEVEL = "al llegar a nivel %d",
 	R_DESC_LOGIN = "al entrar al juego",
@@ -311,7 +335,7 @@ local es = {
 	WEEKDAYS = { "Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado" },
 	EVERY_DAY = "Todos los días",
 
-	HELP = "/bitacora (o /bita): abrir · /bita nota <texto>: nota rápida · /bita entrada <texto>: escribir en el diario · /bita a Nombre: texto: mandarle un recordatorio · /bita opciones",
+	HELP = "/bitacora (o /bita): abrir · /bita nota <texto>: nota rápida · /bita entrada <texto>: escribir en el diario · /bita a Nombre: texto: mandarle un recordatorio · /bita chat nunca|importante|todo · /bita idioma es|en|auto · /bita opciones",
 	QUICK_NOTE_SAVED = "nota guardada.",
 	ENTRY_SAVED = "escrito en el diario.",
 	COMPARTMENT_HINT = "Click para abrir",
@@ -320,7 +344,27 @@ local es = {
 	OPTIONS_INTRO = "Libreta, diario, álbum y recordatorios. La ventana se abre con /bita.",
 	OPT_TOOLTIP = "Mostrar notas en el tooltip de PNJ e ítems",
 	OPT_ZONE = "Avisarme en el chat si tengo notas de la zona a la que entro",
-	OPT_SCREENSHOT = "Aviso en el chat cuando se anota una captura",
+	-- marcadores, bienvenida, chat e idioma
+	TIP_NOTES = "Notas con pestañas, links e imágenes; pegá una a un PNJ, un ítem o una zona.",
+	TIP_JOURNAL = "Se escribe solo: niveles, zonas, jefes, muertes, botín, misiones, Legado.",
+	TIP_ALBUM = "Cuándo, dónde y con quién sacaste cada captura.",
+	TIP_REMINDERS = "Por zona, nivel, correo, banco, día y hora, antes del reinicio, de la guild.",
+	TIP_PROGRESS = "Tus números, tiempo por nivel, compañeros, mazmorras y bandas.",
+	TIP_CHRONICLE = "Los hitos de la guild, compartidos por quienes tienen Bitácora.",
+	TIP_KEY = "Tecla: %s",
+	WELCOME_INTRO = "Un libro para tus personajes de Forever. Los marcadores de la derecha:",
+	WELCOME_SLASH = "Se abre con %s, con el atajo de teclado o con el botón de addons del minimapa.",
+	WELCOME_OK = "Entendido",
+	OPT_CHAT = "En el chat",
+	CHAT_NEVER = "Nada",
+	CHAT_IMPORTANT = "Lo importante, una vez por sesión",
+	CHAT_ALL = "Todo",
+	OPT_LANG = "Idioma",
+	LANG_AUTO = "El del juego",
+	LANG_ES = "Castellano",
+	LANG_EN = "English",
+	LANG_SET = "Idioma: %s. Las páginas ya abiertas releen sus textos con /reload.",
+	CHAT_SET = "Chat: %s.",
 	OPT_QUESTS = "Anotar en el diario las misiones completadas",
 	OPT_BOOK_INTRO = "Abrir la tapa al abrir el libro",
 	PINNED = "fijada",
@@ -406,13 +450,34 @@ local es = {
 	R_DESC_FROM = "te lo mandó %s",
 }
 
+-- ns.L is an empty proxy: every lookup goes to the language in use, so the language can be chosen in the
+-- settings (most Spanish speakers play on an English client) and switched after the files have loaded.
+setmetatable(es, { __index = en })
 local locale = GetLocale()
-local L = (locale == "esES" or locale == "esMX") and es or {}
-setmetatable(L, { __index = en })
+local L = setmetatable({}, { __index = (locale == "esES" or locale == "esMX") and es or en })
 ns.L = L
 ns.locale = locale
+ns.LANGS = { auto = true, es = true, en = true }
 
 local ADDON = ...
 local KEY = string.upper(ADDON)
-_G["BINDING_HEADER_" .. KEY] = (ns.edition and ns.edition.title) or "Bitácora"
-_G["BINDING_NAME_" .. KEY .. "_TOGGLE"] = L.BINDING_TOGGLE
+local function bindingNames()
+	_G["BINDING_HEADER_" .. KEY] = (ns.edition and ns.edition.title) or "Bitácora"
+	_G["BINDING_NAME_" .. KEY .. "_TOGGLE"] = L.BINDING_TOGGLE
+end
+bindingNames()
+
+-- "auto" follows the client; "es" and "en" force one. Fires "locale" so the window re-reads its texts.
+function ns.SetLocale(code)
+	code = ns.LANGS[code] and code or "auto"
+	local want = code
+	if code == "auto" then
+		want = (locale == "esES" or locale == "esMX") and "es" or "en"
+	end
+	getmetatable(L).__index = want == "es" and es or en
+	ns.lang = want
+	bindingNames()
+	ns.Fire("locale")
+	return want
+end
+ns.lang = (locale == "esES" or locale == "esMX") and "es" or "en"

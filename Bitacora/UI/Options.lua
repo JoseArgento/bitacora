@@ -4,108 +4,124 @@ local UI = ns.UI
 
 -- A page in the game's Options → AddOns list. Forever loads Blizzard_Settings_Shared, whose
 -- Settings.RegisterCanvasLayoutCategory takes any frame we draw ourselves.
+-- The page is drawn the first time it is needed (never at file load), so its texts are in the chosen language.
 
 local QUALITIES = { { 2, "QUALITY_UNCOMMON" }, { 3, "QUALITY_RARE" }, { 4, "QUALITY_EPIC" }, { 5, "QUALITY_LEGENDARY" } }
+local CLOCKS = { { "local", "CLOCK_LOCAL" }, { "realm", "CLOCK_REALM" } }
+local CHATS = { { "never", "CHAT_NEVER" }, { "important", "CHAT_IMPORTANT" }, { "all", "CHAT_ALL" } }
+local LANGS = { { "auto", "LANG_AUTO" }, { "es", "LANG_ES" }, { "en", "LANG_EN" } }
 
 local panel = CreateFrame("Frame")
 panel:Hide()
 UI.options = panel
+panel.checks = {}
 
-local title = UI.Label(panel, ns.edition.title or L.TITLE, "GameFontNormalLarge")
-title:SetPoint("TOPLEFT", 16, -16)
-local sub = UI.Label(panel, L.OPTIONS_INTRO, "GameFontHighlightSmall")
-sub:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
-
-local checks = {}
-local function check(key, text, y)
-	local c = UI.Check(panel, text, function(self)
-		ns.db.settings[key] = self:GetChecked() and true or false
-		ns.Fire("settings", key)
-	end)
-	c:SetPoint("TOPLEFT", 12, y)
-	checks[key] = c
-	return c
-end
--- only the options of the parts this edition has
-local y = -64
-local function add(key, text, part)
-	if part then
-		check(key, text, y)
-		y = y - 28
-	end
-end
-add("tooltipNotes", L.OPT_TOOLTIP, ns.Notes)
-add("zoneNotes", L.OPT_ZONE, ns.Notes)
-add("screenshotChat", L.OPT_SCREENSHOT, ns.Album)
-add("journalQuests", L.OPT_QUESTS, ns.Journal)
-add("chronicle", L.OPT_CHRONICLE, ns.Chronicle)
-add("guildReminders", L.OPT_GUILD_REMINDERS, ns.GuildReminders)
-add("reminderPopup", L.OPT_REMINDER_POPUP, ns.Reminders)
-add("calendar", L.OPT_CALENDAR, ns.Reminders)
-add("calendarAuto", L.OPT_CALENDAR_AUTO, ns.Reminders)
-add("campBuff", L.OPT_CAMP_BUFF, ns.Reminders)
-add("bookIntro", L.OPT_BOOK_INTRO, true)
-
-local lootLabel = UI.Label(panel, L.SETTINGS_LOOT, "GameFontNormal")
-lootLabel:SetPoint("TOPLEFT", 16, y - 12)
-local loot = UI.Button(panel, "", 160, nil)
-loot:SetPoint("TOPLEFT", lootLabel, "BOTTOMLEFT", 0, -6)
-lootLabel:SetShown(ns.Journal ~= nil)
-loot:SetShown(ns.Journal ~= nil)
-
--- which clock the day-and-time reminders follow
-local CLOCKS = { { "local", "CLOCK_LOCAL" }, { "realm", "CLOCK_REALM" } }
-local clockLabel = UI.Label(panel, L.OPT_CLOCK, "GameFontNormal")
-clockLabel:SetPoint("TOPLEFT", ns.Journal and loot or lootLabel, ns.Journal and "BOTTOMLEFT" or "TOPLEFT", 0, ns.Journal and -18 or 0)
-local clock = UI.Button(panel, "", 200, nil)
-clock:SetPoint("TOPLEFT", clockLabel, "BOTTOMLEFT", 0, -6)
-clockLabel:SetShown(ns.Reminders ~= nil)
-clock:SetShown(ns.Reminders ~= nil)
-clock:SetScript("OnClick", function(self)
-	UI.Menu(self, function(root)
-		for _, pair in ipairs(CLOCKS) do
-			root:CreateRadio(L[pair[2]], function()
-				return (ns.db.settings.clock or "local") == pair[1]
-			end, function()
-				ns.db.settings.clock = pair[1]
-				panel.Refresh()
-				ns.Fire("settings", "clock")
-			end)
-		end
-	end)
-end)
-
-local function qualityText(q)
-	for _, pair in ipairs(QUALITIES) do
-		if pair[1] == q then
+local function labelOf(pairs_, value)
+	for _, pair in ipairs(pairs_) do
+		if pair[1] == value then
 			return L[pair[2]]
 		end
 	end
-	return tostring(q)
+	return tostring(value)
+end
+
+-- A button that opens a radio menu over `pairs_` and stores the pick in settings[key].
+local function chooser(key, pairs_, default, width, onPick)
+	local b = UI.Button(panel, "", width or 200, nil)
+	b:SetScript("OnClick", function(self)
+		UI.Menu(self, function(root)
+			for _, pair in ipairs(pairs_) do
+				root:CreateRadio(L[pair[2]], function()
+					return (ns.db.settings[key] or default) == pair[1]
+				end, function()
+					ns.db.settings[key] = pair[1]
+					if onPick then
+						onPick(pair[1])
+					end
+					panel.Refresh()
+					ns.Fire("settings", key)
+				end)
+			end
+		end)
+	end)
+	b.key, b.pairs, b.default = key, pairs_, default
+	return b
+end
+
+function panel.Build()
+	if panel.built then
+		return
+	end
+	panel.built = true
+	local title = UI.Label(panel, ns.edition.title or L.TITLE, "GameFontNormalLarge")
+	title:SetPoint("TOPLEFT", 16, -16)
+	local sub = UI.Label(panel, L.OPTIONS_INTRO, "GameFontHighlightSmall")
+	sub:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
+
+	local y = -64
+	local function add(key, text, part)
+		if not part then
+			return
+		end
+		local c = UI.Check(panel, text, function(self)
+			ns.db.settings[key] = self:GetChecked() and true or false
+			ns.Fire("settings", key)
+		end)
+		c:SetPoint("TOPLEFT", 12, y)
+		panel.checks[key] = c
+		y = y - 28
+	end
+	-- only the options of the parts this edition has
+	add("tooltipNotes", L.OPT_TOOLTIP, ns.Notes)
+	add("zoneNotes", L.OPT_ZONE, ns.Notes)
+	add("journalQuests", L.OPT_QUESTS, ns.Journal)
+	add("chronicle", L.OPT_CHRONICLE, ns.Chronicle)
+	add("guildReminders", L.OPT_GUILD_REMINDERS, ns.GuildReminders)
+	add("reminderPopup", L.OPT_REMINDER_POPUP, ns.Reminders)
+	add("calendar", L.OPT_CALENDAR, ns.Reminders)
+	add("calendarAuto", L.OPT_CALENDAR_AUTO, ns.Reminders)
+	add("campBuff", L.OPT_CAMP_BUFF, ns.Reminders)
+	add("bookIntro", L.OPT_BOOK_INTRO, true)
+
+	-- the pickers: a label and a button each, one under the other
+	local last
+	local function picker(labelKey, button, shown)
+		local label = UI.Label(panel, L[labelKey], "GameFontNormal")
+		if last then
+			label:SetPoint("TOPLEFT", last, "BOTTOMLEFT", 0, -18)
+		else
+			label:SetPoint("TOPLEFT", 16, y - 12)
+		end
+		button:SetPoint("TOPLEFT", label, "BOTTOMLEFT", 0, -6)
+		label:SetShown(shown)
+		button:SetShown(shown)
+		if shown then
+			last = button
+		end
+		return label
+	end
+	panel.loot = chooser("lootQuality", QUALITIES, 4, 160)
+	picker("SETTINGS_LOOT", panel.loot, ns.Journal ~= nil)
+	panel.clock = chooser("clock", CLOCKS, "local", 200)
+	picker("OPT_CLOCK", panel.clock, ns.Reminders ~= nil)
+	panel.chat = chooser("chat", CHATS, "important", 260)
+	picker("OPT_CHAT", panel.chat, true)
+	panel.lang = chooser("lang", LANGS, "auto", 200, function(code)
+		ns.SetLocale(code)
+	end)
+	picker("OPT_LANG", panel.lang, true)
 end
 
 function panel.Refresh()
-	for key, c in pairs(checks) do
+	panel.Build()
+	for key, c in pairs(panel.checks) do
 		c:SetChecked(ns.db.settings[key] and true or false)
 	end
-	loot:SetText(qualityText(ns.db.settings.lootQuality or 4))
-	clock:SetText(L["CLOCK_" .. string.upper(ns.db.settings.clock or "local")] or L.CLOCK_LOCAL)
+	for _, b in ipairs({ panel.loot, panel.clock, panel.chat, panel.lang }) do
+		b:SetText(labelOf(b.pairs, ns.db.settings[b.key] or b.default))
+	end
 end
 
-loot:SetScript("OnClick", function(self)
-	UI.Menu(self, function(root)
-		for _, pair in ipairs(QUALITIES) do
-			root:CreateRadio(L[pair[2]], function()
-				return (ns.db.settings.lootQuality or 4) == pair[1]
-			end, function()
-				ns.db.settings.lootQuality = pair[1]
-				panel.Refresh()
-			end)
-		end
-	end)
-end)
-
-panel.loot, panel.clock, panel.checks = loot, clock, checks
 panel:SetScript("OnShow", panel.Refresh)
 
 function UI.RegisterOptions()
@@ -115,6 +131,7 @@ function UI.RegisterOptions()
 	if ns.disabled then
 		return
 	end
+	panel.Build()
 	local category = Settings.RegisterCanvasLayoutCategory(panel, ns.edition.title or L.TITLE)
 	Settings.RegisterAddOnCategory(category)
 	UI.optionsCategory = category

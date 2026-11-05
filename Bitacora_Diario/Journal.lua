@@ -90,11 +90,47 @@ function J.Entries(charKey, filter)
 	return out
 end
 
+-- The milestones view: consecutive level-ups of the same day fold into one row
+-- ("Niveles 2 a 9"); the row keeps the last entry's time and place and the folded entries.
+function J.Grouped(entries)
+	local out = {}
+	local run
+	for _, e in ipairs(entries) do
+		local day = (e.d or ""):sub(1, 10)
+		if e.kind == "level" and run and run.day == day and (e.level or 0) == (run.level or 0) + 1 then
+			run.level = e.level
+			run.t, run.d = e.t, e.d
+			run.zone, run.sub = e.zone, e.sub
+			table.insert(run.entries, e)
+		else
+			if run then
+				table.insert(out, #run.entries > 1 and run or run.entries[1])
+				run = nil
+			end
+			if e.kind == "level" then
+				run = { kind = "level", group = true, day = day, from = e.level, level = e.level, t = e.t, d = e.d, zone = e.zone, sub = e.sub, entries = { e } }
+			else
+				table.insert(out, e)
+			end
+		end
+	end
+	if run then
+		table.insert(out, #run.entries > 1 and run or run.entries[1])
+	end
+	return out
+end
+
 function J.Text(e)
 	local k = e.kind
 	if k == "start" then
-		return L.J_START:format(e.level or 1, e.zone or "?")
+		if e.zone and e.zone ~= "" then
+			return L.J_START:format(e.level or 1, e.zone)
+		end
+		return L.J_START_NOWHERE:format(e.level or 1)
 	elseif k == "level" then
+		if e.group then
+			return L.J_LEVELS:format(e.from or 0, e.level or 0)
+		end
 		return L.J_LEVEL:format(e.level or 0)
 	elseif k == "zone" then
 		return L.J_ZONE:format(e.name or e.zone or "?")
@@ -178,7 +214,7 @@ function J.OnLogin()
 		if back.note then
 			text = text .. " " .. L.WHERE_WAS_NOTE:format(back.note)
 		end
-		ns.Print(text)
+		ns.Say("whereWas", text, true)
 	end
 end
 
@@ -230,6 +266,16 @@ function J.OnZoneChanged(silent)
 		return
 	end
 	local where = ns.Where()
+	-- the start entry is written at login, when the zone text can still be empty: fill it in now
+	if where.zone ~= "" then
+		for i = #c.journal, math.max(1, #c.journal - 5), -1 do
+			local e = c.journal[i]
+			if e.kind == "start" and (not e.zone or e.zone == "") then
+				e.zone, e.sub = where.zone, where.sub ~= "" and where.sub or nil
+				ns.Fire("journal", e)
+			end
+		end
+	end
 	local key = where.mapID and ("m" .. where.mapID) or (where.zone ~= "" and ("z" .. where.zone)) or nil
 	if not key or c.visited[key] then
 		return

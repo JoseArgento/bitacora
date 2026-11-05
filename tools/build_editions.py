@@ -30,7 +30,7 @@ EDITIONS = {
         "slash": ["/libreta"],
         "logic": ["Notes.lua"],
         "ui": ["UI/NotesTab.lua", "UI/Tooltip.lua"],
-        "icon": "Interface\\Icons\\INV_Misc_Note_01",
+        "icon": "Interface\\AddOns\\Bitacora_Datos\\Media\\icon",
     },
     "Bitacora_Diario": {
         "title": "Bitácora · Diario",
@@ -39,7 +39,7 @@ EDITIONS = {
         "slash": ["/diario"],
         "logic": ["Journal.lua", "Progress.lua", "Companions.lua", "Chronicle.lua"],
         "ui": ["UI/JournalTab.lua", "UI/ProgressTab.lua", "UI/ChronicleTab.lua"],
-        "icon": "Interface\\Icons\\INV_Misc_Book_09",
+        "icon": "Interface\\AddOns\\Bitacora_Datos\\Media\\icon",
     },
     "Bitacora_Album": {
         "title": "Bitácora · Álbum",
@@ -48,7 +48,7 @@ EDITIONS = {
         "slash": ["/album"],
         "logic": ["Album.lua"],
         "ui": ["UI/AlbumTab.lua"],
-        "icon": "Interface\\Icons\\INV_Misc_Spyglass_03",
+        "icon": "Interface\\AddOns\\Bitacora_Datos\\Media\\icon",
     },
     "Bitacora_Recordatorios": {
         "title": "Bitácora · Recordatorios",
@@ -57,7 +57,7 @@ EDITIONS = {
         "slash": ["/recordatorios", "/recordar"],
         "logic": ["Reminders.lua", "GuildReminders.lua"],
         "ui": ["UI/RemindersTab.lua"],
-        "icon": "Interface\\Icons\\INV_Misc_PocketWatch_01",
+        "icon": "Interface\\AddOns\\Bitacora_Datos\\Media\\icon_bell",
         "single": True,  # one page: the form above the list
     },
     # A truly standalone addon: its own saved data and textures, no Bitacora_Datos. Packaged in its own zip
@@ -69,7 +69,7 @@ EDITIONS = {
         "slash": ["/recordame"],
         "logic": ["Reminders.lua", "GuildReminders.lua"],
         "ui": ["UI/RemindersTab.lua"],
-        "icon": "Interface\\Icons\\INV_Misc_PocketWatch_01",
+        "icon": "Interface\\AddOns\\Recordame\\Media\\icon_bell",
         "standalone": True,
         "single": True,
         # "curse": 123456,  # Recordame's own CurseForge project, once it exists (then run this script)

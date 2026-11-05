@@ -233,7 +233,8 @@
     const holder = el("div");
     root.append(holder);
     function draw() {
-      const all = c ? c.journal.filter((e) => state.filter === "all" || C.isMilestone(e)) : [];
+      let all = c ? c.journal.filter((e) => state.filter === "all" || C.isMilestone(e)) : [];
+      if (state.filter !== "all") all = C.groupLevels(all);
       const entries = C.searchEntries(all, state.jquery, lang);
       if (!entries.length) {
         put(holder, el("p", { class: "empty", text: all.length ? L().noMatches : L().journalEmpty }));

@@ -728,3 +728,9 @@ function MOCK.savedVariables(name)
 	table.insert(out, "\n")
 	return table.concat(out)
 end
+
+-- key bindings (MOCK.bindings["BITACORA_TOGGLE"] = "F9")
+MOCK.bindings = {}
+function GetBindingKey(action)
+	return MOCK.bindings[action]
+end

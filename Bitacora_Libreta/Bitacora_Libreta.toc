@@ -6,7 +6,7 @@
 ## Author: José Argento
 ## Version: @project-version@
 ## Dependencies: Bitacora_Datos
-## IconTexture: Interface\Icons\INV_Misc_Note_01
+## IconTexture: Interface\AddOns\Bitacora_Datos\Media\icon
 ## AddonCompartmentFunc: Bitacora_Libreta_OnAddonCompartmentClick
 ## AddonCompartmentFuncOnEnter: Bitacora_Libreta_OnAddonCompartmentEnter
 ## AddonCompartmentFuncOnLeave: Bitacora_Libreta_OnAddonCompartmentLeave

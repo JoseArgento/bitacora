@@ -6,7 +6,7 @@
 ## Author: José Argento
 ## Version: @project-version@
 ## SavedVariables: RecordameDB
-## IconTexture: Interface\Icons\INV_Misc_PocketWatch_01
+## IconTexture: Interface\AddOns\Recordame\Media\icon_bell
 ## AddonCompartmentFunc: Recordame_OnAddonCompartmentClick
 ## AddonCompartmentFuncOnEnter: Recordame_OnAddonCompartmentEnter
 ## AddonCompartmentFuncOnLeave: Recordame_OnAddonCompartmentLeave

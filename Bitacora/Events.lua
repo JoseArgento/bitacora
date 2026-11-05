@@ -48,7 +48,7 @@ local function zoneNotes()
 		for i = 1, math.min(#notes, 3) do
 			table.insert(titles, ns.Notes.DisplayTitle(notes[i]))
 		end
-		ns.Print(L.ZONE_NOTES:format(#notes, w.zone, table.concat(titles, ", ")))
+		ns.Say("zoneNotes", L.ZONE_NOTES:format(#notes, w.zone, table.concat(titles, ", ")), true)
 	end
 end
 
@@ -57,6 +57,7 @@ on("ADDON_LOADED", function(name)
 		return
 	end
 	ns.InitDB()
+	ns.SetLocale(ns.db.settings.lang)
 	frame:UnregisterEvent("ADDON_LOADED")
 end)
 
@@ -258,6 +259,21 @@ SlashCmdList[KEY] = function(msg)
 			local _, reply = ns.GuildReminders.Whisper(name, text)
 			ns.Print(reply)
 		end
+	elseif cmd == "chat" then
+		local modes = { nunca = "never", never = "never", importante = "important", important = "important", todo = "all", all = "all" }
+		local mode = modes[string.lower(rest)]
+		if mode then
+			ns.db.settings.chat = mode
+			ns.Fire("settings", "chat")
+		end
+		ns.Print(L.CHAT_SET:format(L["CHAT_" .. string.upper(ns.db.settings.chat or "important")]))
+	elseif cmd == "idioma" or cmd == "language" or cmd == "lang" then
+		local code = string.lower(rest)
+		if ns.LANGS[code] then
+			ns.db.settings.lang = code
+			ns.SetLocale(code)
+		end
+		ns.Print(L.LANG_SET:format(L["LANG_" .. string.upper(ns.db.settings.lang or "auto")]))
 	elseif cmd == "opciones" or cmd == "options" or cmd == "config" then
 		ns.OpenOptions()
 	elseif cmd == "help" or cmd == "ayuda" or cmd == "?" then

@@ -6,7 +6,7 @@
 ## Author: José Argento
 ## Version: @project-version@
 ## Dependencies: Bitacora_Datos
-## IconTexture: Interface\Icons\INV_Misc_Book_09
+## IconTexture: Interface\AddOns\Bitacora_Datos\Media\icon
 ## AddonCompartmentFunc: Bitacora_Diario_OnAddonCompartmentClick
 ## AddonCompartmentFuncOnEnter: Bitacora_Diario_OnAddonCompartmentEnter
 ## AddonCompartmentFuncOnLeave: Bitacora_Diario_OnAddonCompartmentLeave
