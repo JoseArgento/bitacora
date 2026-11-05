@@ -229,6 +229,18 @@ end
 function Frame:SetWidth(w)
 	self.width = w
 end
+function Frame:SetHeight(h)
+	self.height = h
+end
+function Frame:GetHeight()
+	return self.height or 100
+end
+function Frame:SetSize(w, h)
+	self.width, self.height = w, h
+end
+function Frame:GetSize()
+	return self.width or 100, self.height or 100
+end
 function Frame:GetStringWidth()
 	return #(self._text or "") * 6
 end
@@ -334,7 +346,8 @@ end
 UISpecialFrames = {}
 StaticPopupDialogs = {}
 SlashCmdList = {}
-ACCEPT, CANCEL, YES, NO = "Accept", "Cancel", "Yes", "No"
+ACCEPT, CANCEL, YES, NO, OKAY = "Accept", "Cancel", "Yes", "No", "Okay"
+RAID_CLASS_COLORS = { MAGE = { colorStr = "ff3fc7eb" }, PRIEST = { colorStr = "ffffffff" }, WARRIOR = { colorStr = "ffc69b6d" } }
 SOUNDKIT = { RAID_WARNING = 8959, IG_CHARACTER_INFO_TAB = 841, IG_CHARACTER_INFO_OPEN = 839, IG_CHARACTER_INFO_CLOSE = 840 }
 ChatTypeInfo = { RAID_WARNING = { r = 1, g = 0.28, b = 0 } }
 function PlaySound(id)
@@ -443,6 +456,7 @@ end
 function GetRealmName()
 	return MOCK.player.realm
 end
+MOCK.groupRealm = {} -- unit -> realm of a group member from another realm
 function UnitName(unit)
 	if unit == "player" then
 		return MOCK.player.name
@@ -450,7 +464,7 @@ function UnitName(unit)
 	if unit == "target" then
 		return MOCK.target and MOCK.target.name
 	end
-	return MOCK.group[unit]
+	return MOCK.group[unit], MOCK.groupRealm[unit]
 end
 function UnitIsUnit(a, b)
 	return a == b or (b == "player" and MOCK.group[a] == MOCK.player.name)
@@ -469,7 +483,11 @@ end
 function UnitLevel()
 	return MOCK.player.level
 end
-function UnitClass()
+MOCK.groupClass = {} -- unit -> class token of a group member
+function UnitClass(unit)
+	if unit and unit ~= "player" and MOCK.groupClass[unit] then
+		return MOCK.groupClass[unit], MOCK.groupClass[unit]
+	end
 	return "Mage", MOCK.player.class
 end
 function UnitRace()

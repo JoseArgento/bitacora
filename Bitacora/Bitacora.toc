@@ -21,6 +21,7 @@ Album.lua
 Reminders.lua
 GuildReminders.lua
 Progress.lua
+Companions.lua
 Chronicle.lua
 Events.lua
 UI\Widgets.lua

@@ -9,18 +9,9 @@ ns.Album = A
 
 local function groupNames()
 	local names = {}
-	local n = GetNumGroupMembers()
-	if n == 0 then
-		return names
-	end
-	local prefix, count = "party", n - 1
-	if IsInRaid() then
-		prefix, count = "raid", n
-	end
-	for i = 1, math.min(count, 40) do
-		local unit = prefix .. i
+	for _, unit in ipairs(ns.GroupUnits()) do
 		local name = ns.Plain(UnitName(unit))
-		if name and not UnitIsUnit(unit, "player") then
+		if name then
 			table.insert(names, name)
 		end
 	end

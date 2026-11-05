@@ -87,3 +87,26 @@ def test_a_postcard_of_a_day(pages):
             assert not errors, errors
             pg.close()
         browser.close()
+
+
+def test_time_per_level_and_companions_show_up(pages):
+    with sync_api.sync_playwright() as p:
+        browser = p.chromium.launch()
+        for page_file in pages:
+            for width in (1200, 375):
+                pg = browser.new_page(viewport={"width": width, "height": 800})
+                pg.set_default_timeout(90_000)
+                pg.goto(page_file.as_uri())
+                pg.wait_for_selector("#particulars li")
+                pg.click('#crew button:has-text("Anabel")')
+                pg.click(".tabs a[data-view=diario]")
+                splits = pg.inner_text(".splits")
+                assert "Nivel 5" in splits and "40 min" in splits, splits
+                pg.click('#crew button:has-text("Josecito")')
+                splits = pg.inner_text(".splits")
+                assert "mejor: Anabel" in splits, splits  # Anabel did level 1 faster
+                people = pg.inner_text(".companions")
+                assert "Beto" in people and "Caro" in people and "Ana" in people, people
+                assert pg.evaluate("document.documentElement.scrollWidth") <= width
+                pg.close()
+        browser.close()

@@ -38,15 +38,18 @@ def main() -> None:
     gl.LOOT_ITEM_PUSHED_SELF, gl.LOOT_ITEM_PUSHED_SELF_MULTIPLE = "Recibes: %s", "Recibes: %sx%d"
     t(g, 4, 15, 10)
     g.login()
+    g.m.runTimers()
     g.db.settings.lootQuality = 3
     g.run('ns.Journal.AddManual("Primer día de Forever. Fila de 40 minutos, valió la pena.")')
-    t(g, 4, 15, 40)
-    for lvl in (2, 3, 4, 5):
+    for lvl, minute in ((2, 25), (3, 33), (4, 44), (5, 58)):
+        t(g, 4, 15, minute)
         m.player.level = lvl
         g.fire("PLAYER_LEVEL_UP", lvl)
     m.where.sub = "Villadorada"
     t(g, 4, 16, 5)
     m.group["party1"] = "Ana"
+    m.groupClass["party1"] = "WARRIOR"
+    g.fire("GROUP_ROSTER_UPDATE")
     g.fire("SCREENSHOT_SUCCEEDED")
     g.run("ns.Album.SetCaption(1, 'Con Ana en la posada de Villadorada')")
     t(g, 4, 17, 30)
@@ -67,9 +70,11 @@ def main() -> None:
     g.fire("PLAYER_LEVEL_UP", 18)
     m.group["party2"] = "Beto"
     m.group["party3"] = "Caro"
+    m.groupClass["party2"], m.groupClass["party3"] = "PRIEST", "ROGUE"
     m.where.mapID, m.where.zone, m.where.sub, m.where.x = 291, "Las Minas de la Muerte", "", None
     m.maps[291] = "Las Minas de la Muerte"
     g.fire("ZONE_CHANGED_NEW_AREA")
+    g.fire("GROUP_ROSTER_UPDATE")
     t(g, 5, 22, 10)
     g.fire("ENCOUNTER_END", 2969, "Edwin VanCleef", 1, 5, 1)
     g.fire("CHAT_MSG_LOOT", "Recibes botín: " + RARE, "Josecito")
@@ -106,8 +111,14 @@ def main() -> None:
     g.ns.charKey = None
     t(g, 6, 19, 0)
     g.fire("PLAYER_LOGIN")
-    m.player.level = 6
-    g.fire("PLAYER_LEVEL_UP", 6)
+    g.m.runTimers()
+    # levels 2 to 6 over the evening: 12, 20, 25, 30 and 40 minutes each (the splits of the Progress tab)
+    minute = 0
+    for lvl, took in ((2, 12), (3, 20), (4, 25), (5, 30), (6, 40)):
+        minute += took
+        t(g, 6, 19 + minute // 60, minute % 60)
+        m.player.level = lvl
+        g.fire("PLAYER_LEVEL_UP", lvl)
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(m.savedVariables("BitacoraDB"), encoding="utf-8")

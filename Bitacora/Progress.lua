@@ -52,6 +52,40 @@ function P.Stats(charKey)
 	return s
 end
 
+-- How long each level took: from the "played" seconds the journal writes at the start and at every level-up.
+-- { { level = n, seconds = s, at = epoch } } for the levels the journal saw from beginning to end.
+function P.Splits(charKey)
+	local c = ns.Char(charKey)
+	local out = {}
+	if not c then
+		return out
+	end
+	local prev -- the entry that began the current level
+	for _, e in ipairs(c.journal) do
+		if (e.kind == "start" or e.kind == "level") and type(e.level) == "number" and type(e.played) == "number" then
+			if prev and e.kind == "level" and e.level > prev.level and e.played >= prev.played then
+				-- levels skipped at once (a quest that gives two) get the whole span on the first one
+				table.insert(out, { level = prev.level, seconds = e.played - prev.played, at = e.t })
+			end
+			prev = e
+		end
+	end
+	return out
+end
+
+-- The account's fastest time at each level: { [level] = { seconds, name } }.
+function P.BestSplits()
+	local best = {}
+	for key, c in pairs(ns.db.chars) do
+		for _, s in ipairs(P.Splits(key)) do
+			if not best[s.level] or s.seconds < best[s.level].seconds then
+				best[s.level] = { seconds = s.seconds, name = c.name or key }
+			end
+		end
+	end
+	return best
+end
+
 -- Every dungeon and raid of the Encounter Journal with its bosses, read once per session:
 -- { { id, name, raid = bool, bosses = { { name, encounter = dungeonEncounterID } } } }.
 -- Selecting an instance changes the Encounter Journal's own selection, so this is not done while it is

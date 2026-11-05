@@ -4,6 +4,7 @@ Recordatorios para **WoW Forever** que saltan cuando importan. Es la pestaña de
 
 - **Cuándo avisa:** al entrar a una zona o subzona ("cuando llegue a Forjaz, vender el paño"), al llegar a un nivel ("al 40, la montura"), al entrar al juego, al abrir el correo, el banco, un vendedor o la subasta, un día a una hora ("los martes a las 20:30") o unas horas antes del reinicio semanal.
 - Cada uno puede ser de un personaje o de todos, de una vez o repetido. Avisa en el centro de la pantalla, con sonido.
+- **Posponer:** cada aviso abre una ventanita con "5, 10 o 15 min después" (se apaga en las opciones). Si uno por día y hora venció mientras no jugabas, salta al entrar, una vez (mira hasta 30 días atrás). Los de día y hora van por el reloj de tu compu o por el del reino, a elección.
 - **De la guild:** un oficial (rango 0 o 1) puede mandar un recordatorio por día y hora a toda la guild. Salta a la misma hora para todos, en la hora de cada uno. Les llega a los que tengan Recordame o Bitácora.
 - `/recordame` abre la ventana; también desde el botón de addons junto al minimapa.
 
@@ -17,6 +18,6 @@ Recordatorios para **WoW Forever** que saltan cuando importan. Es la pestaña de
 
 ---
 
-**English:** Reminders for WoW Forever, as their own addon (Bitácora's reminders, standalone): by zone, level, login, mailbox, bank, vendor, auction house, day and time, or hours before the weekly reset. Officers (ranks 0-1) can send day-and-time reminders to the whole guild. It sends nothing of yours; at login it asks the guild for the officers' reminders with an empty `Q|1` (can be turned off). `/recordame`.
+**English:** Reminders for WoW Forever, as their own addon (Bitácora's reminders, standalone): by zone, level, login, mailbox, bank, vendor, auction house, day and time, or hours before the weekly reset, with snooze, catch-up of what came due while you were out, and your computer's or the realm's clock. Officers (ranks 0-1) can send day-and-time reminders to the whole guild. It sends nothing of yours; at login it asks the guild for the officers' reminders with an empty `Q|1` (can be turned off). `/recordame`.
 
 Sin relación con Blizzard Entertainment. Licencia MIT.

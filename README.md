@@ -40,12 +40,15 @@ El diario de a bordo de tus personajes de **WoW Forever**: una libreta, un diari
 - **Recordatorios**
   - "Cuando entre a Forjaz, vender el paño", "al llegar a 40, la montura", "al abrir el correo", "al entrar al juego", "los martes a las 20:30", "6 horas antes del reinicio semanal".
   - Pueden ser de un solo personaje o repetirse.
-  - Avisan en el centro de la pantalla, con sonido.
+  - Avisan en el centro de la pantalla, con sonido, y en una ventanita con botones para **posponer** 5, 10 o 15 minutos (se puede apagar).
+  - Los de día y hora van por el reloj de tu compu o, si lo elegís en las opciones, por el del reino. Si uno venció mientras no jugabas, salta al entrar (una vez; mira hasta 30 días atrás, desde la última vez que corrió el addon).
   - **De la guild:** un oficial (rango 0 o 1) puede mandar uno por día y hora a toda la guild ("jueves 19:45, raid: traigan pociones"). Salta a la misma hora para todos, se muestra en tu hora local, y solo lo puede borrar quien lo creó.
 - **Progreso**
   - Tus números: días jugados, zonas pisadas, misiones, jefes distintos, primeras muertes de jefes, botín, muertes y dónde más moriste.
   - Cada mazmorra y banda de la guía de aventuras del juego, con cuántos jefes mataste ("Minas de la Muerte: 2 de 3").
   - Logros por categoría.
+  - **Tiempo por nivel:** cuánto tardaste en cada nivel y, si otro personaje tuyo lo hizo más rápido, cuál y en cuánto. Se cuenta desde que el addon vio el nivel; si escribís `/played`, el conteo del juego manda.
+  - **Compañeros:** con quién agrupaste (de toda la cuenta): clase, cuántos grupos, cuándo fue el último y dónde. Hasta 500; se van los más viejos.
 - **Guild** (la crónica, apagada si no la prendés)
   - Si la prendés en las opciones, tus hitos (cada 10 niveles y el último, primeros jefes, logros, botín) les llegan a los de tu guild que tengan Bitácora, y ves los de ellos.
 
@@ -109,10 +112,10 @@ El addon no manda nada tuyo a nadie si no prendés la crónica de la guild. Lo �
 **Probado:**
 - ✅ **Cada función, evento y template existe en Forever 1.60.1.** Lo revisa `tools/check_api.py` contra los dumps de [Ketho/BlizzardInterfaceResources](https://github.com/Ketho/BlizzardInterfaceResources) y el código de la UI de [Gethe/wow-ui-source](https://github.com/Gethe/wow-ui-source), rama `forever`. Ejemplos: `ChatFrameUtil.InsertLink` (Forever no tiene `ChatEdit_InsertLink`), `RaidWarningUtil.AddMessage` (`RaidNotice_AddMessage` solo existe con los alias viejos), `TooltipDataProcessor`, `ScrollingEditBoxTemplate`, el compartimento de addons de Forever. El script encuentra nombres inventados o mal escritos.
 - ✅ [forever-lint](https://github.com/JoseArgento/forever-lint): solo la nota FL012 (las cuentas de prueba no pueden mandar mensajes de addon), que la crónica ya maneja. [Addon Sentry](https://github.com/JoseArgento/addon-sentry) da "Sin señales de riesgo".
-- ✅ **136 tests.**
-  - 125 corren el addon en Lua 5.1 (el Lua de WoW), con un reemplazo chico del cliente (`tests/wow_mock.lua`): eventos, datos guardados y recargados, recordatorios (incluido el semanal), tooltips, links con shift-click, nombres de imágenes, patrones de botín en varios idiomas, valores secretos, cada pestaña armándose sin errores de Lua, el progreso contra una guía de aventuras de prueba, la crónica (mensajes malos, con códigos de color o con código adentro, inundación, tope de 300, dos jugadores pasándose hitos), los reportes de la beta (muertes dobles, zona vieja al llegar), el aspecto Taberna, y las partes sueltas: cada una sola, varias juntas compartiendo los datos, y el completo con una parte (la parte se hace a un lado).
+- ✅ **154 tests.**
+  - 142 corren el addon en Lua 5.1 (el Lua de WoW), con un reemplazo chico del cliente (`tests/wow_mock.lua`): eventos, datos guardados y recargados, recordatorios (incluido el semanal), tooltips, links con shift-click, nombres de imágenes, patrones de botín en varios idiomas, valores secretos, cada pestaña armándose sin errores de Lua, el progreso contra una guía de aventuras de prueba, la crónica (mensajes malos, con códigos de color o con código adentro, inundación, tope de 300, dos jugadores pasándose hitos), los reportes de la beta (muertes dobles, zona vieja al llegar), el tiempo por nivel (incluido el reajuste con `/played`), los compañeros (tope, valores secretos, otros reinos), los recordatorios que vencieron mientras no jugabas, posponer y el reloj del reino, el aspecto Taberna, y las partes sueltas: cada una sola, varias juntas compartiendo los datos, y el completo con una parte (la parte se hace a un lado).
   - El resto prueban la página: lee el archivo igual que Lua 5.1, empareja capturas y arma los textos.
-- ✅ Las dos páginas probadas en Chromium: cada pestaña, capturas y PNG reales, escritorio y celular, claro y oscuro, y que no aparezca ningún "null" ni "undefined" en pantalla.
+- ✅ Las dos páginas probadas en Chromium: cada pestaña, el tiempo por nivel y los compañeros, capturas y PNG reales, escritorio y celular, claro y oscuro, y que no aparezca ningún "null" ni "undefined" en pantalla.
 
 **Sin probar ⏳.** Todo esto se prueba dentro del juego, y yo no tengo Forever:
 - **La ventana:** que se vea bien (tamaños, anclas, pestañas, listas, menús, ventanas de texto), y el aspecto Taberna con su animación de tapa.
@@ -121,6 +124,8 @@ El addon no manda nada tuyo a nadie si no prendés la crónica de la guild. Lo �
 - **Los eventos:** que `ENCOUNTER_END` o `BOSS_KILL` salten en las mazmorras de Forever.
 - **La guía de aventuras:** que Forever liste sus mazmorras y bandas en `EJ_GetInstanceByIndex` (el orden de lo que devuelve `EJ_GetEncounterInfo` sí está verificado en el código de Blizzard).
 - **La ruta:** la carpeta exacta de Forever donde queda `WTF`.
+- **El reloj del reino:** que `C_DateAndTime.GetCurrentCalendarTime` dé la hora del reino en Forever (existe en el dump).
+- **La ventanita de posponer:** cómo se ve el `StaticPopup` con cuatro botones.
 
 ## Límites
 

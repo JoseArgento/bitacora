@@ -104,6 +104,8 @@ ns.DEFAULTS = {
 		bookIntro = true,
 		chronicle = false, -- the guild chronicle sends addon messages: only if you turn it on
 		guildReminders = true, -- officers' guild reminders: asks the guild for them at login (an empty "Q|1")
+		clock = "local", -- day-and-time reminders go by your computer's clock, or the realm's ("realm")
+		reminderPopup = true, -- a reminder also opens a small window with Snooze buttons
 	},
 	sections = {},
 	notes = {},
@@ -157,6 +159,26 @@ function ns.Char(key)
 		c.isNew = true
 	end
 	return c
+end
+
+-- The units of the group other than you: "party1".."party4" or "raid1".."raid40".
+function ns.GroupUnits()
+	local units = {}
+	local n = GetNumGroupMembers()
+	if n == 0 then
+		return units
+	end
+	local prefix, count = "party", n - 1
+	if IsInRaid() then
+		prefix, count = "raid", n
+	end
+	for i = 1, math.min(count, 40) do
+		local unit = prefix .. i
+		if not UnitIsUnit(unit, "player") then
+			table.insert(units, unit)
+		end
+	end
+	return units
 end
 
 -- Where the player is: names for display, map ID for matching.

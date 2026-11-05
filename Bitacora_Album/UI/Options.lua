@@ -40,6 +40,7 @@ add("screenshotChat", L.OPT_SCREENSHOT, ns.Album)
 add("journalQuests", L.OPT_QUESTS, ns.Journal)
 add("chronicle", L.OPT_CHRONICLE, ns.Chronicle)
 add("guildReminders", L.OPT_GUILD_REMINDERS, ns.GuildReminders)
+add("reminderPopup", L.OPT_REMINDER_POPUP, ns.Reminders)
 add("bookIntro", L.OPT_BOOK_INTRO, true)
 
 local lootLabel = UI.Label(panel, L.SETTINGS_LOOT, "GameFontNormal")
@@ -53,6 +54,28 @@ local skinLabel = UI.Label(panel, L.OPT_SKIN, "GameFontNormal")
 skinLabel:SetPoint("TOPLEFT", ns.Journal and loot or lootLabel, ns.Journal and "BOTTOMLEFT" or "TOPLEFT", 0, ns.Journal and -18 or 0)
 local skin = UI.Button(panel, "", 160, nil)
 skin:SetPoint("TOPLEFT", skinLabel, "BOTTOMLEFT", 0, -6)
+
+-- which clock the day-and-time reminders follow
+local CLOCKS = { { "local", "CLOCK_LOCAL" }, { "realm", "CLOCK_REALM" } }
+local clockLabel = UI.Label(panel, L.OPT_CLOCK, "GameFontNormal")
+clockLabel:SetPoint("TOPLEFT", skin, "BOTTOMLEFT", 0, -18)
+local clock = UI.Button(panel, "", 200, nil)
+clock:SetPoint("TOPLEFT", clockLabel, "BOTTOMLEFT", 0, -6)
+clockLabel:SetShown(ns.Reminders ~= nil)
+clock:SetShown(ns.Reminders ~= nil)
+clock:SetScript("OnClick", function(self)
+	UI.Menu(self, function(root)
+		for _, pair in ipairs(CLOCKS) do
+			root:CreateRadio(L[pair[2]], function()
+				return (ns.db.settings.clock or "local") == pair[1]
+			end, function()
+				ns.db.settings.clock = pair[1]
+				panel.Refresh()
+				ns.Fire("settings", "clock")
+			end)
+		end
+	end)
+end)
 
 local function qualityText(q)
 	for _, pair in ipairs(QUALITIES) do
@@ -69,6 +92,7 @@ function panel.Refresh()
 	end
 	loot:SetText(qualityText(ns.db.settings.lootQuality or 4))
 	skin:SetText(L["SKIN_" .. string.upper(ns.db.settings.skin or "classic")] or ns.db.settings.skin)
+	clock:SetText(L["CLOCK_" .. string.upper(ns.db.settings.clock or "local")] or L.CLOCK_LOCAL)
 end
 
 loot:SetScript("OnClick", function(self)
@@ -98,7 +122,7 @@ skin:SetScript("OnClick", function(self)
 	end)
 end)
 
-panel.loot, panel.skin, panel.checks = loot, skin, checks
+panel.loot, panel.skin, panel.clock, panel.checks = loot, skin, clock, checks
 panel:SetScript("OnShow", panel.Refresh)
 
 function UI.RegisterOptions()

@@ -27,7 +27,12 @@ end
 function GetServerTime()
 	return MOCK.now
 end
+MOCK.realmOffset = 0 -- seconds the realm's clock is ahead of the computer's
 C_DateAndTime = {
+	GetCurrentCalendarTime = function()
+		local t = date("*t", MOCK.now + MOCK.realmOffset)
+		return { year = t.year, month = t.month, monthDay = t.day, weekday = t.wday, hour = t.hour, minute = t.min }
+	end,
 	GetSecondsUntilWeeklyReset = function()
 		if not MOCK.resetAt then
 			return nil

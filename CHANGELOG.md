@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0 (unreleased)
+
+- **Progress**: time per level, with the account's fastest character for each level (the count follows the addon's own sessions and re-anchors to `/played`); **companions**, who you grouped with (class, groups shared, last seen where), account-wide and capped at 500.
+- **Reminders**: snooze 5/10/15 min from a small popup (optional); day-and-time reminders that came due while you were logged out fire at login, once, looking back up to 30 days; a setting to follow the realm's clock instead of your computer's. Same in Recordame.
+- Web: time per level and companions in the journal overview, both looks.
+
 ## 0.1.0 (unreleased)
 
 First version, for WoW Forever 1.60.1.

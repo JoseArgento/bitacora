@@ -34,10 +34,10 @@ EDITIONS = {
     },
     "Bitacora_Diario": {
         "title": "Bitácora · Diario",
-        "en": "Bitácora journal: writes itself as you play (levels, zones, bosses, deaths, loot, gold), with your progress and the guild chronicle.",
-        "es": "Diario de Bitácora: se escribe solo mientras jugás (niveles, zonas, jefes, muertes, botín, oro), con tu progreso y la crónica de la guild.",
+        "en": "Bitácora journal: writes itself as you play (levels, zones, bosses, deaths, loot, gold), with your progress (time per level, companions) and the guild chronicle.",
+        "es": "Diario de Bitácora: se escribe solo mientras jugás (niveles, zonas, jefes, muertes, botín, oro), con tu progreso (tiempo por nivel, compañeros) y la crónica de la guild.",
         "slash": ["/diario"],
-        "logic": ["Journal.lua", "Progress.lua", "Chronicle.lua"],
+        "logic": ["Journal.lua", "Progress.lua", "Companions.lua", "Chronicle.lua"],
         "ui": ["UI/JournalTab.lua", "UI/ProgressTab.lua", "UI/ChronicleTab.lua"],
         "icon": "Interface\\Icons\\INV_Misc_Book_09",
     },

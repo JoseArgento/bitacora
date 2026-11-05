@@ -26,6 +26,8 @@
       levelChart: "Niveles en el tiempo",
       hoursLater: (h) => `${h} h después`,
       tripBosses: "Jefes", tripDeaths: "Dónde más moriste", tripLoot: "Botín",
+      splitsTitle: "Tiempo por nivel", splitLevel: (n) => `Nivel ${n}`, splitBest: (name, t) => `mejor: ${name} ${t}`,
+      companions: "Compañeros", companionTimes: (n) => `${n} grupo${n === 1 ? "" : "s"}`,
       dropShots: "Soltá acá tus capturas (la carpeta Screenshots del juego) o elegilas. Las juntamos con lo que anotó el addon por la hora del nombre del archivo.",
       chooseShots: "Elegir capturas",
       missing: (f) => `${f}`,
@@ -78,6 +80,8 @@
       levelChart: "Levels over time",
       hoursLater: (h) => `${h} h later`,
       tripBosses: "Bosses", tripDeaths: "Where you died most", tripLoot: "Loot",
+      splitsTitle: "Time per level", splitLevel: (n) => `Level ${n}`, splitBest: (name, t) => `best: ${name} ${t}`,
+      companions: "Companions", companionTimes: (n) => `${n} group${n === 1 ? "" : "s"}`,
       dropShots: "Drop your screenshots here (the game's Screenshots folder) or pick them. They are matched to the addon's notes by the time in the file name.",
       chooseShots: "Choose screenshots",
       missing: (f) => `${f}`,
@@ -208,6 +212,8 @@
       const chart = levelChart(c);
       const trip = tripSummary(c);
       if (chart || trip) root.append(el("div", { class: "overview" }, chart, trip));
+      const more = [splitsBlock(c), companionsBlock()].filter(Boolean);
+      if (more.length) root.append(el("div", { class: "overview" }, more));
     }
     const holder = el("div");
     root.append(holder);
@@ -353,6 +359,31 @@
     const last = pts[pts.length - 1];
     add("text", { x: Math.min(x(last.t), W - padR) - 8, y: y(last.level) - 9, class: "endlabel", "text-anchor": "end" }, `${L().level} ${last.level}`);
     return el("figure", { class: "chart" }, el("figcaption", { class: "chart-title", text: L().levelChart }), svg);
+  }
+
+  // Time per level as rows with a bar to scale, and the account's best for that level when someone else holds it.
+  function splitsBlock(c) {
+    const rows = C.splits(c).slice().reverse();
+    if (!rows.length) return null;
+    const best = C.bestSplits(state.db.chars);
+    const max = Math.max(...rows.map((r) => r.seconds), 1);
+    return el("div", { class: "trip splits" }, el("h3", { text: L().splitsTitle }), el("ul", {}, rows.map((r) => {
+      const b = best.get(r.level);
+      const faster = b && b.name !== c.name && b.seconds < r.seconds;
+      return el("li", { class: faster ? "" : "best" },
+        el("span", { class: "bar", style: `width:${Math.max(2, Math.round((r.seconds / max) * 100))}%` }),
+        el("span", { text: L().splitLevel(r.level) }),
+        el("span", { class: "n", text: faster ? `${C.duration(r.seconds, lang)} · ${L().splitBest(b.name, C.duration(b.seconds, lang))}` : C.duration(r.seconds, lang) }));
+    })));
+  }
+
+  // Who you grouped with, account-wide, newest first.
+  function companionsBlock() {
+    const people = (state.db.companions || []).slice(0, 30);
+    if (!people.length) return null;
+    return el("div", { class: "trip companions" }, el("h3", { text: L().companions }), el("ul", {}, people.map((p) =>
+      el("li", {}, el("span", { "data-class": p.class.toLowerCase(), text: p.realm && p.realm !== current().realm ? `${p.name}-${p.realm}` : p.name }),
+        el("span", { class: "n", text: [L().companionTimes(p.times), p.last ? fmtDate(p.last) : null, p.zone || null].filter(Boolean).join(" · ") })))));
   }
 
   function tripSummary(c) {

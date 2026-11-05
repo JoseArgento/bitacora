@@ -1,4 +1,4 @@
-local _, ns = ...
+local ADDON, ns = ...
 local L = ns.L
 
 local R = {}
@@ -134,21 +134,101 @@ function R.NextReset()
 	return math.floor((GetServerTime() + secs) / 3600 + 0.5) * 3600, secs
 end
 
+-- The clock day-and-time reminders go by: your computer's (settings.clock = "local") or the realm's
+-- ("realm"). As an epoch that date()/time() read in local time, so the same arithmetic serves both.
+function R.Now(now)
+	now = now or time()
+	if ns.db.settings.clock ~= "realm" then
+		return now
+	end
+	local ct = C_DateAndTime and C_DateAndTime.GetCurrentCalendarTime and C_DateAndTime.GetCurrentCalendarTime()
+	if type(ct) ~= "table" or not tonumber(ct.year) then
+		return now
+	end
+	return time({ year = ct.year, month = ct.month, day = ct.monthDay, hour = ct.hour, min = ct.minute, sec = 0 })
+end
+
+-- How far back a login looks for day-and-time reminders that came due while you were out: since the last
+-- time the addon was running (kept in settings.lastSeen), at most 30 days; 6 hours if it never ran.
+R.CATCHUP_MAX = 30 * 86400
+R.CATCHUP_DEFAULT = 6 * 3600
+
+local POPUP = string.upper(ADDON) .. "_REMINDER"
+
 local function fire(r)
 	r.fired = time()
+	r.snooze = nil
 	if not r.repeating then
 		r.done = true
 	end
 	ns.Alert(L.REMINDER_FIRED:format(r.text))
+	if ns.db.settings.reminderPopup ~= false and StaticPopupDialogs[POPUP] then
+		StaticPopup_Show(POPUP, r.text, nil, { id = r.id })
+	end
 	ns.Fire("reminders")
 end
+
+-- Snooze: ring again in `minutes`, even a one-time reminder that was just marked done.
+function R.Snooze(id, minutes)
+	minutes = tonumber(minutes)
+	if not minutes or minutes <= 0 then
+		return nil
+	end
+	for _, r in ipairs(ns.db.reminders) do
+		if r.id == id then
+			r.done = nil
+			r.snooze = time() + math.floor(minutes * 60)
+			ns.Fire("reminders")
+			return r
+		end
+	end
+end
+
+StaticPopupDialogs[POPUP] = {
+	text = "%s",
+	button1 = OKAY,
+	button2 = L.SNOOZE:format(5),
+	button3 = L.SNOOZE:format(10),
+	button4 = L.SNOOZE:format(15),
+	OnButton2 = function(_, data)
+		R.Snooze(data and data.id, 5)
+	end,
+	OnButton3 = function(_, data)
+		R.Snooze(data and data.id, 10)
+	end,
+	OnButton4 = function(_, data)
+		R.Snooze(data and data.id, 15)
+	end,
+	timeout = 0,
+	whileDead = true,
+	hideOnEscape = true,
+	preferredIndex = 3,
+}
 
 -- ctx: { event = "zone", zone, sub, mapID } | { event = "level", level } | { event = "login" }
 --      | { event = "place", place } | { event = "tick", now }
 function R.Check(ctx, charKey)
 	local fired = {}
+	local real = ctx.now or time()
+	local now = R.Now(real)
+	local shift = now - real -- the realm clock, as an offset on your computer's
+	-- a login looks back to the last tick the addon saw (real time), moved to the same clock
+	local since
+	if ctx.event == "login" then
+		local lastSeen = tonumber(ns.db.settings.lastSeen)
+		if lastSeen and real - lastSeen <= R.CATCHUP_MAX and real - lastSeen >= 0 then
+			since = lastSeen + shift
+		else
+			since = now - R.CATCHUP_DEFAULT
+		end
+	end
 	for _, r in ipairs(R.List(charKey)) do
-		if not r.done then
+		if r.snooze and (ctx.event == "tick" or ctx.event == "login") then
+			if real >= r.snooze then
+				fire(r)
+				table.insert(fired, r)
+			end
+		elseif not r.done then
 			local hit = false
 			if r.kind == "zone" and ctx.event == "zone" then
 				local want = ns.Lower(r.value)
@@ -168,17 +248,20 @@ function R.Check(ctx, charKey)
 					r.week = nextReset
 				end
 			elseif r.kind == "time" and (ctx.event == "tick" or ctx.event == "login") then
-				local now = ctx.now or time()
 				local due = R.LastDue(r.value, now)
-				-- due now (within 10 minutes, or since the last check when logging in) and not fired for this one yet
-				local window = ctx.event == "login" and 6 * 3600 or 600
-				hit = due ~= nil and now - due <= window and (r.fired or 0) < due and (r.created or 0) <= due
+				-- due now (within 10 minutes), or while you were out (since the addon last ran) when logging in;
+				-- never twice for the same moment, and not for a moment before it was written
+				local okWindow = ctx.event == "login" and (due ~= nil and due > since) or (due ~= nil and now - due <= 600)
+				hit = okWindow and (r.fired or 0) + shift < due and (r.created or 0) + shift <= due
 			end
 			if hit then
 				fire(r)
 				table.insert(fired, r)
 			end
 		end
+	end
+	if ctx.event == "tick" or ctx.event == "login" then
+		ns.db.settings.lastSeen = real
 	end
 	return fired
 end

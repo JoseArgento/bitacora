@@ -8,28 +8,72 @@ BitacoraDB = {
 			},
 			["class"] = "PRIEST",
 			["created"] = 1793991600,
+			["guildFired"] = {
+			},
 			["journal"] = {
 				{
 					["d"] = "2026-11-06 19:00",
 					["kind"] = "start",
 					["level"] = 1,
+					["played"] = 0,
 					["sub"] = "Abadía de Northshire",
 					["t"] = 1793991600,
 					["zone"] = "Bosque de Elwynn",
 				}, -- [1]
 				{
-					["d"] = "2026-11-06 19:00",
+					["d"] = "2026-11-06 19:12",
 					["kind"] = "level",
-					["level"] = 6,
+					["level"] = 2,
+					["played"] = 720,
 					["sub"] = "Abadía de Northshire",
-					["t"] = 1793991600,
+					["t"] = 1793992320,
 					["zone"] = "Bosque de Elwynn",
 				}, -- [2]
+				{
+					["d"] = "2026-11-06 19:32",
+					["kind"] = "level",
+					["level"] = 3,
+					["played"] = 1920,
+					["sub"] = "Abadía de Northshire",
+					["t"] = 1793993520,
+					["zone"] = "Bosque de Elwynn",
+				}, -- [3]
+				{
+					["d"] = "2026-11-06 19:57",
+					["kind"] = "level",
+					["level"] = 4,
+					["played"] = 3420,
+					["sub"] = "Abadía de Northshire",
+					["t"] = 1793995020,
+					["zone"] = "Bosque de Elwynn",
+				}, -- [4]
+				{
+					["d"] = "2026-11-06 20:27",
+					["kind"] = "level",
+					["level"] = 5,
+					["played"] = 5220,
+					["sub"] = "Abadía de Northshire",
+					["t"] = 1793996820,
+					["zone"] = "Bosque de Elwynn",
+				}, -- [5]
+				{
+					["d"] = "2026-11-06 21:07",
+					["kind"] = "level",
+					["level"] = 6,
+					["played"] = 7620,
+					["sub"] = "Abadía de Northshire",
+					["t"] = 1793999220,
+					["zone"] = "Bosque de Elwynn",
+				}, -- [6]
 			},
 			["level"] = 6,
 			["money"] = {
 			},
 			["name"] = "Anabel",
+			["playtime"] = {
+				["acc"] = 0,
+				["sessionStart"] = 1793991600,
+			},
 			["race"] = "Human",
 			["realm"] = "Forever",
 			["visited"] = {
@@ -73,11 +117,14 @@ BitacoraDB = {
 			},
 			["class"] = "MAGE",
 			["created"] = 1793805000,
+			["guildFired"] = {
+			},
 			["journal"] = {
 				{
 					["d"] = "2026-11-04 15:10",
 					["kind"] = "start",
 					["level"] = 1,
+					["played"] = -91200,
 					["sub"] = "Abadía de Northshire",
 					["t"] = 1793805000,
 					["zone"] = "Bosque de Elwynn",
@@ -92,41 +139,46 @@ BitacoraDB = {
 					["zone"] = "Bosque de Elwynn",
 				}, -- [2]
 				{
-					["d"] = "2026-11-04 15:40",
+					["d"] = "2026-11-04 15:25",
 					["kind"] = "level",
 					["level"] = 2,
+					["played"] = -90300,
 					["sub"] = "Abadía de Northshire",
-					["t"] = 1793806800,
+					["t"] = 1793805900,
 					["zone"] = "Bosque de Elwynn",
 				}, -- [3]
 				{
-					["d"] = "2026-11-04 15:40",
+					["d"] = "2026-11-04 15:33",
 					["kind"] = "level",
 					["level"] = 3,
+					["played"] = -89820,
 					["sub"] = "Abadía de Northshire",
-					["t"] = 1793806800,
+					["t"] = 1793806380,
 					["zone"] = "Bosque de Elwynn",
 				}, -- [4]
 				{
-					["d"] = "2026-11-04 15:40",
+					["d"] = "2026-11-04 15:44",
 					["kind"] = "level",
 					["level"] = 4,
+					["played"] = -89160,
 					["sub"] = "Abadía de Northshire",
-					["t"] = 1793806800,
+					["t"] = 1793807040,
 					["zone"] = "Bosque de Elwynn",
 				}, -- [5]
 				{
-					["d"] = "2026-11-04 15:40",
+					["d"] = "2026-11-04 15:58",
 					["kind"] = "level",
 					["level"] = 5,
+					["played"] = -88320,
 					["sub"] = "Abadía de Northshire",
-					["t"] = 1793806800,
+					["t"] = 1793807880,
 					["zone"] = "Bosque de Elwynn",
 				}, -- [6]
 				{
 					["d"] = "2026-11-04 17:30",
 					["kind"] = "level",
 					["level"] = 10,
+					["played"] = -82800,
 					["sub"] = "Villadorada",
 					["t"] = 1793813400,
 					["zone"] = "Bosque de Elwynn",
@@ -152,16 +204,6 @@ BitacoraDB = {
 				}, -- [9]
 				{
 					["d"] = "2026-11-04 18:00",
-					["kind"] = "zone",
-					["level"] = 10,
-					["mapID"] = 1436,
-					["name"] = "Páramos de Poniente",
-					["sub"] = "Colina del Centinela",
-					["t"] = 1793815200,
-					["zone"] = "Páramos de Poniente",
-				}, -- [10]
-				{
-					["d"] = "2026-11-04 18:00",
 					["kind"] = "quest",
 					["level"] = 10,
 					["quest"] = 184,
@@ -169,7 +211,7 @@ BitacoraDB = {
 					["t"] = 1793815200,
 					["title"] = "Las tierras de Furlbrow",
 					["zone"] = "Páramos de Poniente",
-				}, -- [11]
+				}, -- [10]
 				{
 					["d"] = "2026-11-04 18:20",
 					["kind"] = "death",
@@ -177,7 +219,7 @@ BitacoraDB = {
 					["sub"] = "Colina del Centinela",
 					["t"] = 1793816400,
 					["zone"] = "Páramos de Poniente",
-				}, -- [12]
+				}, -- [11]
 				{
 					["d"] = "2026-11-04 18:20",
 					["kind"] = "note",
@@ -186,24 +228,16 @@ BitacoraDB = {
 					["t"] = 1793816400,
 					["text"] = "Me mató un murloc. Otra vez.",
 					["zone"] = "Páramos de Poniente",
-				}, -- [13]
+				}, -- [12]
 				{
 					["d"] = "2026-11-05 21:00",
 					["kind"] = "level",
 					["level"] = 18,
+					["played"] = 16200,
 					["sub"] = "Colina del Centinela",
 					["t"] = 1793912400,
 					["zone"] = "Páramos de Poniente",
-				}, -- [14]
-				{
-					["d"] = "2026-11-05 21:00",
-					["kind"] = "zone",
-					["level"] = 18,
-					["mapID"] = 291,
-					["name"] = "Las Minas de la Muerte",
-					["t"] = 1793912400,
-					["zone"] = "Las Minas de la Muerte",
-				}, -- [15]
+				}, -- [13]
 				{
 					["boss"] = 2969,
 					["d"] = "2026-11-05 22:10",
@@ -214,7 +248,7 @@ BitacoraDB = {
 					["name"] = "Edwin VanCleef",
 					["t"] = 1793916600,
 					["zone"] = "Las Minas de la Muerte",
-				}, -- [16]
+				}, -- [14]
 				{
 					["d"] = "2026-11-05 22:10",
 					["item"] = 2244,
@@ -225,7 +259,7 @@ BitacoraDB = {
 					["quality"] = 3,
 					["t"] = 1793916600,
 					["zone"] = "Las Minas de la Muerte",
-				}, -- [17]
+				}, -- [15]
 				{
 					["d"] = "2026-11-05 23:00",
 					["kind"] = "played",
@@ -233,7 +267,7 @@ BitacoraDB = {
 					["t"] = 1793919600,
 					["total"] = 23400,
 					["zone"] = "Las Minas de la Muerte",
-				}, -- [18]
+				}, -- [16]
 			},
 			["level"] = 18,
 			["money"] = {
@@ -245,13 +279,57 @@ BitacoraDB = {
 				["t"] = 1793919600,
 				["total"] = 23400,
 			},
+			["playtime"] = {
+				["acc"] = 23400,
+				["sessionStart"] = 1793919600,
+			},
 			["race"] = "Human",
 			["realm"] = "Forever",
 			["visited"] = {
 				["m1429"] = true,
-				["m1436"] = true,
-				["m291"] = true,
 			},
+		},
+	},
+	["companions"] = {
+		["Ana-Forever"] = {
+			["class"] = "WARRIOR",
+			["first"] = 1793808300,
+			["last"] = 1793808300,
+			["name"] = "Ana",
+			["realm"] = "Forever",
+			["times"] = 1,
+			["with"] = {
+				["Josecito-Forever"] = true,
+			},
+			["zone"] = "Bosque de Elwynn",
+		},
+		["Beto-Forever"] = {
+			["class"] = "PRIEST",
+			["first"] = 1793912400,
+			["last"] = 1793912400,
+			["name"] = "Beto",
+			["realm"] = "Forever",
+			["times"] = 1,
+			["with"] = {
+				["Josecito-Forever"] = true,
+			},
+			["zone"] = "Las Minas de la Muerte",
+		},
+		["Caro-Forever"] = {
+			["class"] = "ROGUE",
+			["first"] = 1793912400,
+			["last"] = 1793912400,
+			["name"] = "Caro",
+			["realm"] = "Forever",
+			["times"] = 1,
+			["with"] = {
+				["Josecito-Forever"] = true,
+			},
+			["zone"] = "Las Minas de la Muerte",
+		},
+	},
+	["guildReminders"] = {
+		["Los Del Fondo-Forever"] = {
 		},
 	},
 	["nextId"] = 9,
@@ -340,8 +418,14 @@ BitacoraDB = {
 		}, -- [2]
 	},
 	["settings"] = {
+		["bookIntro"] = true,
+		["chronicle"] = false,
+		["clock"] = "local",
+		["guildReminders"] = true,
 		["journalQuests"] = true,
+		["lastSeen"] = 1793991600,
 		["lootQuality"] = 3,
+		["reminderPopup"] = true,
 		["screenshotChat"] = true,
 		["skin"] = "classic",
 		["tooltipNotes"] = true,

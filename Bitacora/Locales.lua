@@ -162,6 +162,16 @@ local en = {
 	CHRON_LOOT = "%s got %s",
 	CHRON_START = "%s started a new adventure",
 	OPT_CHRONICLE = "Guild chronicle: share my milestones with the guild (addon messages)",
+	PROG_SPLITS = "Time per level",
+	SPLIT_LEVEL = "Level %d",
+	SPLIT_BEST = "your best: %s %s",
+	PROG_COMPANIONS = "Companions",
+	COMPANION_TIMES = "%d groups · %s · %s",
+	SNOOZE = "%d min later",
+	OPT_CLOCK = "Day-and-time reminders go by",
+	CLOCK_LOCAL = "My computer's clock",
+	CLOCK_REALM = "The realm's clock",
+	OPT_REMINDER_POPUP = "Reminders also open a small window with snooze buttons",
 }
 
 local es = {
@@ -318,6 +328,16 @@ local es = {
 	CHRON_LOOT = "%s consiguió %s",
 	CHRON_START = "%s empezó una aventura nueva",
 	OPT_CHRONICLE = "Crónica de la guild: compartir mis hitos con la guild (mensajes de addon)",
+	PROG_SPLITS = "Tiempo por nivel",
+	SPLIT_LEVEL = "Nivel %d",
+	SPLIT_BEST = "tu mejor: %s %s",
+	PROG_COMPANIONS = "Compañeros",
+	COMPANION_TIMES = "%d grupos · %s · %s",
+	SNOOZE = "%d min después",
+	OPT_CLOCK = "Los recordatorios por día y hora van por",
+	CLOCK_LOCAL = "El reloj de mi compu",
+	CLOCK_REALM = "El reloj del reino",
+	OPT_REMINDER_POPUP = "Los recordatorios también abren una ventanita con botones para posponer",
 }
 
 local locale = GetLocale()

@@ -55,3 +55,9 @@ process.stdout.write("ok");
   const none = core.postcardData(jose, "1999-01-01", "es");
   assert.deepStrictEqual([none.lines, none.levelFrom, none.shotStamp], [[], null, null]);
 }
+
+// time per level and companions (the demo: Josecito 1->5 in 30 min, Anabel 1->6 with known splits)
+assert.deepStrictEqual(core.splits(db.chars.find((c) => c.name === "Anabel")).map((s) => [s.level, s.seconds / 60]), [[1, 12], [2, 20], [3, 25], [4, 30], [5, 40]]);
+const best = core.bestSplits(db.chars);
+assert.strictEqual(best.get(1).name, "Anabel");
+assert.deepStrictEqual(db.companions.map((p) => [p.name, p.class, p.times]), [["Beto", "PRIEST", 1], ["Caro", "ROGUE", 1], ["Ana", "WARRIOR", 1]]);

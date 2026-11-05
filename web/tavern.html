@@ -186,6 +186,11 @@ svg.levels .endlabel { fill: var(--ink); font: 700 13px var(--mono); }
 .trip ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
 .trip li { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px dashed var(--rule); padding: 3px 0; min-width: 0; }
 .trip li .n { font: 500 13px var(--mono); color: var(--ink-soft); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.splits li { position: relative; }
+.splits .bar { position: absolute; left: 0; bottom: -1px; height: 3px; background: var(--blue); opacity: 0.5; }
+.splits li.best .bar { background: var(--gold-deep); opacity: 0.8; }
+.companions li .n, .splits li .n { white-space: normal; text-align: right; }
+.companions li [data-class] { font-weight: 700; }
 
 /* album: paintings on the wall */
 .drop { border: 2px dashed var(--gold-deep); border-radius: 6px; padding: 14px 16px; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; }

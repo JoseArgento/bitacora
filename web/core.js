@@ -247,11 +247,14 @@
       visited: Object.keys(c.visited && !Array.isArray(c.visited) ? c.visited : {}).length,
       played: c.played || null,
     }));
+    const companions = Object.entries(db.companions && !Array.isArray(db.companions) ? db.companions : {})
+      .map(([key, c]) => ({ key, name: c.name || key.split("-")[0], realm: c.realm || "", class: c.class || "", first: c.first || 0, last: c.last || 0, zone: c.zone || "", times: c.times || 0 }))
+      .sort((a, b) => b.last - a.last || a.key.localeCompare(b.key));
     chars.sort((a, b) => (b.journal.length ? b.journal[b.journal.length - 1].t : 0) - (a.journal.length ? a.journal[a.journal.length - 1].t : 0));
     const sections = list(db.sections);
     const notes = Object.values(db.notes && !Array.isArray(db.notes) ? db.notes : {}).map((x) => ({ ...x, images: list(x.images) }));
     const reminders = list(db.reminders);
-    return { version: db.version || 0, settings: db.settings || {}, chars, sections, notes, reminders };
+    return { version: db.version || 0, settings: db.settings || {}, chars, sections, notes, reminders, companions };
   }
 
   // ---------------------------------------------------------------- screenshots
@@ -386,6 +389,26 @@
     return pts;
   }
 
+  // How long each level took (mirrors Progress.lua P.Splits): from the "played" seconds the addon writes at
+  // the start and at every level-up. [{ level, seconds, at }]
+  function splits(c) {
+    const out = [];
+    let prev = null;
+    for (const e of c.journal) {
+      if ((e.kind === "start" || e.kind === "level") && typeof e.level === "number" && typeof e.played === "number") {
+        if (prev && e.kind === "level" && e.level > prev.level && e.played >= prev.played) out.push({ level: prev.level, seconds: e.played - prev.played, at: e.t });
+        prev = e;
+      }
+    }
+    return out;
+  }
+  // The account's fastest time at each level: Map(level -> { seconds, name }).
+  function bestSplits(chars) {
+    const best = new Map();
+    for (const c of chars) for (const s of splits(c)) if (!best.has(s.level) || s.seconds < best.get(s.level).seconds) best.set(s.level, { seconds: s.seconds, name: c.name });
+    return best;
+  }
+
   // The trip in a few lists: where you died most, bosses (first kill, times), loot.
   function tripStats(c) {
     const deaths = new Map(), bosses = new Map(), loot = [];
@@ -491,5 +514,5 @@
     };
   }
 
-  return { postcardData, levelSeries, tripStats, searchEntries, LuaError, parseLua, readDB, stampSeconds, shotStamp, matchShots, markupToHtml, plain, entryText, isMilestone, duration, summary, groupByDay, powerOfTwoAtMost, imageName, notesMarkdown, journalMarkdown };
+  return { splits, bestSplits, postcardData, levelSeries, tripStats, searchEntries, LuaError, parseLua, readDB, stampSeconds, shotStamp, matchShots, markupToHtml, plain, entryText, isMilestone, duration, summary, groupByDay, powerOfTwoAtMost, imageName, notesMarkdown, journalMarkdown };
 });

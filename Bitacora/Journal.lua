@@ -113,10 +113,11 @@ function J.OnLogin()
 	c.class = ns.Plain(class) or c.class
 	c.race = ns.Plain(race) or c.race
 	c.level = UnitLevel("player")
+	J.StartSession()
 	if c.isNew then
 		c.isNew = nil
 		J.MarkMoneySeen()
-		J.Add("start")
+		J.Add("start", { played = J.Played() })
 	end
 	J.OnZoneChanged(true)
 end
@@ -126,7 +127,40 @@ function J.OnLevelUp(level)
 	if c then
 		c.level = level
 	end
-	J.Add("level", { level = level })
+	J.Add("level", { level = level, played = J.Played() })
+end
+
+-- Time played, kept by the addon: the seconds the game reported last (/played) plus what this session
+-- added since, or just the sessions this addon saw if the game never said. Written into each level entry,
+-- so the Progress tab can tell how long each level took.
+function J.Played()
+	local c = ns.Char()
+	if not c or not c.playtime then
+		return nil
+	end
+	local p = c.playtime
+	return (p.acc or 0) + (p.sessionStart and math.max(0, time() - p.sessionStart) or 0)
+end
+
+function J.StartSession()
+	local c = ns.Char()
+	if not c then
+		return
+	end
+	c.playtime = c.playtime or { acc = 0 }
+	c.playtime.sessionStart = time()
+end
+
+-- Every tick and at logout: fold this session into the total, so a crash loses at most a tick's worth.
+function J.OnTick()
+	local c = ns.Char()
+	local p = c and c.playtime
+	if not p or not p.sessionStart then
+		return
+	end
+	local now = time()
+	p.acc = (p.acc or 0) + math.max(0, now - p.sessionStart)
+	p.sessionStart = now
 end
 
 -- First visit of a zone (by map ID; by name where the game gives no map). silent: just remember it.
@@ -273,6 +307,22 @@ function J.OnTimePlayed(total, thisLevel)
 	local t = time()
 	local last = c.played
 	c.played = { total = total, level = thisLevel, t = t }
+	-- the game's count is the truth (it also covers time before the addon): re-anchor the session clock,
+	-- and move the marks already written by the same amount so the time between them stays right
+	if type(total) == "number" and not issecretvalue(total) then
+		local estimate = J.Played()
+		c.playtime = c.playtime or {}
+		c.playtime.acc = total
+		c.playtime.sessionStart = t
+		local delta = estimate and (total - estimate) or 0
+		if delta ~= 0 then
+			for _, e in ipairs(c.journal) do
+				if type(e.played) == "number" then
+					e.played = e.played + delta
+				end
+			end
+		end
+	end
 	if not last or t - (last.t or 0) >= 86400 then
 		J.Add("played", { total = total })
 	end

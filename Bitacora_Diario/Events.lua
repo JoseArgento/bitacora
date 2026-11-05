@@ -79,17 +79,14 @@ on("PLAYER_LOGIN", function()
 		ns.Journal.OnLogin()
 	end
 	ns.Fire("login")
+	if ns.Companions then
+		ns.Companions.OnRoster()
+	end
 	-- reminders a moment later, so the alert is not lost in the loading screen spam
 	if ns.Reminders then
 		C_Timer.After(5, function()
 			ns.Reminders.Check({ event = "login", level = UnitLevel("player"), now = time() }, ns.CharKey())
 			ns.Reminders.Check(whereCtx(), ns.CharKey())
-		end)
-		C_Timer.NewTicker(30, function()
-			ns.Reminders.Check({ event = "tick", now = time() }, ns.CharKey())
-			if ns.GuildReminders then
-				ns.GuildReminders.Check("tick")
-			end
 		end)
 		if ns.GuildReminders then
 			C_Timer.After(10, function()
@@ -97,6 +94,30 @@ on("PLAYER_LOGIN", function()
 				ns.GuildReminders.Ask()
 			end)
 		end
+	end
+	C_Timer.NewTicker(30, function()
+		if ns.Reminders then
+			ns.Reminders.Check({ event = "tick", now = time() }, ns.CharKey())
+		end
+		if ns.GuildReminders then
+			ns.GuildReminders.Check("tick")
+		end
+		if ns.Journal then
+			ns.Journal.OnTick()
+		end
+	end)
+end)
+
+-- Logging out: fold the session into the time played and remember when the addon last ran.
+on("PLAYER_LOGOUT", function()
+	if ns.disabled then
+		return
+	end
+	if ns.Journal then
+		ns.Journal.OnTick()
+	end
+	if ns.Reminders then
+		ns.db.settings.lastSeen = time()
 	end
 end)
 
@@ -161,6 +182,9 @@ if ns.Journal then
 end
 if ns.Album then
 	on("SCREENSHOT_SUCCEEDED", ns.Album.OnScreenshot)
+end
+if ns.Companions then
+	on("GROUP_ROSTER_UPDATE", ns.Companions.OnRoster)
 end
 if ns.Chronicle or ns.GuildReminders then
 	on("CHAT_MSG_ADDON", function(...)

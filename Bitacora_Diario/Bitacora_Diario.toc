@@ -1,8 +1,8 @@
 ## Interface: 16001
 ## Title: Bitácora · Diario
-## Notes: Bitácora journal: writes itself as you play (levels, zones, bosses, deaths, loot, gold), with your progress and the guild chronicle.
-## Notes-esES: Diario de Bitácora: se escribe solo mientras jugás (niveles, zonas, jefes, muertes, botín, oro), con tu progreso y la crónica de la guild.
-## Notes-esMX: Diario de Bitácora: se escribe solo mientras jugás (niveles, zonas, jefes, muertes, botín, oro), con tu progreso y la crónica de la guild.
+## Notes: Bitácora journal: writes itself as you play (levels, zones, bosses, deaths, loot, gold), with your progress (time per level, companions) and the guild chronicle.
+## Notes-esES: Diario de Bitácora: se escribe solo mientras jugás (niveles, zonas, jefes, muertes, botín, oro), con tu progreso (tiempo por nivel, compañeros) y la crónica de la guild.
+## Notes-esMX: Diario de Bitácora: se escribe solo mientras jugás (niveles, zonas, jefes, muertes, botín, oro), con tu progreso (tiempo por nivel, compañeros) y la crónica de la guild.
 ## Author: José Argento
 ## Version: @project-version@
 ## Dependencies: Bitacora_Datos
@@ -17,6 +17,7 @@ Locales.lua
 Core.lua
 Journal.lua
 Progress.lua
+Companions.lua
 Chronicle.lua
 Events.lua
 UI\Widgets.lua

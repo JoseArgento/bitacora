@@ -33,6 +33,40 @@ function P.Rows(charKey)
 		line(L.STAT_WORST:format(s.worstZone, s.worstDeaths))
 	end
 
+	local splits = P.Splits(charKey)
+	if #splits > 0 then
+		header(L.PROG_SPLITS)
+		local best = P.BestSplits()
+		local me = ns.Char(charKey)
+		for i = #splits, 1, -1 do
+			local s = splits[i]
+			local b = best[s.level]
+			local right = SecondsToTime(s.seconds)
+			if b and b.name ~= (me and me.name) and b.seconds < s.seconds then
+				right = right .. " · " .. L.SPLIT_BEST:format(b.name, SecondsToTime(b.seconds))
+			elseif b and b.seconds >= s.seconds then
+				right = "|cff40c040" .. right .. "|r"
+			end
+			line(L.SPLIT_LEVEL:format(s.level), right)
+		end
+	end
+
+	if ns.Companions then
+		local people = ns.Companions.Sorted()
+		if #people > 0 then
+			header(L.PROG_COMPANIONS)
+			for i = 1, math.min(#people, 50) do
+				local p = people[i]
+				local name = p.label
+				local color = p.class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[p.class]
+				if color and color.colorStr then
+					name = "|c" .. color.colorStr .. name .. "|r"
+				end
+				line(name, L.COMPANION_TIMES:format(p.times, p.last and date("%d/%m", p.last) or "", p.zone or ""))
+			end
+		end
+	end
+
 	local dungeons = P.Dungeons(charKey)
 	if #dungeons == 0 then
 		header(L.PROG_DUNGEONS)
@@ -95,10 +129,12 @@ UI.RegisterTab("TAB_PROGRESS", "progress", function(panel)
 	return view
 end)
 
--- A kill or a new zone changes the numbers.
-ns.On("journal", function()
+-- A kill, a new zone or a new companion changes the numbers.
+local function refresh()
 	local i = UI.tabOfTopic.progress
 	if i and UI.frame:IsShown() and PanelTemplates_GetSelectedTab(UI.frame) == i and UI.views[i] then
 		UI.views[i].Refresh()
 	end
-end)
+end
+ns.On("journal", refresh)
+ns.On("companions", refresh)
