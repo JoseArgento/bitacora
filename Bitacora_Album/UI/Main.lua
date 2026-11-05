@@ -23,12 +23,12 @@ UI.views = {}
 
 -- Each tab file of this edition registers itself, in TOC order (notebook, journal, album, reminders…).
 -- The builder gets the page: { left = frame, right = frame or nil } inside the book.
-function UI.RegisterTab(textKey, topic, builder)
+function UI.RegisterTab(textKey, topic, builder, tabOpts)
 	local i = #UI.builders + 1
 	UI.builders[i] = builder
 	UI.tabOfTopic[topic] = i
 	UI.keys[i] = topic
-	local tab = f:AddTab(topic, L[textKey])
+	local tab = f:AddTab(topic, L[textKey], tabOpts)
 	tab:SetID(i)
 	tab.textKey = textKey
 	UI.tabs[i] = tab
@@ -53,6 +53,7 @@ function UI.RegisterTab(textKey, topic, builder)
 	UI.pages[i] = f:AddPage(topic)
 	-- a standalone part has a single tab: no bookmarks
 	f:SetTabsShown(i > 1)
+	return tab
 end
 
 function UI.SelectTab(i)
@@ -70,7 +71,9 @@ function UI.SelectTab(i)
 	if UI.views[i] and UI.views[i].Refresh then
 		UI.views[i].Refresh()
 	end
-	ns.db.settings.tab = i
+	if UI.keys[i] ~= "errors" then
+		ns.db.settings.tab = i -- the errors page is never where the book opens next time
+	end
 end
 
 -- a bookmark click lands here (the book already showed the page)
@@ -109,6 +112,70 @@ local function optionsBookmark()
 	return t
 end
 
+-- The addon's own errors (Pergamino.Guard). In a book, a brown bookmark under Options that only shows while
+-- there is something kept; in a single page (Recordame and the parts), a card.
+local function usesCard()
+	return ns.edition.single or #UI.builders < 2
+end
+
+local function errorsBookmark()
+	if UI.errorsTab or usesCard() then
+		return UI.errorsTab
+	end
+	-- registered by hand, outside UI.RegisterTab: it is not one of the book's parts (not in f.Tabs)
+	local i = #UI.builders + 1
+	UI.builders[i] = function(page)
+		return ns.guard.Page(page.left, page.right)
+	end
+	UI.tabOfTopic.errors = i
+	UI.keys[i] = "errors"
+	local tab = f:AddTab("errors", L.ERR_TITLE, { color = P.BOOKMARK_ACTION_COLOR })
+	tab:SetID(i)
+	tab.textKey = "ERR_TITLE"
+	tab:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:SetText(L.ERR_TITLE)
+		GameTooltip:AddLine(L.TIP_ERRORS, 1, 1, 1, true)
+		GameTooltip:Show()
+	end)
+	tab:SetScript("OnLeave", function()
+		GameTooltip:Hide()
+	end)
+	UI.pages[i] = f:AddPage("errors")
+	UI.errorsTab = tab
+	UI.ErrorsChanged()
+	return tab
+end
+
+function UI.ErrorsChanged()
+	local n = #ns.guard.Errors()
+	if UI.errorsTab then
+		UI.errorsTab:SetShown(n > 0 or f.selected == "errors")
+		local v = UI.views[UI.tabOfTopic.errors]
+		if v and v.Refresh then
+			v.Refresh()
+		end
+	end
+	if UI.errorsCard and UI.errorsCard:IsShown() then
+		UI.errorsCard.page.Refresh()
+	end
+end
+
+function UI.Errors()
+	if usesCard() then
+		if not UI.errorsCard then
+			local card = P.Card(ADDON .. "ErrorsCard", 460, 360, L.ERR_TITLE)
+			card.page = ns.guard.Page(card.body)
+			UI.errorsCard = card
+		end
+		UI.errorsCard.page.Refresh()
+		UI.errorsCard:Show()
+		return UI.errorsCard
+	end
+	ns.Toggle("errors")
+	UI.ErrorsChanged()
+end
+
 function ns.Toggle(tab)
 	if f:IsShown() and not tab then
 		f:Hide()
@@ -123,6 +190,7 @@ function ns.Toggle(tab)
 	local wasShown = f:IsShown()
 	f:Show()
 	optionsBookmark()
+	errorsBookmark()
 	UI.SelectTab(tab or ns.db.settings.tab or 1)
 	if not wasShown and UI.OpenBook then
 		UI.OpenBook()
@@ -140,6 +208,9 @@ ns.On("locale", function()
 	end
 	if UI.optionsTab then
 		UI.optionsTab:SetText(L.TAB_OPTIONS)
+	end
+	if UI.errorsTab then
+		UI.errorsTab:SetText(L.ERR_TITLE)
 	end
 end)
 

@@ -150,6 +150,8 @@ El addon no manda nada tuyo a nadie si no prendés la crónica de la guild. Lo �
 - No sabe qué te mató: en Forever el combat log está restringido para los addons.
 - Las notas no se comparten entre jugadores; solo los hitos de la crónica, si la prendés.
 
+**Si algo falla:** `/bita errores` muestra el último error del addon (se guardan los últimos 10, sin popups) para copiarlo en un issue de GitHub. El marcador "Errores" aparece solo mientras hay algo guardado; en Recordame y en las partes sueltas es una tarjeta.
+
 ## Desarrollo
 
 ```bash

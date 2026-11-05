@@ -260,3 +260,46 @@ def test_the_game_options_page_uses_the_games_fonts_not_ink(game):
     assert game.run("local c = ns.UI.options.checks.minimap; return c._template") == "UICheckButtonTemplate"
     intro = game.run("return ns.UI.options.intro._text")
     assert intro == "Notebook, Journal, Album and Reminders. Open the window with /bita."
+
+
+# the addon's own errors (Pergamino.Guard) ---------------------------------------------------------------
+
+
+def test_a_handler_error_is_kept_and_shown_on_an_errors_bookmark(game):
+    # a broken handler in the event frame: the guard keeps the error instead of a popup
+    game.run("ns.Journal.OnLevelUp = function() error('se rompio el diario') end")
+    game.fire("PLAYER_LEVEL_UP", 14)  # does not raise
+    errs = game.run("return ns.guard.Errors()")
+    assert len(errs) == 1 and "se rompio el diario" in errs[1].message and errs[1].label == "PLAYER_LEVEL_UP"
+    assert errs[1].stack != ""
+    assert sum(1 for line in game.m.chat.values() if "tuvo un error" in line or "had an error" in line) == 1
+    # kept per edition under its folder name, inside the shared data
+    assert game.run("return BitacoraDB.errorsByAddon.Bitacora.errors[1].label") == "PLAYER_LEVEL_UP"
+    # /bita errores opens the book on the errors bookmark (brown, shown only now), with the text to copy
+    game.lua.globals().SlashCmdList.BITACORA("errores")
+    f = game.run("return BitacoraFrame")
+    assert f._shown and f.selected == "errors" and game.run("return ns.UI.errorsTab:IsShown()") is True
+    assert game.run("return ns.UI.errorsTab.color == Pergamino.BOOKMARK_ACTION_COLOR") is True
+    i = game.run("return ns.UI.tabOfTopic.errors")
+    assert "se rompio el diario" in game.run(f"return ns.UI.views[{i}].area.box._text")
+    # the errors page is not where the book opens next time, and it is not one of the parts
+    assert game.run("return ns.db.settings.tab") != i
+    assert len(game.run("return BitacoraFrame.Tabs")) == 6
+    game.run(f"ns.UI.views[{i}].clear:GetScript('OnClick')()")
+    assert game.run("return #ns.guard.Errors()") == 0
+    # the slash handler is guarded too
+    game.run("ns.OpenOptions = function() error('se rompio opciones') end")
+    game.lua.globals().SlashCmdList.BITACORA("opciones")
+    assert game.run("return ns.guard.Errors()[1].label") == "slash"
+
+
+def test_a_single_page_edition_shows_its_errors_on_a_card():
+    g = Game(addons=("Recordame",))
+    g.login()
+    g.run("ns.Reminders.Check = function() error('se rompio el recordatorio') end")
+    g.fire("PLAYER_LEVEL_UP", 14)
+    assert "se rompio el recordatorio" in g.run("return RecordameDB.errorsByAddon.Recordame.errors[1].message")
+    g.lua.globals().SlashCmdList.RECORDAME("errores")
+    assert g.run("return ns.UI.errorsCard:IsShown()") is True
+    assert "se rompio el recordatorio" in g.run("return ns.UI.errorsCard.page.area.box._text")
+    assert g.run("return ns.UI.errorsTab") is None

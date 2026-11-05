@@ -136,7 +136,7 @@ local en = {
 	EVERY_DAY = "Every day",
 
 	-- misc
-	HELP = "/bitacora (or /bita): open · /bita note <text>: quick note · /bita entry <text>: write in the journal · /bita to Name: text: whisper a reminder · /bita chat never|important|all · /bita language es|en|auto · /bita options",
+	HELP = "/bitacora (or /bita): open · /bita note <text>: quick note · /bita entry <text>: write in the journal · /bita to Name: text: whisper a reminder · /bita chat never|important|all · /bita language es|en|auto · /bita options · /bita errores: the addon's own errors, to copy",
 	QUICK_NOTE_SAVED = "note saved.",
 	ENTRY_SAVED = "written in the journal.",
 	COMPARTMENT_HINT = "Click to open",
@@ -148,6 +148,12 @@ local en = {
 	OPT_MINIMAP = "Show the minimap button",
 	MINIMAP_TIP = "Click: open the book. Right-click: options. Drag it around the minimap to move it.",
 	TIP_OPTIONS = "Language, chat, the cover, the guild chronicle and the rest. Also /bita options.",
+	ERR_TITLE = "Errors",
+	TIP_ERRORS = "The addon had a Lua error. The page shows it to copy into a GitHub issue.",
+	ERR_NOTICE = "had an error. %s errores shows it to copy.",
+	ERR_EMPTY = "No errors kept.",
+	ERR_CLEAR = "Clear",
+	ERR_COPY = "Select the text and copy it with Ctrl+C, then paste it in a GitHub issue.",
 	OPT_TOOLTIP = "Show notes in NPC and item tooltips",
 	OPT_ZONE = "Tell me in chat about notes for the zone I enter",
 	-- bookmarks, welcome, chat and language
@@ -391,7 +397,7 @@ local es = {
 	WEEKDAYS = { "Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado" },
 	EVERY_DAY = "Todos los días",
 
-	HELP = "/bitacora (o /bita): abrir · /bita nota <texto>: nota rápida · /bita entrada <texto>: escribir en el diario · /bita a Nombre: texto: mandarle un recordatorio · /bita chat nunca|importante|todo · /bita idioma es|en|auto · /bita opciones",
+	HELP = "/bitacora (o /bita): abrir · /bita nota <texto>: nota rápida · /bita entrada <texto>: escribir en el diario · /bita a Nombre: texto: mandarle un recordatorio · /bita chat nunca|importante|todo · /bita idioma es|en|auto · /bita opciones · /bita errores: los errores del addon, para copiarlos",
 	QUICK_NOTE_SAVED = "nota guardada.",
 	ENTRY_SAVED = "escrito en el diario.",
 	COMPARTMENT_HINT = "Click para abrir",
@@ -403,6 +409,12 @@ local es = {
 	OPT_MINIMAP = "Mostrar el botón del minimapa",
 	MINIMAP_TIP = "Clic: abre el libro. Clic derecho: opciones. Arrastralo alrededor del minimapa para moverlo.",
 	TIP_OPTIONS = "Idioma, chat, la tapa, la crónica de la guild y lo demás. También /bita opciones.",
+	ERR_TITLE = "Errores",
+	TIP_ERRORS = "El addon tuvo un error de Lua. La página lo muestra para copiarlo en un issue de GitHub.",
+	ERR_NOTICE = "tuvo un error. %s errores lo muestra para copiarlo.",
+	ERR_EMPTY = "Sin errores guardados.",
+	ERR_CLEAR = "Borrar",
+	ERR_COPY = "Seleccioná el texto y copialo con Ctrl+C, después pegalo en un issue de GitHub.",
 	OPT_TOOLTIP = "Mostrar notas en el tooltip de PNJ e ítems",
 	OPT_ZONE = "Avisarme en el chat si tengo notas de la zona a la que entro",
 	-- marcadores, bienvenida, chat e idioma

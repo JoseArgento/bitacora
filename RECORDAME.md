@@ -13,6 +13,7 @@ Recordatorios para **WoW Forever** que saltan cuando importan. Es la pestaña de
 - **El campamento:** 5 minutos antes de que venza el buff del campamento, un aviso (se apaga en las opciones; ⏳ los IDs de Forever no se conocen, se reconoce por nombre).
 - `/recordame idioma es|en|auto` elige el idioma aunque el cliente esté en inglés; `/recordame chat nunca|importante|todo` mide lo que va al chat.
 - `/recordame` abre la ventana; también su botón con la campana en el borde del minimapa (clic derecho: opciones; se arrastra y se esconde en las opciones) y el botón de addons junto al minimapa. La ventana es una página de pergamino dentro de una tapa de cuero (la piel **Pergamino**, que va dentro del addon en `Libs/Pergamino`, con sus fuentes OFL): el formulario arriba, la lista abajo.
+- **Si algo falla:** `/recordame errores` muestra el último error del addon (se guardan los últimos 10, sin popups) en una tarjeta para copiarlo en un issue de GitHub.
 
 **Qué manda:** nada tuyo por su cuenta. Al entrar le pide a tu guild (`Q|1`, un pedido vacío) los recordatorios de los oficiales; se apaga en las opciones. Si sos oficial, manda los que escribas para la guild; si usás "recordale a", ese texto va por susurro a esa persona. Lo que llega solo se acepta de oficiales (los de guild) o de gente de la guild y amigos (los susurrados), se limpia y nunca se ejecuta.
 

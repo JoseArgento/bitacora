@@ -52,6 +52,7 @@ local function zoneNotes()
 	end
 end
 
+local onSlash -- the slash handler, defined below; guarded once the saved variables are in
 on("ADDON_LOADED", function(name)
 	if name ~= ADDON then
 		return
@@ -59,6 +60,8 @@ on("ADDON_LOADED", function(name)
 	ns.InitDB()
 	ns.SetLocale(ns.db.settings.lang)
 	frame:UnregisterEvent("ADDON_LOADED")
+	-- from here on a Lua error in a handler is kept, not thrown (see /bita errores)
+	SlashCmdList[string.upper(ADDON)] = ns.guard.Install(frame, onSlash)
 end)
 
 -- A standalone part steps aside when the full Bitácora is loaded too: the full one already does its job,
@@ -259,7 +262,7 @@ local KEY = string.upper(ADDON)
 for i, command in ipairs(ns.edition.slash) do
 	_G["SLASH_" .. KEY .. i] = command
 end
-SlashCmdList[KEY] = function(msg)
+onSlash = function(msg)
 	if ns.disabled then
 		ns.Print(L.STANDALONE_OFF:format(ns.edition.title or ADDON))
 		return
@@ -301,12 +304,15 @@ SlashCmdList[KEY] = function(msg)
 		ns.Print(L.LANG_SET:format(L["LANG_" .. string.upper(ns.db.settings.lang or "auto")]))
 	elseif cmd == "opciones" or cmd == "options" or cmd == "config" then
 		ns.OpenOptions()
+	elseif cmd == "errores" or cmd == "errors" then
+		ns.UI.Errors()
 	elseif cmd == "help" or cmd == "ayuda" or cmd == "?" then
 		ns.Print(L.HELP)
 	else
 		ns.Toggle()
 	end
 end
+SlashCmdList[KEY] = onSlash
 
 -- Key binding (Bindings.xml) and the addon compartment next to the minimap (TOC fields).
 local function toggle()

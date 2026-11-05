@@ -154,6 +154,23 @@ function ns.InitDB()
 		table.insert(ns.db.sections, { id = ns.NewID("s"), name = L.GENERAL })
 	end
 	ns.db.version = ns.DB_VERSION
+	-- the addon's own errors, kept here and shown with /bita errores (Pergamino.Guard). Each edition keeps
+	-- its own list, under its folder name, since several can share Bitacora_Datos.
+	ns.db.errorsByAddon = type(ns.db.errorsByAddon) == "table" and ns.db.errorsByAddon or {}
+	local own = ns.db.errorsByAddon
+	own[ADDON] = type(own[ADDON]) == "table" and own[ADDON] or { errors = {} }
+	ns.guard = Pergamino.Guard(ns.edition.title or ADDON, own[ADDON], {
+		slash = ns.edition.slash[1],
+		chat = function()
+			ns.Print(L.ERR_NOTICE:format(ns.edition.slash[1]))
+		end,
+		L = { title = L.ERR_TITLE, empty = L.ERR_EMPTY, clear = L.ERR_CLEAR, copy = L.ERR_COPY },
+	})
+	ns.guard.OnError = function()
+		if ns.UI and ns.UI.ErrorsChanged then
+			ns.UI.ErrorsChanged()
+		end
+	end
 end
 
 function ns.NewID(prefix)
