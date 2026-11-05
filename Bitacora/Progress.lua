@@ -104,17 +104,9 @@ end
 -- Selecting an instance changes the Encounter Journal's own selection, so this is not done while it is
 -- open, and the tier is put back afterwards.
 local instances
-function P.Instances()
-	if instances then
-		return instances
-	end
-	if EncounterJournal and EncounterJournal:IsShown() then
-		return {}
-	end
-	local tier = EJ_GetCurrentTier and EJ_GetCurrentTier()
-	-- the Adventure Guide keeps the instance it shows here (Blizzard_EncounterJournal); put it back after
-	local shown = EncounterJournal and EncounterJournal.instanceID
-	local out = {}
+
+-- Reads every instance the journal lists right now (the tier that is selected), with their bosses.
+local function readInstances(out)
 	for _, raid in ipairs({ false, true }) do
 		local i = 1
 		while true do
@@ -141,7 +133,37 @@ function P.Instances()
 			i = i + 1
 		end
 	end
-	-- EJ_GetCurrentTier gives 0 before the Adventure Guide was ever opened; EJ_SelectTier(0) is an error
+end
+
+function P.Instances()
+	if instances then
+		return instances
+	end
+	if EncounterJournal and EncounterJournal:IsShown() then
+		return {}
+	end
+	local tier = EJ_GetCurrentTier and EJ_GetCurrentTier()
+	-- the Adventure Guide keeps the instance it shows here (Blizzard_EncounterJournal); put it back after
+	local shown = EncounterJournal and EncounterJournal.instanceID
+	local out = {}
+	readInstances(out)
+	-- before the Adventure Guide was ever opened no tier is selected (EJ_GetCurrentTier gives 0) and the
+	-- journal lists nothing: select each tier in turn and read it
+	if #out == 0 and EJ_SelectTier and EJ_GetNumTiers then
+		local seen = {}
+		for t = 1, (EJ_GetNumTiers() or 0) do
+			EJ_SelectTier(t)
+			local found = {}
+			readInstances(found)
+			for _, inst in ipairs(found) do
+				if not seen[inst.id] then
+					seen[inst.id] = true
+					table.insert(out, inst)
+				end
+			end
+		end
+	end
+	-- EJ_SelectTier(0) is an error, so the tier is only put back when there was one
 	if tier and tier > 0 and EJ_SelectTier then
 		EJ_SelectTier(tier)
 	end

@@ -36,6 +36,15 @@ class Game:
         self.m.locale = locale
         self.addons = ["Bitacora_Datos", *addons] if datos else list(addons)
         self.m.loaded = self.lua.table_from({name: True for name in self.addons})
+        # the TOC titles, as C_AddOns.GetAddOnMetadata gives them
+        titles = {}
+        for name in self.addons:
+            toc = ROOT / name / f"{name}.toc"
+            if toc.is_file():
+                for line in toc.read_text(encoding="utf-8").splitlines():
+                    if line.startswith("## Title:"):
+                        titles[name] = self.lua.table_from({"Title": line.split(":", 1)[1].strip()})
+        self.m.metadata = self.lua.table_from(titles)
         self.nss = {}
         loader = self.lua.eval("function(src, name) return assert(loadstring(src, '@' .. name)) end")
         if saved is not None:
@@ -710,6 +719,24 @@ def test_a_part_steps_aside_when_the_full_addon_is_loaded():
     assert g.warnings() == ["Reminder: x"]  # one alert, not three
     g.lua.globals().SlashCmdList.BITACORA_DIARIO("")
     assert "is off because the full Bitácora is loaded" in g.chat()[-1]
+
+
+def test_the_parts_say_they_are_off_in_one_line_once():
+    g = Game(addons=("Bitacora", "Bitacora_Diario", "Bitacora_Libreta", "Bitacora_Recordatorios"))
+    g.login()
+    lines = [c for c in g.chat() if "are off because" in c]
+    assert lines == ["|cff8fd1c4Bitácora · Diario|r: Diario, Libreta and Recordatorios are off because the full Bitácora is loaded; it already has them. (Said once.)"]
+    assert g.db.settings.partsNoticed is True
+    # the next login says nothing
+    g2 = Game(saved=g.m.savedVariables("BitacoraDB"), addons=("Bitacora", "Bitacora_Diario", "Bitacora_Libreta"))
+    g2.login()
+    assert not [c for c in g2.chat() if "are off because" in c]
+
+
+def test_the_parts_stay_quiet_when_the_chat_is_set_to_never():
+    g = Game(saved='BitacoraDB = { settings = { chat = "never" } }', addons=("Bitacora", "Bitacora_Diario"))
+    g.login()
+    assert not [c for c in g.chat() if "off because" in c] and g.db.settings.partsNoticed is None
 
 
 def test_all_four_parts_together_do_each_thing_once():

@@ -69,10 +69,32 @@ local function fullLoaded()
 	return ADDON ~= FULL and not ns.edition.standalone and C_AddOns.IsAddOnLoaded(FULL)
 end
 
+-- The parts that are loaded next to the full Bitácora, by their short names ("Diario, Libreta…").
+local PARTS = { "Bitacora_Diario", "Bitacora_Libreta", "Bitacora_Album", "Bitacora_Recordatorios" }
+local function partsLoaded()
+	local names = {}
+	for _, part in ipairs(PARTS) do
+		if C_AddOns.IsAddOnLoaded(part) then
+			local title = C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(part, "Title") or part
+			title = tostring(title):gsub("^.-·%s*", "")
+			table.insert(names, title)
+		end
+	end
+	return names
+end
+
 on("PLAYER_LOGIN", function()
 	if fullLoaded() then
 		ns.disabled = true
-		ns.Print(L.STANDALONE_OFF:format(ns.edition.title or ADDON))
+		-- one line for all the parts, the first time only (the parts share the saved data), and none
+		-- when the chat is set to "never"
+		local settings = ns.db and ns.db.settings
+		if settings and not settings.partsNoticed and settings.chat ~= "never" then
+			settings.partsNoticed = true
+			local names = partsLoaded()
+			local list = #names > 1 and (table.concat(names, ", ", 1, #names - 1) .. " " .. L.AND .. " " .. names[#names]) or names[1] or (ns.edition.title or ADDON)
+			ns.Print(L.PARTS_OFF:format(list))
+		end
 		return
 	end
 	ns.Char() -- creates this character's record on first use

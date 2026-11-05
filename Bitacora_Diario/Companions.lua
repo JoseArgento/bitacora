@@ -14,7 +14,8 @@ local current = {} -- key -> true: who is in the group right now, so a roster ch
 local function keyOf(unit)
 	local name, realm = UnitName(unit)
 	name = ns.Plain(name)
-	if not name or name == "" then
+	-- a member whose name has not arrived yet is "Unknown" (UNKNOWNOBJECT); the next roster update retries
+	if not name or name == "" or name == (UNKNOWNOBJECT or "Unknown") or name == "Unknown" then
 		return nil
 	end
 	realm = ns.Plain(realm)

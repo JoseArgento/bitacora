@@ -66,7 +66,8 @@ function P.Rows(charKey)
 				if color and color.colorStr then
 					name = "|c" .. color.colorStr .. name .. "|r"
 				end
-				line(name, L.COMPANION_TIMES:format(p.times, p.last and date("%d/%m", p.last) or "", p.zone or ""))
+				local when, zone = p.last and date("%d/%m", p.last) or "", p.zone or ""
+				line(name, p.times == 1 and L.COMPANION_TIMES_1:format(when, zone) or L.COMPANION_TIMES:format(p.times, when, zone))
 			end
 		end
 	end

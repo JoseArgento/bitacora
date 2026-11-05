@@ -313,6 +313,16 @@ end
 function Frame:GetStringWidth()
 	return #(self._text or "") * 6
 end
+function Frame:GetStringHeight()
+	-- rough: 14 px per wrapped line of (width / 6) characters
+	local text = self._text or ""
+	local perLine = math.max(1, math.floor((self.width or 400) / 6))
+	local lines = 0
+	for line in (text .. "\n"):gmatch("(.-)\n") do
+		lines = lines + math.max(1, math.ceil(#line / perLine))
+	end
+	return lines * 14
+end
 function Frame:GetFontString()
 	return self.fontString
 end
@@ -653,6 +663,9 @@ LOOT_ITEM_CREATED_SELF = "You create: %s."
 C_AddOns = {
 	IsAddOnLoaded = function(name)
 		return MOCK.loaded and MOCK.loaded[name] == true
+	end,
+	GetAddOnMetadata = function(name, field)
+		return MOCK.metadata and MOCK.metadata[name] and MOCK.metadata[name][field]
 	end,
 }
 

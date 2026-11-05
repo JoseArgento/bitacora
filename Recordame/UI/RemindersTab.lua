@@ -24,7 +24,7 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(page)
 	local form = CreateFrame("Frame", nil, left)
 	form:SetPoint("TOPLEFT", 0, 0)
 	form:SetPoint("TOPRIGHT", 0, 0)
-	form:SetHeight(stacked and 150 or 220)
+	form:SetHeight(220) -- layout() sets the real height
 
 	local head = UI.Label(form, L.NEW_REMINDER_HEAD, "heading")
 	head:SetPoint("TOPLEFT", 0, 0)
@@ -50,7 +50,6 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(page)
 	local forGuild = UI.Check(form, L.FOR_GUILD)
 
 	local create = UI.Button(form, L.NEW_REMINDER, 160, nil)
-	create:SetPoint("BOTTOMLEFT", form, "BOTTOMLEFT", 0, 0)
 
 	local function layout()
 		local k = view.kind
@@ -106,13 +105,35 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(page)
 			end
 			prev = repeating
 		end
+		local last = prev
 		if forGuild:IsShown() then
 			if prev then
 				forGuild:SetPoint("TOPLEFT", onlyChar:IsShown() and onlyChar or repeating, "BOTTOMLEFT", 0, -8)
 			else
 				forGuild:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -14)
 			end
+			last = forGuild
 		end
+		-- the button goes under the last row of checks (never over them), and the form is as tall as
+		-- its rows so what hangs from its bottom (help text, the list on a single page) follows
+		create:ClearAllPoints()
+		if last then
+			create:SetPoint("TOPLEFT", last == repeating and onlyChar:IsShown() and onlyChar or last, "BOTTOMLEFT", 0, -14)
+		else
+			create:SetPoint("TOPLEFT", anchor == kindButton and whenLabel or anchor, "BOTTOMLEFT", 0, -14)
+		end
+		local rows = 20 + 10 + 24 + 14 + 26 -- heading, text, "when" line
+		if anchor ~= kindButton then
+			rows = rows + 12 + 26 -- the value line
+		end
+		if prev then
+			rows = rows + 14 + 18 -- the checks
+		end
+		if forGuild:IsShown() and prev then
+			rows = rows + 8 + 18
+		end
+		rows = rows + 14 + 26 -- the button
+		form:SetHeight(rows)
 	end
 	forGuild:HookScript("OnClick", layout)
 
@@ -300,5 +321,6 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(page)
 	end
 
 	view.list = list
+	view.form, view.create, view.onlyChar, view.repeating = form, create, onlyChar, repeating
 	return view
 end)

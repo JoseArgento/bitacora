@@ -74,3 +74,16 @@ def test_guild_reminders_pop_once_with_both_installed():
     g.m.now = at + 30
     g.m.tick()
     assert warnings(g) == ["Ofi (guild): Raid"]
+
+
+def test_on_the_single_page_the_button_sits_under_the_checks():
+    # in the game the "only this character" check was hidden behind the "new reminder" button
+    g = recordame()
+    g.run("ns.Toggle()")
+    i = g.run("return ns.UI.tabOfTopic.reminders")
+    view = g.run(f"return ns.UI.views[{i}]")
+    assert view.onlyChar._shown is True and view.repeating._shown is True
+    anchored = g.run(f"local v = ns.UI.views[{i}]; local p = v.create._points[1]; return p[1] .. ':' .. tostring(p[2] == v.onlyChar) .. ':' .. p[3]")
+    assert anchored == "TOPLEFT:true:BOTTOMLEFT"
+    # heading, text, when, value, checks and the button all fit in the form
+    assert view.form.height >= 20 + 10 + 24 + 14 + 26 + 12 + 26 + 14 + 18 + 14 + 26

@@ -124,9 +124,17 @@ function EJ_GetCurrentTier()
 	return MOCK.ej.tier
 end
 function EJ_SelectTier(t)
+	assert(t and t > 0, "Usage: EJ_SelectTier(index) Invalid index " .. tostring(t))
 	MOCK.ej.tier = t
 end
+function EJ_GetNumTiers()
+	return MOCK.ej.numTiers or 1
+end
 function EJ_GetInstanceByIndex(i, raid)
+	-- like the game: with no tier selected (0, the guide never opened) nothing is listed
+	if MOCK.ej.tier == 0 then
+		return nil
+	end
 	local list = raid and MOCK.ej.raids or MOCK.ej.dungeons
 	local inst = list[i]
 	if inst then

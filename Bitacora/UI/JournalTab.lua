@@ -46,7 +46,11 @@ UI.RegisterTab("TAB_JOURNAL", "journal", function(page)
 		row.date:SetText(UI.FormatDate(e))
 		-- one line: the entry, then the place in muted ink ("Llegó a nivel 11. · Bosque de Elwynn")
 		local where = (e.kind ~= "zone" and e.kind ~= "death" and e.kind ~= "start" and e.zone and e.zone ~= "") and (" |cff6c4e31· " .. e.zone .. "|r") or ""
-		row.text:SetText(J.Text(e) .. where)
+		local text = J.Text(e)
+		if where ~= "" then
+			text = text:gsub("%.$", "") -- "Reached level 11 · Elwynn Forest", not "level 11. · Elwynn"
+		end
+		row.text:SetText(text .. where)
 		row.selected:SetShown(view.selected == e)
 	end, function(e)
 		view.selected = e

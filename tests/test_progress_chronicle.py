@@ -244,9 +244,19 @@ def test_the_guides_own_instance_is_put_back():
     assert g.m.ej.selected == 64
 
 
-def test_a_guide_never_opened_has_tier_zero_and_is_not_selected():
-    # In the game EJ_GetCurrentTier() is 0 until the Adventure Guide was opened once; EJ_SelectTier(0) errors
+def test_a_guide_never_opened_has_tier_zero_and_its_tiers_are_walked():
+    # In the game EJ_GetCurrentTier() is 0 until the Adventure Guide was opened once: EJ_SelectTier(0) errors
+    # and the journal lists nothing, so each tier is selected and read in turn
     g = Game()
-    g.run("MOCK.ej.tier = 0; local real = EJ_SelectTier; EJ_SelectTier = function(t) assert(t > 0, 'Invalid index 0'); real(t) end")
+    g.run("MOCK.ej.tier = 0; MOCK.ej.numTiers = 2")
     g.login()
     assert len(g.ns.Progress.Instances()) == 3
+    # the tier is not put back to 0
+    assert g.m.ej.tier != 0
+
+
+def test_a_journal_that_lists_nothing_in_any_tier_says_so():
+    g = Game()
+    g.run("MOCK.ej.tier = 0; MOCK.ej.numTiers = 0")
+    g.login()
+    assert len(g.ns.Progress.Instances()) == 0

@@ -53,6 +53,9 @@ def test_consecutive_level_ups_of_a_day_fold_into_one_milestone_row(game):
     # and the window's milestones list shows the folded row
     game.run("ns.Toggle('journal')")
     assert game.run("return ns.UI.views[ns.UI.tabOfTopic.journal].filter") == "milestones"
+    # the row reads "Levels 11 to 13 · Elwynn Forest": no period before the place
+    texts = lua_list(game.run("local t = {}; for _, r in ipairs(ns.UI.views[ns.UI.tabOfTopic.journal].list.box.rows) do t[#t + 1] = r.text:GetText() end; return t"))
+    assert "Levels 11 to 13 |cff6c4e31· Elwynn Forest|r" in texts and not [t for t in texts if ". |cff6c4e31·" in t]
 
 
 # chat with measure ----------------------------------------------------------------------------------
@@ -152,6 +155,10 @@ def test_the_welcome_card_shows_once(game):
     assert card._shown is True
     text = card.text._text
     assert "Notebook" in text and "/bitacora" in text and "Guild" in text
+    # the card is as tall as its text needs, with the button under the text
+    assert card.height >= 40 + game.run("return ns.UI.welcomeCard.text:GetStringHeight()") + 16 + 26
+    point = game.run("local p = ns.UI.welcomeCard.ok._points[1]; return p[1] .. ':' .. tostring(p[2] == ns.UI.welcomeCard.text)")
+    assert point == "TOP:true"
     game.run("ns.UI.welcomeCard:Hide(); ns.Toggle(); ns.Toggle()")
     assert game.run("return ns.UI.welcomeCard._shown") is False
 
@@ -171,3 +178,20 @@ def test_bookmark_tooltips_describe_the_page_and_the_key(game):
     lines = lua_list(tip.lines)
     assert tip._text == "Journal" and "Writes itself" in lines[-2] and lines[-1] == "Key: F9"
     assert tab.textKey == "TAB_JOURNAL"
+
+
+def test_an_options_bookmark_opens_the_options(game):
+    game.run("ns.Toggle()")
+    tab = game.run("return ns.UI.optionsTab")
+    assert tab is not None and tab.fontString._text == "Options"
+    opened = game.run("local hit = false; local real = ns.OpenOptions; ns.OpenOptions = function() hit = true end; ns.UI.optionsTab:GetScript('OnClick')(ns.UI.optionsTab); ns.OpenOptions = real; return hit")
+    assert opened is True
+    # it hangs under the last bookmark
+    assert game.run("local p = ns.UI.optionsTab._points[1]; return p[2] == ns.UI.tabs[#ns.UI.tabs]") is True
+
+
+def test_no_options_bookmark_on_a_single_page_part():
+    g = Game(addons=("Bitacora_Recordatorios",))
+    g.login()
+    g.run("ns.Toggle()")
+    assert g.run("return ns.UI.optionsTab") is None

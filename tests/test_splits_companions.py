@@ -109,7 +109,16 @@ def test_grouping_with_someone_writes_them_down(game):
     p = people[0]
     assert (p.key, p.label, p["class"], p.times, p.zone) == ("Ana-Forever", "Ana", "WARRIOR", 1, "Elwynn Forest")
     today = game.run('return date("%d/%m")')
-    assert ("#", "Companions") in rows(game) and ("|cffc69b6dAna|r", f"1 groups · {today} · Elwynn Forest") in rows(game)
+    assert ("#", "Companions") in rows(game) and ("|cffc69b6dAna|r", f"1 group · {today} · Elwynn Forest") in rows(game)
+
+
+def test_a_member_whose_name_has_not_arrived_is_not_written_down(game):
+    # the game names such a unit "Unknown" (UNKNOWNOBJECT) until the roster catches up
+    game.run('UNKNOWNOBJECT = "Unknown"')
+    group(game, party1="Unknown", party2="Beto")
+    assert {p.name for p in lua_list(game.ns.Companions.Sorted())} == {"Beto"}
+    group(game, party1="Ana", party2="Beto")  # the name arrived: Ana counts now
+    assert {p.name for p in lua_list(game.ns.Companions.Sorted())} == {"Ana", "Beto"}
 
 
 def test_a_roster_change_counts_a_person_once(game):

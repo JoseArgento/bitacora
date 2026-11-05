@@ -85,6 +85,50 @@ function UI.SelectedTab()
 	return f.selectedTab
 end
 
+-- A small bookmark under the others that opens the options (there was no visible way to get there).
+local function optionsBookmark()
+	if UI.optionsTab or ns.edition.single or #UI.tabs == 0 then
+		return UI.optionsTab
+	end
+	local last = UI.tabs[#UI.tabs]
+	local w, h = last:GetSize()
+	local t = CreateFrame("Button", nil, f)
+	t:SetSize(w, math.max(20, (h or 30) - 6))
+	t:SetFrameLevel(last:GetFrameLevel())
+	t:SetPoint("TOPLEFT", last, "BOTTOMLEFT", 0, -16)
+	local cloth = t:CreateTexture(nil, "ARTWORK")
+	cloth:SetAllPoints()
+	cloth:SetTexture(P.MEDIA .. "ribbon")
+	cloth:SetVertexColor(0.8, 0.8, 0.8)
+	local hl = t:CreateTexture(nil, "HIGHLIGHT")
+	hl:SetAllPoints()
+	hl:SetColorTexture(1, 0.9, 0.6, 0.1)
+	t:SetNormalFontObject(P.fonts.tab)
+	t:SetText(L.TAB_OPTIONS)
+	local fs = t:GetFontString()
+	if fs then
+		local lfs = last:GetFontString()
+		local _, _, _, x = lfs and lfs:GetPoint(1)
+		fs:SetPoint("LEFT", t, "LEFT", x or 50, 0)
+		fs:SetPoint("RIGHT", t, "RIGHT", -18, 0)
+		fs:SetJustifyH("LEFT")
+	end
+	t:SetScript("OnClick", function()
+		ns.OpenOptions()
+	end)
+	t:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:SetText(L.TAB_OPTIONS)
+		GameTooltip:AddLine(L.TIP_OPTIONS, 1, 1, 1, true)
+		GameTooltip:Show()
+	end)
+	t:SetScript("OnLeave", function()
+		GameTooltip:Hide()
+	end)
+	UI.optionsTab = t
+	return t
+end
+
 function ns.Toggle(tab)
 	if f:IsShown() and not tab then
 		f:Hide()
@@ -98,6 +142,7 @@ function ns.Toggle(tab)
 	end
 	local wasShown = f:IsShown()
 	f:Show()
+	optionsBookmark()
 	UI.SelectTab(tab or ns.db.settings.tab or 1)
 	if not wasShown and UI.OpenBook then
 		UI.OpenBook()
@@ -113,6 +158,9 @@ ns.On("locale", function()
 	for _, tab in ipairs(UI.tabs) do
 		tab:SetText(L[tab.textKey])
 	end
+	if UI.optionsTab then
+		UI.optionsTab:SetText(L.TAB_OPTIONS)
+	end
 end)
 
 -- The first time the book opens after installing: a card with what each bookmark holds.
@@ -123,17 +171,19 @@ function UI.Welcome()
 	ns.db.settings.welcomed = true
 	local card = UI.welcomeCard
 	if not card then
-		card = P.Card(ADDON .. "Welcome", 420, 300, ns.edition.title or L.TITLE)
+		card = P.Card(ADDON .. "Welcome", 460, 300, ns.edition.title or L.TITLE)
 		local body = UI.Label(card.body, "", "body")
 		body:SetPoint("TOPLEFT")
-		body:SetPoint("RIGHT")
+		body:SetWidth(460 - 40)
 		body:SetWordWrap(true)
 		body:SetSpacing(4)
 		card.text = body
 		local ok = UI.Button(card, L.WELCOME_OK, 120, function()
 			card:Hide()
 		end)
-		ok:SetPoint("BOTTOM", 0, 18)
+		-- the button sits under the text, never over it: the card grows to fit what the text needs
+		ok:SetPoint("TOP", body, "BOTTOM", 0, -16)
+		card.ok = ok
 		UI.welcomeCard = card
 	end
 	local lines = {}
@@ -145,6 +195,9 @@ function UI.Welcome()
 	end
 	table.insert(lines, L.WELCOME_SLASH:format(ns.edition.slash[1]))
 	card.text:SetText(L.WELCOME_INTRO .. "\n\n" .. table.concat(lines, "\n"))
+	-- title (40) + text + gap + button (26) + bottom margin
+	local textHeight = card.text:GetStringHeight() or 0
+	card:SetHeight(math.max(200, 40 + textHeight + 16 + 26 + 24))
 	card:Show()
 end
 
