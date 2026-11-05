@@ -24,4 +24,3 @@ UI\Main.lua
 UI\RemindersTab.lua
 UI\Options.lua
 UI\Skin.lua
-Bindings.xml

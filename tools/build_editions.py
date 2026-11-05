@@ -115,7 +115,6 @@ def toc(name: str, e: dict, files: list[str]) -> str:
         "",
         *(["Libs\\Pergamino\\Pergamino.lua"] if e.get("standalone") else []),
         *[f.replace("/", "\\") for f in files],
-        "Bindings.xml",
         "",
     ]
     return "\n".join(lines)

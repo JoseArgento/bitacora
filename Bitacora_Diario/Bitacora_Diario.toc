@@ -27,4 +27,3 @@ UI\ProgressTab.lua
 UI\ChronicleTab.lua
 UI\Options.lua
 UI\Skin.lua
-Bindings.xml

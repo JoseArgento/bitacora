@@ -35,4 +35,3 @@ UI\ChronicleTab.lua
 UI\Options.lua
 UI\Skin.lua
 UI\Tooltip.lua
-Bindings.xml

@@ -23,4 +23,3 @@ UI\NotesTab.lua
 UI\Tooltip.lua
 UI\Options.lua
 UI\Skin.lua
-Bindings.xml

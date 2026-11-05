@@ -22,4 +22,3 @@ UI\Main.lua
 UI\AlbumTab.lua
 UI\Options.lua
 UI\Skin.lua
-Bindings.xml
