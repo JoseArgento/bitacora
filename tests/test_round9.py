@@ -186,13 +186,11 @@ def test_an_options_bookmark_opens_the_options(game):
     assert tab is not None and tab.fontString._text == "Options"
     opened = game.run("local hit = false; local real = ns.OpenOptions; ns.OpenOptions = function() hit = true end; ns.UI.optionsTab:GetScript('OnClick')(ns.UI.optionsTab); ns.OpenOptions = real; return hit")
     assert opened is True
-    # it hangs 12 px under the last bookmark
-    assert game.run("local p = ns.UI.optionsTab._points[1]; return p[2] == ns.UI.tabs[#ns.UI.tabs] and p[5] == -12") is True
-    # only the top half of the ribbon texture (the normal bookmark), not both stacked into a thin line
-    assert game.run("return table.concat(ns.UI.optionsTab.cloth._texCoord, ',')") == "0,1,0,0.5"
-    assert game.run("return ns.UI.optionsTab:GetWidth()") == 160
-    assert game.run("return ns.UI.optionsTab:GetHeight()") >= 20
-
+    # it is the book's own action bookmark: smaller, brown, never the open one
+    assert game.run("return ns.UI.optionsTab.action ~= nil and ns.UI.optionsTab.color == Pergamino.BOOKMARK_ACTION_COLOR") is True
+    assert game.run("return ns.UI.optionsTab:GetWidth(), ns.UI.optionsTab:GetHeight()") == (128, 22)
+    game.run("ns.UI.frame:SelectTab('options')")
+    assert game.run("return ns.UI.frame.selected") != "options"
 
 def test_no_options_bookmark_on_a_single_page_part():
     g = Game(addons=("Bitacora_Recordatorios",))

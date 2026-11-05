@@ -617,9 +617,9 @@ def test_the_window_is_a_pergamino_book_with_a_cover_that_opens(game):
     assert str(frame.pageL.texture).endswith("Libs\\Pergamino\\Media\\page") and frame.pageR is not None and frame.spine is not None
     assert frame.title._text == "Bitácora" and frame.close is not None and len(frame.Tabs) == 6
     assert "Bitacora_Datos" in str(frame.pageL.texture)  # the look comes from the shared data addon
-    # the bookmark of the open page is the gold one
-    assert game.run("return BitacoraFrame.tabs.journal.cloth:GetTexCoord()") == (0, 1, 0.5, 1)
-    assert game.run("return BitacoraFrame.tabs.notes.cloth:GetTexCoord()") == (0, 1, 0, 0.5)
+    # the bookmark of the open page shows its gold edge; each bookmark has its own colour
+    assert game.run("return BitacoraFrame.tabs.journal.edge:IsShown(), BitacoraFrame.tabs.notes.edge:IsShown()") == (True, False)
+    assert game.run("return BitacoraFrame.tabs.journal.color ~= BitacoraFrame.tabs.notes.color") is True
     # the texts wear Pergamino fonts (Alegreya / Cinzel), not the game's
     path = game.run("return Pergamino.fonts.body:GetFont()")
     assert "Alegreya" in path[0]
