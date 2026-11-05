@@ -4,6 +4,8 @@ El diario de a bordo de tus personajes de **WoW Forever**: una libreta, un diari
 
 [Read in English](README.en.md)
 
+![La Libreta de Bitácora en el juego: un libro abierto con un marcador por parte](docs/libro.png)
+
 ![La página web de Bitácora: el diario como libro de a bordo](docs/web.png)
 
 **La web, en vivo:** [Bitácora](https://joseargento.github.io/bitacora/) · [Taberna](https://joseargento.github.io/bitacora/taberna.html)
@@ -115,7 +117,7 @@ La pestaña **Imágenes** de la página web lleva cualquier imagen a potencia de
 
 ## ¿Y Forever Journal o Forever Told?
 
-Hay otros diarios para Forever, y son buenos: [Forever Journal](https://www.curseforge.com/wow/addons/forever-journal) tiene el viaje por capítulos, metas, compañeros, un libro de misiones y recordatorios dentro del juego; [Forever Told](https://www.curseforge.com/wow/addons/forever-told) tiene crónica de guild, "se busca", epitafios Hardcore y capturas automáticas. Si querés eso, instalalos. Lo que Bitácora tiene y ellos no: **la página web** (el libro de a bordo, las postales, el álbum armado con tus capturas reales, los personajes lado a lado, la crónica de la guild semana a semana), las **notas que salen en el tooltip** del PNJ o del ítem, **imágenes** en las notas, los hitos propios de Forever (Legado, campamento, planos), el calendario del juego como recordatorios, castellano de verdad, y 210 tests que se corren contra la API de Forever antes de cada versión.
+Hay otros diarios para Forever, y son buenos: [Forever Journal](https://www.curseforge.com/wow/addons/forever-journal) tiene el viaje por capítulos, metas, compañeros, un libro de misiones y recordatorios dentro del juego; [Forever Told](https://www.curseforge.com/wow/addons/forever-told) tiene crónica de guild, "se busca", epitafios Hardcore y capturas automáticas. Si querés eso, instalalos. Lo que Bitácora tiene y ellos no: **la página web** (el libro de a bordo, las postales, el álbum armado con tus capturas reales, los personajes lado a lado, la crónica de la guild semana a semana), las **notas que salen en el tooltip** del PNJ o del ítem, **imágenes** en las notas, los hitos propios de Forever (Legado, campamento, planos), el calendario del juego como recordatorios, castellano de verdad, y 223 tests que se corren contra la API de Forever antes de cada versión.
 
 ## Privacidad
 
@@ -128,20 +130,20 @@ El addon no manda nada tuyo a nadie si no prendés la crónica de la guild. Lo �
 **Probado:**
 - ✅ **Cada función, evento y template existe en Forever 1.60.1.** Lo revisa `tools/check_api.py` contra los dumps de [Ketho/BlizzardInterfaceResources](https://github.com/Ketho/BlizzardInterfaceResources) y el código de la UI de [Gethe/wow-ui-source](https://github.com/Gethe/wow-ui-source), rama `forever`. Ejemplos: `ChatFrameUtil.InsertLink` (Forever no tiene `ChatEdit_InsertLink`), `RaidWarningUtil.AddMessage` (`RaidNotice_AddMessage` solo existe con los alias viejos), `TooltipDataProcessor`, `ScrollingEditBoxTemplate`, el compartimento de addons de Forever. El script encuentra nombres inventados o mal escritos.
 - ✅ [forever-lint](https://github.com/JoseArgento/forever-lint): solo la nota FL012 (las cuentas de prueba no pueden mandar mensajes de addon), que la crónica ya maneja. [Addon Sentry](https://github.com/JoseArgento/addon-sentry) da "Sin señales de riesgo".
-- ✅ **210 tests.**
+- ✅ **223 tests.**
   - 147 corren el addon en Lua 5.1 (el Lua de WoW), con un reemplazo chico del cliente (`tests/wow_mock.lua`): eventos, datos guardados y recargados, recordatorios (incluido el semanal), tooltips, links con shift-click, nombres de imágenes, patrones de botín en varios idiomas, valores secretos, cada pestaña armándose sin errores de Lua, el progreso contra una guía de aventuras de prueba, la crónica (mensajes malos, con códigos de color o con código adentro, inundación, tope de 300, dos jugadores pasándose hitos), los reportes de la beta (muertes dobles, zona vieja al llegar), el tiempo por nivel (incluido el reajuste con `/played`), los compañeros (tope, valores secretos, otros reinos), los recordatorios que vencieron mientras no jugabas, posponer y el reloj del reino, el libro (páginas, marcadores, tapa, fuentes) y las partes sueltas: cada una sola, varias juntas compartiendo los datos, y el completo con una parte (la parte se hace a un lado).
   - El resto prueban la página: lee el archivo igual que Lua 5.1, empareja capturas y arma los textos.
 - ✅ Las dos páginas probadas en Chromium: cada pestaña, el tiempo por nivel y los compañeros, capturas y PNG reales, escritorio y celular, claro y oscuro, y que no aparezca ningún "null" ni "undefined" en pantalla.
 
-**Sin probar ⏳.** Todo esto se prueba dentro del juego, y yo no tengo Forever:
-- **La ventana:** cómo se ve de verdad el libro en el cliente (texturas TGA, fuentes TTF propias, marcadores, tamaños, anclas, listas, menús), y la animación de la tapa. Está verificado en una maqueta HTML con las mismas medidas y en el mock de Lua, no en el juego.
-- **Las imágenes:** que el juego cargue PNG desde `BitacoraImagenes`, una carpeta sin `.toc`.
-- **Los nombres de archivo:** que las capturas de Forever se llamen `WoWScrnShot_MMDDYY_HHMMSS`.
-- **Los eventos:** que `ENCOUNTER_END` o `BOSS_KILL` salten en las mazmorras de Forever.
-- **La guía de aventuras:** que Forever liste sus mazmorras y bandas en `EJ_GetInstanceByIndex` (el orden de lo que devuelve `EJ_GetEncounterInfo` sí está verificado en el código de Blizzard).
-- **La ruta:** la carpeta exacta de Forever donde queda `WTF`.
-- **El reloj del reino:** que `C_DateAndTime.GetCurrentCalendarTime` dé la hora del reino en Forever (existe en el dump).
-- **La ventanita de posponer:** cómo se ve el `StaticPopup` con cuatro botones.
+**En el cliente** (desde el lanzamiento, 4 y 5/11): el libro con sus texturas y fuentes, los marcadores, el botón del minimapa, las imágenes PNG desde `BitacoraImagenes`, los nombres de las capturas (`WoWScrnShot_MMDDYY_HHMMSS`), el diario, el álbum, los recordatorios por zona, el progreso (tiempo por nivel, compañeros) y las opciones del juego.
+
+**Todavía sin ver ⏳:**
+- **La guía de aventuras:** con la guía nunca abierta `EJ_GetInstanceByIndex` no listó nada; el addon ahora recorre los niveles antes de rendirse, pero falta confirmarlo.
+- **Los eventos de jefes:** que `ENCOUNTER_END` o `BOSS_KILL` salten en las mazmorras de Forever (todavía no entré a una).
+- **El calendario:** los campos de `C_Calendar.GetDayEvent` (tomados como en retail) y el popup de tres botones.
+- **El Legado:** que `C_Traits.GetTraitCurrencyForAchievement` dé los puntos, y qué abre `ToggleLegacyChallenges` antes de desbloquearlo.
+- **El campamento:** los IDs del hechizo de fogata y de los buffs, y que `C_RestrictedActions` avise cuando las auras son secretas (si no, el aviso se apaga solo por la sesión).
+- **El reloj del reino** (`C_DateAndTime.GetCurrentCalendarTime`) y la ventanita de posponer con cuatro botones.
 
 ## Límites
 

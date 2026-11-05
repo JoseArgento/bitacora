@@ -2,6 +2,8 @@
 
 Recordatorios para **WoW Forever** que saltan cuando importan. Es la pestaña de recordatorios de [Bitácora](README.md) como addon aparte: no necesita nada más.
 
+![Recordame en el juego: una sola página de pergamino](docs/recordame.png)
+
 - **Cuándo avisa:** al entrar a una zona o subzona ("cuando llegue a Forjaz, vender el paño"), al llegar a un nivel ("al 40, la montura"), al entrar al juego, al abrir el correo, el banco, un vendedor o la subasta, un día a una hora ("los martes a las 20:30") o unas horas antes del reinicio semanal.
 - Cada uno puede ser de un personaje o de todos, de una vez o repetido. Avisa en el centro de la pantalla, con sonido.
 - **Posponer:** cada aviso abre una ventanita con "5, 10 o 15 min después" (se apaga en las opciones). Si uno por día y hora venció mientras no jugabas, salta al entrar, una vez (mira hasta 30 días atrás). Los de día y hora van por el reloj de tu compu o por el del reino, a elección.
