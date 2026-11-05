@@ -13,46 +13,44 @@ local KINDS = {
 	{ "reset", "R_RESET" },
 }
 
-UI.RegisterTab("TAB_REMINDERS", "reminders", function(panel)
+-- Left page: the form for a new reminder. Right page: the reminders (on a single page, one under the other).
+UI.RegisterTab("TAB_REMINDERS", "reminders", function(page)
 	local view = { kind = "zone", place = "MAIL", wday = 0 }
+	local left, right = page.left, page.right
+	local stacked = right == nil
+	right = right or left
 
 	-- form -------------------------------------------------------------------------------------------
-	local form = UI.Inset(panel)
+	local form = CreateFrame("Frame", nil, left)
 	form:SetPoint("TOPLEFT", 0, 0)
 	form:SetPoint("TOPRIGHT", 0, 0)
-	form:SetHeight(96)
+	form:SetHeight(stacked and 150 or 220)
 
-	local textLabel = UI.Label(form, L.REMINDER_TEXT, "GameFontNormal")
-	textLabel:SetPoint("TOPLEFT", 12, -12)
-	local text = UI.Input(form, 420)
-	text:SetPoint("LEFT", textLabel, "RIGHT", 12, 0)
-	text:SetPoint("RIGHT", form, "RIGHT", -16, 0)
+	local head = UI.Label(form, L.NEW_REMINDER_HEAD, "heading")
+	head:SetPoint("TOPLEFT", 0, 0)
 
-	local whenLabel = UI.Label(form, L.WHEN, "GameFontNormal")
-	whenLabel:SetPoint("TOPLEFT", textLabel, "BOTTOMLEFT", 0, -16)
+	local text = UI.Input(form, 300, nil, L.REMINDER_TEXT)
+	text:SetPoint("TOPLEFT", head, "BOTTOMLEFT", 0, -10)
+	text:SetPoint("RIGHT", form, "RIGHT", 0, 0)
+
+	local whenLabel = UI.Label(form, L.WHEN, "subheading")
+	whenLabel:SetPoint("TOPLEFT", text, "BOTTOMLEFT", 0, -14)
 	local kindButton = UI.Button(form, "", 150, nil)
-	kindButton:SetPoint("LEFT", whenLabel, "RIGHT", 12, 0)
+	kindButton:SetPoint("LEFT", whenLabel, "RIGHT", 10, 0)
 
-	local value = UI.Input(form, 200)
-	value:SetPoint("LEFT", kindButton, "RIGHT", 12, 0)
-	local valueHint = UI.Label(form, "", "GameFontDisableSmall")
-	valueHint:SetPoint("LEFT", value, "RIGHT", 8, 0)
-
+	local value = UI.Input(form, 150, nil, "")
+	local valueHint = UI.Label(form, "", "small")
 	local optionButton = UI.Button(form, "", 140, nil) -- place or weekday
-	optionButton:SetPoint("LEFT", kindButton, "RIGHT", 12, 0)
-	local minute = UI.Input(form, 40)
-	minute:SetPoint("LEFT", value, "RIGHT", 6, 0)
+	optionButton:SetPoint("TOPLEFT", whenLabel, "BOTTOMLEFT", 0, -12)
+	local minute = UI.Input(form, 40, nil, "00")
 
 	local onlyChar = UI.Check(form, L.ONLY_THIS_CHAR)
-	onlyChar:SetPoint("TOPLEFT", whenLabel, "BOTTOMLEFT", -4, -10)
 	local repeating = UI.Check(form, L.REPEAT)
-	repeating:SetPoint("LEFT", onlyChar.label, "RIGHT", 16, 0)
 	-- officers can send a day-and-time reminder to the whole guild
 	local forGuild = UI.Check(form, L.FOR_GUILD)
-	forGuild:SetPoint("LEFT", repeating.label, "RIGHT", 16, 0)
 
 	local create = UI.Button(form, L.NEW_REMINDER, 160, nil)
-	create:SetPoint("BOTTOMRIGHT", -12, 10)
+	create:SetPoint("BOTTOMLEFT", form, "BOTTOMLEFT", 0, 0)
 
 	local function layout()
 		local k = view.kind
@@ -65,25 +63,56 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(panel)
 		minute:SetShown(k == "time")
 		optionButton:SetShown(k == "place" or k == "time")
 		value:ClearAllPoints()
+		valueHint:ClearAllPoints()
+		-- the second line: option button and/or value
+		local anchor
 		if k == "time" then
 			optionButton:SetText(view.wday == 0 and L.EVERY_DAY or L.WEEKDAYS[view.wday])
 			value:SetWidth(40)
-			value:SetPoint("LEFT", optionButton, "RIGHT", 12, 0)
-			valueHint:ClearAllPoints()
+			value:SetPoint("LEFT", optionButton, "RIGHT", 10, 0)
+			minute:ClearAllPoints()
+			minute:SetPoint("LEFT", value, "RIGHT", 6, 0)
 			valueHint:SetPoint("LEFT", minute, "RIGHT", 8, 0)
 			valueHint:SetText(L.R_TIME_HINT)
+			anchor = optionButton
+		elseif k == "place" then
+			optionButton:SetText(L[R.PLACE_LABEL[view.place]])
+			anchor = optionButton
 		else
-			value:SetWidth((k == "level" or k == "reset") and 50 or 200)
-			value:SetPoint("LEFT", kindButton, "RIGHT", 12, 0)
-			valueHint:ClearAllPoints()
+			value:SetWidth((k == "level" or k == "reset") and 50 or 220)
+			value:SetPoint("TOPLEFT", whenLabel, "BOTTOMLEFT", 0, -12)
 			valueHint:SetPoint("LEFT", value, "RIGHT", 8, 0)
 			valueHint:SetText(k == "zone" and L.R_ZONE_HINT or k == "level" and L.R_LEVEL_HINT or k == "reset" and L.R_RESET_HINT or "")
-			optionButton:SetText(L[R.PLACE_LABEL[view.place]])
+			anchor = value
+		end
+		if k == "login" then
+			anchor = kindButton
 		end
 		valueHint:SetShown(value:IsShown())
+		-- the checks under that line
+		onlyChar:ClearAllPoints()
+		onlyChar:SetPoint("TOPLEFT", anchor == kindButton and whenLabel or anchor, "BOTTOMLEFT", 0, -14)
+		repeating:ClearAllPoints()
+		forGuild:ClearAllPoints()
 		repeating:SetShown(k ~= "level")
 		forGuild:SetShown(G ~= nil and G.IAmOfficer() and k == "time")
 		onlyChar:SetShown(not (forGuild:IsShown() and forGuild:GetChecked()))
+		local prev = onlyChar:IsShown() and onlyChar or nil
+		if repeating:IsShown() then
+			if prev then
+				repeating:SetPoint("LEFT", prev.label, "RIGHT", 16, 0)
+			else
+				repeating:SetPoint("TOPLEFT", anchor == kindButton and whenLabel or anchor, "BOTTOMLEFT", 0, -14)
+			end
+			prev = repeating
+		end
+		if forGuild:IsShown() then
+			if prev then
+				forGuild:SetPoint("TOPLEFT", onlyChar:IsShown() and onlyChar or repeating, "BOTTOMLEFT", 0, -8)
+			else
+				forGuild:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -14)
+			end
+		end
 	end
 	forGuild:HookScript("OnClick", layout)
 
@@ -172,27 +201,47 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(panel)
 		end
 	end)
 
-	-- list -------------------------------------------------------------------------------------------
-	local inset = UI.Inset(panel)
-	inset:SetPoint("TOPLEFT", form, "BOTTOMLEFT", 0, -8)
-	inset:SetPoint("BOTTOMRIGHT", 0, 0)
+	-- the help under the form, left page
+	if not stacked then
+		local help = UI.Label(left, L.REMINDERS_HELP, "muted")
+		help:SetPoint("TOPLEFT", form, "BOTTOMLEFT", 0, -16)
+		help:SetPoint("RIGHT", 0, 0)
+		help:SetWordWrap(true)
+		help:SetSpacing(3)
+	end
 
-	local list = UI.List(inset, 30, function(row, r)
+	-- list -------------------------------------------------------------------------------------------
+	local listHead = UI.Label(right, L.TAB_REMINDERS, "heading")
+	if stacked then
+		listHead:SetPoint("TOPLEFT", form, "BOTTOMLEFT", 0, -16)
+	else
+		listHead:SetPoint("TOPLEFT", 0, 0)
+	end
+	local rule = UI.Rule(right)
+	rule:SetPoint("TOPLEFT", listHead, "BOTTOMLEFT", 0, -6)
+	rule:SetPoint("RIGHT", right, "RIGHT", 0, 0)
+
+	local listFrame = CreateFrame("Frame", nil, right)
+	listFrame:SetPoint("TOPLEFT", rule, "BOTTOMLEFT", 0, -4)
+	listFrame:SetPoint("BOTTOMRIGHT", right, "BOTTOMRIGHT", 0, 0)
+
+	local list = UI.List(listFrame, 40, function(row, r)
 		if not row.text then
-			row.text = UI.Label(row, "", "GameFontHighlight")
-			row.text:SetPoint("LEFT", 10, 0)
-			row.text:SetPoint("RIGHT", -220, 0)
+			row.text = UI.Label(row, "", "body")
+			row.text:SetPoint("TOPLEFT", 4, -4)
+			row.text:SetPoint("RIGHT", -4, 0)
 			row.text:SetWordWrap(false)
-			row.when = UI.Label(row, "", "GameFontDisableSmall", "RIGHT")
-			row.when:SetPoint("RIGHT", -10, 0)
-			row.when:SetWidth(200)
+			row.when = UI.Label(row, "", "small")
+			row.when:SetPoint("BOTTOMLEFT", 4, 4)
+			row.when:SetPoint("RIGHT", -4, 0)
+			row.when:SetWordWrap(false)
 		end
 		if r.guild then
-			row.text:SetText("|cff40c0ff" .. r.text .. "|r")
+			row.text:SetText("|cff2b5da8" .. r.text .. "|r")
 			row.when:SetText(L.GUILD_TAG:format(r.by, date("%a %d/%m %H:%M", r.next - (GetServerTime() - time()))))
 			return
 		end
-		row.text:SetText(r.done and ("|cff808080" .. r.text .. "|r") or r.text)
+		row.text:SetText(r.done and ("|cff6c4e31" .. r.text .. "|r") or r.text)
 		local when = R.Describe(r)
 		if r.char then
 			when = when .. " · " .. r.char
@@ -222,11 +271,13 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(panel)
 			end)
 		end)
 	end)
-	list.box:SetPoint("TOPLEFT", 4, -4)
-	list.box:SetPoint("BOTTOMRIGHT", -20, 4)
+	list.box:SetPoint("TOPLEFT", 0, 0)
+	list.box:SetPoint("BOTTOMRIGHT", -16, 0)
 
-	local empty = UI.Label(inset, L.REMINDERS_EMPTY, "GameFontDisable", "CENTER")
-	empty:SetPoint("CENTER")
+	local empty = UI.Label(listFrame, L.REMINDERS_EMPTY, "muted", "CENTER")
+	empty:SetPoint("TOPLEFT", 10, -30)
+	empty:SetPoint("TOPRIGHT", -10, -30)
+	empty:SetWordWrap(true)
 
 	function view.Refresh()
 		layout()
@@ -248,5 +299,6 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(panel)
 		empty:SetShown(#items == 0)
 	end
 
+	view.list = list
 	return view
 end)

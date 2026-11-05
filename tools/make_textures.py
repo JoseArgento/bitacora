@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Draws the tavern skin's textures: Bitacora_Datos/Media/{parchment,wood,cover}.tga.
+"""Draws the book cover: Bitacora_Datos/Media/cover.tga (the rest of the look is Pergamino's, in Libs/Pergamino).
 
 Everything is generated here from noise and shapes (no game art). Sizes are powers of 2 and the files are
 32-bit TGA, which every WoW client loads. Needs Pillow. Deterministic: the same seed gives the same files.
@@ -121,7 +121,7 @@ def cover() -> Image.Image:
 
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
-    for name, make in [("parchment", parchment), ("wood", wood), ("cover", cover)]:
+    for name, make in [("cover", cover)]:
         img = make()
         assert img.width == img.height and img.width & (img.width - 1) == 0, name
         path = OUT / f"{name}.tga"

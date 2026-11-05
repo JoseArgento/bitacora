@@ -95,7 +95,12 @@ def main() -> int:
             own_globals |= {v.strip() for v in m.group(1).split(",")}
     own_methods: set[str] = set()
     files = sorted(addon.rglob("*.lua"))
-    for p in files:
+    # what the addons it depends on define (Bitacora_Datos brings the Pergamino look) counts as its own too
+    dep_files: list[Path] = []
+    for toc in tocs:
+        if toc.parent != addon:
+            dep_files += sorted(toc.parent.rglob("*.lua"))
+    for p in files + dep_files:
         text = p.read_text(encoding="utf-8")
         own_globals |= set(re.findall(r"^(\w+)\s*=", text, re.M)) | set(re.findall(r"^function\s+(\w+)\s*\(", text, re.M))
         own_methods |= set(re.findall(r"function\s+[\w.]+[:.](\w+)\s*\(", text))

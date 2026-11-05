@@ -9,7 +9,7 @@ Recordatorios para **WoW Forever** que saltan cuando importan. Es la pestaña de
 - **Del calendario del juego:** al entrar mira los eventos de la guild (y los que te invitaron) de los próximos 7 días y por cada uno nuevo pregunta "¿Te aviso antes de «Onyxia» (jue 12/11 20:30)?" con Sí / No / Siempre. Avisa 60 minutos antes, en tu hora. Se apaga en las opciones.
 - **"Recordale a":** `/recordame a Pepito: traé agua` le manda el recordatorio a alguien de tu guild o de tu lista de amigos (mensaje de addon por susurro) y le salta al instante. Solo se aceptan de gente de la guild o amigos; de otros se ignora en silencio.
 - **El campamento:** 5 minutos antes de que venza el buff del campamento, un aviso (se apaga en las opciones; ⏳ los IDs de Forever no se conocen, se reconoce por nombre).
-- `/recordame` abre la ventana; también desde el botón de addons junto al minimapa.
+- `/recordame` abre la ventana; también desde el botón de addons junto al minimapa. La ventana es una página de pergamino dentro de una tapa de cuero (la piel **Pergamino**, que va dentro del addon en `Libs/Pergamino`, con sus fuentes OFL): el formulario arriba, la lista abajo.
 
 **Qué manda:** nada tuyo por su cuenta. Al entrar le pide a tu guild (`Q|1`, un pedido vacío) los recordatorios de los oficiales; se apaga en las opciones. Si sos oficial, manda los que escribas para la guild; si usás "recordale a", ese texto va por susurro a esa persona. Lo que llega solo se acepta de oficiales (los de guild) o de gente de la guild y amigos (los susurrados), se limpia y nunca se ejecuta.
 

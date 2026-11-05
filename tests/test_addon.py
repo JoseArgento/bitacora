@@ -585,9 +585,6 @@ def test_options_panel_registers_and_changes_settings(game):
     game.run("ns.UI.options.loot:GetScript('OnClick')(ns.UI.options.loot)")
     game.m.clickMenu("Rare (blue)")
     assert game.db.settings.lootQuality == 3
-    game.run("ns.UI.options.skin:GetScript('OnClick')(ns.UI.options.skin)")
-    game.m.clickMenu("Tavern book")
-    assert game.db.settings.skin == "tavern"
     game.run("local c = ns.UI.options.checks.zoneNotes; c:SetChecked(false); c:GetScript('OnClick')(c)")
     assert game.db.settings.zoneNotes is False
 
@@ -601,38 +598,45 @@ def test_journal_search(game):
     game.run("ns.Toggle(2); ns.UI.views[2].search:SetText('level'); ns.UI.views[2].Refresh()")
 
 
-def test_tavern_skin_recolors_and_opens_the_book(game):
+def test_the_window_is_a_pergamino_book_with_a_cover_that_opens(game):
     game.run("ns.Toggle(1); ns.Toggle(); ns.UI.SelectTab(2); ns.UI.frame:Hide()")
-    game.db.settings.skin = "tavern"
-    game.run("ns.Fire('settings', 'skin')")
     frame = game.lua.globals().BitacoraFrame
-    assert frame.tavern.page._shown and str(frame.tavern.page.texture).endswith("Media\\parchment")
-    # labels on parchment use dark ink; the body editor too
-    inks = game.run(
-        """
-        local n, dark = 0, 0
-        for fs, font in pairs(ns.UI.labels) do
-          n = n + 1
-          local r = fs:GetTextColor()
-          if r < 0.6 then dark = dark + 1 end
-        end
-        return n, dark
-        """
-    )
-    assert inks[0] > 10 and inks[1] >= inks[0] * 0.8
+    # two parchment pages, a spine, a title banner, a wax seal and six bookmarks
+    assert str(frame.pageL.texture).endswith("Libs\\Pergamino\\Media\\page") and frame.pageR is not None and frame.spine is not None
+    assert frame.title._text == "Bitácora" and frame.close is not None and len(frame.Tabs) == 6
+    assert "Bitacora_Datos" in str(frame.pageL.texture)  # the look comes from the shared data addon
+    # the bookmark of the open page is the gold one
+    assert game.run("return BitacoraFrame.tabs.journal.cloth:GetTexCoord()") == (0, 1, 0.5, 1)
+    assert game.run("return BitacoraFrame.tabs.notes.cloth:GetTexCoord()") == (0, 1, 0, 0.5)
+    # the texts wear Pergamino fonts (Alegreya / Cinzel), not the game's
+    path = game.run("return Pergamino.fonts.body:GetFont()")
+    assert "Alegreya" in path[0]
+    assert game.run("return ns.UI.views[1].title:GetFontObject() == Pergamino.fonts.big") is True
+    # the cover plays once when the book opens, then hides itself
     game.m.played = 0
     game.run("ns.Toggle(1)")
-    assert game.m.played == 1 and frame.tavern.cover._shown is False  # played, then hid itself
-    game.db.settings.skin = "classic"
-    game.run("ns.Fire('settings', 'skin')")
-    assert frame.tavern.page._shown is False
+    assert game.m.played == 1 and frame.cover._shown is False
+    game.db.settings.bookIntro = False
+    game.run("ns.Toggle(); ns.Toggle(1)")
+    assert game.m.played == 1
+
+
+def test_bookmarks_switch_pages(game):
+    game.run("ns.Toggle(1)")
+    frame = game.lua.globals().BitacoraFrame
+    game.run("BitacoraFrame.tabs.album:GetScript('OnClick')()")
+    assert frame.selectedTab == 3 and game.db.settings.tab == 3
+    assert game.run("return BitacoraFrame.pages.album.left:IsShown(), BitacoraFrame.pages.notes.left:IsShown()") == (True, False)
 
 
 def test_textures_are_powers_of_two_tga():
-    for name in ["parchment", "wood", "cover"]:
-        data = (ROOT / "Bitacora_Datos" / "Media" / f"{name}.tga").read_bytes()
+    files = [ROOT / "Bitacora_Datos" / "Media" / "cover.tga", *(ROOT / "Bitacora_Datos" / "Libs" / "Pergamino" / "Media").glob("*.tga")]
+    assert len(files) >= 9
+    for path in files:
+        name = path.name
+        data = path.read_bytes()
         width, height, bpp = int.from_bytes(data[12:14], "little"), int.from_bytes(data[14:16], "little"), data[16]
-        assert data[2] == 2 and bpp == 32 and width == height and width & (width - 1) == 0, name
+        assert data[2] == 2 and bpp == 32 and width & (width - 1) == 0 and height & (height - 1) == 0, name
 
 
 # standalone parts -------------------------------------------------------------------------------------
@@ -662,8 +666,12 @@ def test_each_part_loads_alone(part):
     frame = g.lua.globals()[part + "Frame"]
     if part == "Bitacora_Diario":  # the journal comes with its progress and the guild chronicle
         assert frame._shown and len(frame.Tabs) == 3 and frame.Tabs[1]._shown is True
-    else:  # a single tab: no tab strip
+    else:  # a single tab: no bookmarks
         assert frame._shown and len(frame.Tabs) == 1 and frame.Tabs[1]._shown is False
+    if part == "Bitacora_Recordatorios":  # the reminders fit on one page
+        assert frame.right is None and frame.single is True
+    else:
+        assert frame.right is not None
     assert g.lua.globals()["SLASH_" + part.upper() + "1"].startswith("/")
     assert g.db.version == 1
 
@@ -716,3 +724,36 @@ def test_all_four_parts_together_do_each_thing_once():
     assert g.kinds() == ["start", "level"] and len(g.char().album) == 1
     assert len(list(g.db.notes.values())) == 1 and g.warnings() == ["Reminder: y"]
     assert g.db.sections[1].name == "General" and len(g.db.sections) == 1  # the first tab is made once
+
+
+# the two pages of each tab --------------------------------------------------------------------------
+
+
+def test_journal_right_page_shows_the_clicked_entry(game):
+    game.fire("PLAYER_LEVEL_UP", 11)
+    game.run("ns.Toggle(2)")
+    assert game.run("return ns.UI.views[2].list.box.rows[1].tag.text:GetText()") == "LEVEL"
+    game.run("local l = ns.UI.views[2].list; l.box.rows[1]:GetScript('OnClick')(l.box.rows[1], 'LeftButton')")
+    assert game.run("return ns.UI.views[2].selected.kind") == "level"
+
+
+def test_album_right_page_shows_the_clicked_shot(game):
+    game.fire("SCREENSHOT_SUCCEEDED")
+    game.run("ns.Toggle(3)")
+    game.run("local l = ns.UI.views[3].list; l.box.rows[1]:GetScript('OnClick')(l.box.rows[1], 'LeftButton')")
+    assert game.run("return ns.UI.views[3].selected") == 1
+
+
+def test_notebook_sections_are_chips_and_the_empty_right_page_says_so(game):
+    game.run("ns.Toggle(1); ns.Notes.AddSection('Onyxia'); ns.UI.views[1].Refresh()")
+    chips = game.run("local c = ns.UI.views[1].sections.chips; return c[1]:GetText(), c[2]:GetText(), c[3]:GetText(), c[1].pressed")
+    assert chips[0] == "All" and chips[2] == "Onyxia" and chips[3] is True
+    assert game.run("return ns.UI.views[1].selected") is None
+
+
+def test_reminders_part_stacks_the_form_over_the_list():
+    g = Game(addons=("Bitacora_Recordatorios",))
+    g.login()
+    g.run("ns.Toggle()")
+    assert g.run("return ns.UI.frame.single, ns.UI.frame.right") == (True, None)
+    assert g.run("return ns.UI.views[1].list ~= nil") is True

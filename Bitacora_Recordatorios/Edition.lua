@@ -4,4 +4,5 @@ local _, ns = ...
 ns.edition = {
 	title = "Bitácora · Recordatorios",
 	slash = { "/recordatorios", "/recordar" },
+	single = true,
 }

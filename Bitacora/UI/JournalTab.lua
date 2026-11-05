@@ -1,87 +1,105 @@
 local _, ns = ...
 local L = ns.L
 local UI = ns.UI
+local P = UI.P
 local J = ns.Journal
 
-local KIND_ICON = {
-	start = "Interface\\Icons\\INV_Misc_Book_09",
-	level = "Interface\\Icons\\Spell_Holy_SurgeOfLight",
-	zone = "Interface\\Icons\\INV_Misc_Map_01",
-	boss = "Interface\\Icons\\Achievement_Boss_Onyxia",
-	death = "Interface\\Icons\\Ability_Rogue_FeignDeath",
-	quest = "Interface\\GossipFrame\\ActiveQuestIcon",
-	loot = "Interface\\Icons\\INV_Misc_Bag_10",
-	achievement = "Interface\\Icons\\Achievement_General",
-	money = "Interface\\Icons\\INV_Misc_Coin_01",
-	played = "Interface\\Icons\\INV_Misc_PocketWatch_01",
-	note = "Interface\\Icons\\INV_Feather_05",
-}
+-- Left page: search, filters, the entries (newest first), "Write".
+-- Right page: the character (menu), its numbers, and the entry you clicked, in full.
+UI.RegisterTab("TAB_JOURNAL", "journal", function(page)
+	local view = { filter = "milestones", char = nil, selected = nil }
+	local left, right = page.left, page.right or page.left
 
-UI.RegisterTab("TAB_JOURNAL", "journal", function(panel)
-	local view = { filter = "milestones", char = nil }
-
-	-- the summary goes under the list: the top row holds search, filters, write and the character menu
-	local summary = UI.Label(panel, "", "GameFontHighlightSmall")
-	summary:SetPoint("BOTTOMLEFT", 4, 2)
-
-	local charButton = UI.Button(panel, "", 160, nil)
-	charButton:SetPoint("TOPRIGHT", -4, 0)
-
-	local write = UI.Button(panel, L.ADD_ENTRY, 90, function()
-		UI.Prompt(L.ENTRY_PROMPT, "", function(text)
-			J.AddManual(text)
-		end)
-	end)
-	write:SetPoint("RIGHT", charButton, "LEFT", -8, 0)
-
-	local filterAll, filterMilestones
-	filterMilestones = UI.Button(panel, L.FILTER_MILESTONES, 90, function()
-		view.filter = "milestones"
-		view.Refresh()
-	end)
-	filterMilestones:SetPoint("RIGHT", write, "LEFT", -16, 0)
-	filterAll = UI.Button(panel, L.FILTER_ALL, 70, function()
-		view.filter = "all"
-		view.Refresh()
-	end)
-	filterAll:SetPoint("RIGHT", filterMilestones, "LEFT", -4, 0)
-
-	local search = CreateFrame("EditBox", nil, panel, "SearchBoxTemplate")
-	search:SetSize(170, 20)
-	search:SetPoint("TOPLEFT", 8, -2)
+	-- left page -------------------------------------------------------------------------------------
+	local search = UI.Input(left, 150, nil, L.SEARCH_JOURNAL)
+	search:SetPoint("TOPLEFT", 0, 0)
 	search:HookScript("OnTextChanged", function()
 		view.Refresh()
 	end)
 	view.search = search
 
-	local inset = UI.Inset(panel)
-	inset:SetPoint("TOPLEFT", 0, -30)
-	inset:SetPoint("BOTTOMRIGHT", 0, 18)
+	local filters = UI.ChipRow(left, 200)
+	filters:SetPoint("LEFT", search, "RIGHT", 10, 0)
 
-	local list = UI.List(inset, 26, function(row, e)
-		if not row.icon then
-			row.icon = row:CreateTexture(nil, "ARTWORK")
-			row.icon:SetSize(20, 20)
-			row.icon:SetPoint("LEFT", 6, 0)
-			row.date = UI.Label(row, "", "GameFontDisableSmall")
-			row.date:SetPoint("LEFT", row.icon, "RIGHT", 8, 0)
-			row.date:SetWidth(108)
-			row.text = UI.Label(row, "", "GameFontHighlight")
-			row.text:SetPoint("LEFT", row.date, "RIGHT", 6, 0)
-			row.text:SetPoint("RIGHT", -8, 0)
+	local rule = UI.Rule(left)
+	rule:SetPoint("TOPLEFT", search, "BOTTOMLEFT", 0, -8)
+	rule:SetPoint("RIGHT", left, "RIGHT", 0, 0)
+
+	local listFrame = CreateFrame("Frame", nil, left)
+	listFrame:SetPoint("TOPLEFT", rule, "BOTTOMLEFT", 0, -4)
+	listFrame:SetPoint("BOTTOMRIGHT", left, "BOTTOMRIGHT", 0, 34)
+
+	local list
+	list = UI.List(listFrame, 40, function(row, e)
+		if not row.tag then
+			row.tag = UI.Tag(row, "", "note")
+			row.tag:SetPoint("TOPLEFT", 4, -5)
+			row.date = UI.Label(row, "", "small")
+			row.date:SetPoint("TOPRIGHT", -4, -4)
+			row.text = UI.Label(row, "", "body")
+			row.text:SetPoint("BOTTOMLEFT", 4, 4)
+			row.text:SetPoint("RIGHT", -4, 0)
 			row.text:SetWordWrap(false)
 			UI.EnableLinks(row)
 		end
-		row.icon:SetTexture(KIND_ICON[e.kind] or KIND_ICON.note)
+		row.tag:Set(L.KINDS and L.KINDS[e.kind] or e.kind, e.kind)
 		row.date:SetText(UI.FormatDate(e))
-		local where = (e.kind ~= "zone" and e.kind ~= "death" and e.kind ~= "start" and e.zone and e.zone ~= "") and ("  |cff808080" .. e.zone .. "|r") or ""
+		local where = (e.kind ~= "zone" and e.kind ~= "death" and e.kind ~= "start" and e.zone and e.zone ~= "") and ("  |cff6c4e31" .. e.zone .. "|r") or ""
 		row.text:SetText(J.Text(e) .. where)
+		row.selected:SetShown(view.selected == e)
+	end, function(e)
+		view.selected = e
+		list:Refresh()
+		view.ShowEntry()
 	end)
-	list.box:SetPoint("TOPLEFT", 4, -4)
-	list.box:SetPoint("BOTTOMRIGHT", -20, 4)
+	list.box:SetPoint("TOPLEFT", 0, 0)
+	list.box:SetPoint("BOTTOMRIGHT", -16, 0)
 
-	local empty = UI.Label(inset, L.JOURNAL_EMPTY, "GameFontDisable", "CENTER")
+	local empty = UI.Label(listFrame, L.JOURNAL_EMPTY, "muted", "CENTER")
 	empty:SetPoint("CENTER")
+
+	local write = UI.Button(left, L.ADD_ENTRY, 110, function()
+		UI.Prompt(L.ENTRY_PROMPT, "", function(text)
+			J.AddManual(text)
+		end)
+	end)
+	write:SetPoint("BOTTOMLEFT", 0, 0)
+
+	-- right page --------------------------------------------------------------------------------------
+	local charButton = UI.Button(right, "", 170, nil)
+	charButton:SetPoint("TOPLEFT", 0, 0)
+	local charHint = UI.Label(right, L.JOURNAL_OF, "muted")
+	charHint:SetPoint("LEFT", charButton, "RIGHT", 10, 0)
+
+	local summaryHead = UI.Label(right, L.SUMMARY_HEAD, "heading")
+	summaryHead:SetPoint("TOPLEFT", charButton, "BOTTOMLEFT", 0, -18)
+	local summary = UI.Label(right, "", "body")
+	summary:SetPoint("TOPLEFT", summaryHead, "BOTTOMLEFT", 0, -6)
+	summary:SetPoint("RIGHT", 0, 0)
+	summary:SetWordWrap(true)
+	summary:SetSpacing(3)
+
+	local entryRule = UI.Rule(right)
+	entryRule:SetPoint("TOPLEFT", summary, "BOTTOMLEFT", 0, -14)
+	entryRule:SetPoint("RIGHT", 0, 0)
+
+	local entryHead = UI.Label(right, L.ENTRY_HEAD, "heading")
+	entryHead:SetPoint("TOPLEFT", entryRule, "BOTTOMLEFT", 0, -12)
+	local entryTag = UI.Tag(right, "", "note")
+	entryTag:SetPoint("LEFT", entryHead, "RIGHT", 8, 0)
+	local entryWhen = UI.Label(right, "", "small")
+	entryWhen:SetPoint("TOPLEFT", entryHead, "BOTTOMLEFT", 0, -6)
+	local entryText = CreateFrame("Frame", nil, right)
+	entryText:SetPoint("TOPLEFT", entryWhen, "BOTTOMLEFT", 0, -6)
+	entryText:SetPoint("BOTTOMRIGHT", 0, 0)
+	UI.EnableLinks(entryText)
+	entryText.text = UI.Label(entryText, "", "italic")
+	entryText.text:SetPoint("TOPLEFT")
+	entryText.text:SetPoint("RIGHT")
+	entryText.text:SetWordWrap(true)
+	entryText.text:SetSpacing(3)
+	local entryHint = UI.Label(right, L.ENTRY_PICK, "muted")
+	entryHint:SetPoint("TOPLEFT", entryHead, "BOTTOMLEFT", 0, -6)
 
 	charButton:SetScript("OnClick", function(self)
 		UI.Menu(self, function(root)
@@ -95,11 +113,33 @@ UI.RegisterTab("TAB_JOURNAL", "journal", function(panel)
 					return (view.char or ns.CharKey()) == key
 				end, function()
 					view.char = key
+					view.selected = nil
 					view.Refresh()
 				end)
 			end
 		end)
 	end)
+
+	function view.ShowEntry()
+		local e = view.selected
+		entryHint:SetShown(e == nil)
+		entryTag:SetShown(e ~= nil)
+		entryWhen:SetShown(e ~= nil)
+		entryText:SetShown(e ~= nil)
+		if not e then
+			return
+		end
+		entryTag:Set(L.KINDS and L.KINDS[e.kind] or e.kind, e.kind)
+		local when = UI.FormatDate(e)
+		if e.level then
+			when = when .. " · " .. L.LEVEL_N:format(e.level)
+		end
+		if e.zone and e.zone ~= "" then
+			when = when .. " · " .. e.zone
+		end
+		entryWhen:SetText(when)
+		entryText.text:SetText(J.Text(e))
+	end
 
 	function view.Refresh()
 		local key = view.char or ns.CharKey()
@@ -119,14 +159,27 @@ UI.RegisterTab("TAB_JOURNAL", "journal", function(panel)
 		local c = ns.db.chars[key]
 		summary:SetText(L.SUMMARY:format(c and c.level or s.level, s.entries, s.bosses, s.deaths))
 		charButton:SetText(key or "?")
-		if view.filter == "all" then
-			filterAll:LockHighlight()
-			filterMilestones:UnlockHighlight()
-		else
-			filterMilestones:LockHighlight()
-			filterAll:UnlockHighlight()
-		end
+		filters:Set({
+			{
+				text = L.FILTER_MILESTONES,
+				selected = view.filter == "milestones",
+				onClick = function()
+					view.filter = "milestones"
+					view.Refresh()
+				end,
+			},
+			{
+				text = L.FILTER_ALL,
+				selected = view.filter == "all",
+				onClick = function()
+					view.filter = "all"
+					view.Refresh()
+				end,
+			},
+		})
+		view.ShowEntry()
 	end
 
+	view.list = list
 	return view
 end)

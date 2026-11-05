@@ -22,10 +22,14 @@ def warnings(g):
 def test_needs_nothing_else():
     toc = (ROOT / "Recordame" / "Recordame.toc").read_text(encoding="utf-8")
     assert "## Dependencies" not in toc and "## SavedVariables: RecordameDB" in toc
-    assert (ROOT / "Recordame" / "Media" / "parchment.tga").is_file()
+    assert (ROOT / "Recordame" / "Media" / "cover.tga").is_file()
+    assert (ROOT / "Recordame" / "Libs" / "Pergamino" / "Pergamino.lua").is_file()  # its own copy of the look
+    assert toc.index("Libs\\Pergamino\\Pergamino.lua") < toc.index("Core.lua")
     g = recordame()
     assert g.lua.globals().RecordameDB is not None and g.lua.globals().BitacoraDB is None
     assert g.ns.MEDIA == "Interface\\AddOns\\Recordame\\Media\\"
+    assert "Interface\\AddOns\\Recordame\\Libs\\Pergamino" in g.lua.globals().Pergamino.MEDIA
+    assert g.lua.globals().RecordameFrame.single is True and g.lua.globals().RecordameFrame.right is None
 
 
 def test_reminders_work_alone():

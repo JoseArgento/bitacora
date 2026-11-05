@@ -12,6 +12,7 @@
 ## AddonCompartmentFuncOnLeave: Recordame_OnAddonCompartmentLeave
 ## Category: Roleplay
 
+Libs\Pergamino\Pergamino.lua
 Edition.lua
 Locales.lua
 Core.lua

@@ -1,76 +1,81 @@
 local ADDON, ns = ...
 local L = ns.L
 local UI = ns.UI
+local P = UI.P
 local N = ns.Notes
 
 local MAX_THUMBS = 4
 
-UI.RegisterTab("TAB_NOTES", "notes", function(panel)
+-- Left page: the sections as chips, the search, the list of notes, "New note".
+-- Right page: the note itself (title, scope, body, images, pin / attach / more).
+UI.RegisterTab("TAB_NOTES", "notes", function(page)
 	local view = { section = nil, selected = nil }
+	local left, right = page.left, page.right or page.left
 
-	-- tabs of the notebook (sections) ----------------------------------------------------------
-	local sectionBar = CreateFrame("Frame", nil, panel)
-	sectionBar:SetPoint("TOPLEFT", 0, 0)
-	sectionBar:SetPoint("TOPRIGHT", -190, 0)
-	sectionBar:SetHeight(24)
-	local sectionButtons = {}
-
-	local search = CreateFrame("EditBox", nil, panel, "SearchBoxTemplate")
-	search:SetSize(170, 20)
-	search:SetPoint("TOPRIGHT", -4, -2)
+	-- left page -------------------------------------------------------------------------------------
+	local search = UI.Input(left, 120, nil, L.SEARCH)
+	search:SetPoint("TOPRIGHT", 0, 0)
 	search:HookScript("OnTextChanged", function()
 		view.RefreshList()
 	end)
 
-	-- note list (left) ---------------------------------------------------------------------------
-	local listFrame = UI.Inset(panel)
-	listFrame:SetPoint("TOPLEFT", 0, -30)
-	listFrame:SetPoint("BOTTOMLEFT", 0, 30)
-	listFrame:SetWidth(240)
+	local sections = UI.ChipRow(left, left:GetWidth() - 130)
+	sections:SetPoint("TOPLEFT", 0, 0)
 
-	local list = UI.List(listFrame, 36, function(row, note)
+	local rule = UI.Rule(left)
+	rule:SetPoint("TOPLEFT", sections, "BOTTOMLEFT", 0, -8)
+	rule:SetPoint("RIGHT", left, "RIGHT", 0, 0)
+
+	local listFrame = CreateFrame("Frame", nil, left)
+	listFrame:SetPoint("TOPLEFT", rule, "BOTTOMLEFT", 0, -4)
+	listFrame:SetPoint("BOTTOMRIGHT", left, "BOTTOMRIGHT", 0, 34)
+
+	local list = UI.List(listFrame, 40, function(row, note)
 		if not row.title then
-			row.title = UI.Label(row, "", "GameFontHighlight")
-			row.title:SetPoint("TOPLEFT", 6, -4)
-			row.title:SetPoint("RIGHT", -6, 0)
+			row.title = UI.Label(row, "", "strong")
+			row.title:SetPoint("TOPLEFT", 4, -4)
+			row.title:SetPoint("RIGHT", -60, 0)
 			row.title:SetWordWrap(false)
-			row.sub = UI.Label(row, "", "GameFontDisableSmall")
-			row.sub:SetPoint("TOPLEFT", row.title, "BOTTOMLEFT", 0, -2)
-			row.sub:SetPoint("RIGHT", -6, 0)
+			row.sub = UI.Label(row, "", "small")
+			row.sub:SetPoint("TOPLEFT", row.title, "BOTTOMLEFT", 0, -1)
+			row.sub:SetPoint("RIGHT", -4, 0)
 			row.sub:SetWordWrap(false)
+			row.tag = UI.Tag(row, L.PINNED, "pinned")
+			row.tag:SetPoint("TOPRIGHT", -4, -6)
 		end
-		row.title:SetText((note.pinned and "|TInterface\\Buttons\\UI-GuildButton-PublicNote-Up:12|t " or "") .. N.DisplayTitle(note))
+		row.title:SetText(N.DisplayTitle(note))
 		local sub = ns.Preview(note.body, 50)
 		if note.attach then
 			sub = "@" .. (note.attach.label or "") .. (sub ~= "" and " · " .. sub or "")
 		end
 		row.sub:SetText(sub)
+		row.tag:SetShown(note.pinned and true or false)
 		row.selected:SetShown(view.selected == note.id)
 	end, function(note)
 		view.Select(note.id)
 	end)
-	list.box:SetPoint("TOPLEFT", 4, -4)
-	list.box:SetPoint("BOTTOMRIGHT", -20, 4)
+	list.box:SetPoint("TOPLEFT", 0, 0)
+	list.box:SetPoint("BOTTOMRIGHT", -16, 0)
 
-	local empty = UI.Label(listFrame, L.NO_NOTES, "GameFontDisable", "CENTER")
+	local empty = UI.Label(listFrame, L.NO_NOTES, "muted", "CENTER")
 	empty:SetPoint("TOPLEFT", 10, -20)
 	empty:SetPoint("TOPRIGHT", -10, -20)
 
-	local newNote = UI.Button(panel, L.NEW_NOTE, 120, function()
+	local newNote = UI.Button(left, L.NEW_NOTE, 120, function()
 		local note = N.Create({ section = view.section })
 		view.Select(note.id, true)
 	end)
-	newNote:SetPoint("BOTTOMLEFT", 0, 2)
+	newNote:SetPoint("BOTTOMLEFT", 0, 0)
 
-	-- editor (right) -----------------------------------------------------------------------------
-	local editor = CreateFrame("Frame", nil, panel)
-	editor:SetPoint("TOPLEFT", listFrame, "TOPRIGHT", 10, 0)
-	editor:SetPoint("BOTTOMRIGHT", 0, 0)
+	-- right page: the note -----------------------------------------------------------------------------
+	local editor = CreateFrame("Frame", nil, right)
+	editor:SetAllPoints()
 
-	local title = UI.Input(editor, 300)
-	title:SetPoint("TOPLEFT", 6, 0)
-	title:SetPoint("RIGHT", -200, 0)
-	title:SetFontObject("GameFontNormalLarge")
+	local title = UI.Input(editor, 300, nil, L.NOTE_TITLE_HINT)
+	title:SetPoint("TOPLEFT", 0, 0)
+	title:SetPoint("RIGHT", 0, 0)
+	title:SetFontObject(P.fonts.big)
+	title:SetHeight(28)
 
 	local function current()
 		return view.selected and N.Get(view.selected)
@@ -100,36 +105,15 @@ UI.RegisterTab("TAB_NOTES", "notes", function(panel)
 		end
 	end)
 
-	local pin = UI.Button(editor, L.PIN, 60, function()
-		local note = current()
-		if note then
-			N.Update(note.id, { pinned = not note.pinned or nil })
-			view.ShowNote()
-		end
-	end)
-	pin:SetPoint("TOPRIGHT", -130, 1)
+	local scopeLabel = UI.Label(editor, "", "small")
+	scopeLabel:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 2, -4)
+	scopeLabel:SetPoint("RIGHT", 0, 0)
+	scopeLabel:SetWordWrap(false)
 
-	local more = UI.Button(editor, "…", 30, nil)
-	more:SetPoint("TOPRIGHT", -96, 1)
-
-	local attach = UI.Button(editor, L.ATTACH, 90, nil)
-	attach:SetPoint("TOPRIGHT", 0, 1)
-
-	local scopeLabel = UI.Label(editor, "", "GameFontDisableSmall")
-	scopeLabel:SetPoint("TOPLEFT", title, "BOTTOMLEFT", -4, -6)
-	local attachLabel = UI.Label(editor, "", "GameFontDisableSmall")
-	attachLabel:SetPoint("LEFT", scopeLabel, "RIGHT", 12, 0)
-
-	local bodyFrame = UI.Inset(editor)
-	bodyFrame:SetPoint("TOPLEFT", 0, -44)
-	bodyFrame:SetPoint("BOTTOMRIGHT", 0, 140)
-	local body = CreateFrame("Frame", nil, bodyFrame, "ScrollingEditBoxTemplate")
-	body:SetPoint("TOPLEFT", 8, -8)
-	body:SetPoint("BOTTOMRIGHT", -24, 8)
-	local bodyBar = CreateFrame("EventFrame", nil, bodyFrame, "MinimalScrollBar")
-	bodyBar:SetPoint("TOPLEFT", body, "TOPRIGHT", 6, 0)
-	bodyBar:SetPoint("BOTTOMLEFT", body, "BOTTOMRIGHT", 6, 0)
-	ScrollUtil.RegisterScrollBoxWithScrollBar(body:GetScrollBox(), bodyBar)
+	local area = P.TextArea(editor)
+	area:SetPoint("TOPLEFT", scopeLabel, "BOTTOMLEFT", -2, -8)
+	area:SetPoint("BOTTOMRIGHT", editor, "BOTTOMRIGHT", 0, 150)
+	local body = area.box
 	body:RegisterCallback("OnTextChanged", function(_, editBox, userChanged)
 		local note = current()
 		if note and userChanged then
@@ -138,13 +122,15 @@ UI.RegisterTab("TAB_NOTES", "notes", function(panel)
 		end
 	end, view)
 
-	local hint = UI.Label(editor, L.NOTE_HINT, "GameFontDisableSmall")
-	hint:SetPoint("TOPLEFT", bodyFrame, "BOTTOMLEFT", 2, -4)
+	local hint = UI.Label(editor, L.NOTE_HINT, "muted")
+	hint:SetPoint("TOPLEFT", area, "BOTTOMLEFT", 2, -2)
+	hint:SetPoint("RIGHT", 0, 0)
+	hint:SetWordWrap(false)
 
 	-- images strip
-	local imagesLabel = UI.Label(editor, L.IMAGES, "GameFontNormalSmall")
-	imagesLabel:SetPoint("TOPLEFT", hint, "BOTTOMLEFT", 0, -8)
-	local addImage = UI.Button(editor, L.ADD_IMAGE, 120, function()
+	local imagesLabel = UI.Label(editor, L.IMAGES, "subheading")
+	imagesLabel:SetPoint("TOPLEFT", hint, "BOTTOMLEFT", 0, -10)
+	local addImage = UI.Button(editor, L.ADD_IMAGE, 130, function()
 		local note = current()
 		if not note then
 			return
@@ -160,31 +146,27 @@ UI.RegisterTab("TAB_NOTES", "notes", function(panel)
 	end)
 	addImage:SetPoint("LEFT", imagesLabel, "RIGHT", 10, 0)
 
-	local preview = CreateFrame("Frame", ADDON .. "ImagePreview", UIParent, "BasicFrameTemplateWithInset")
-	preview:SetSize(540, 562)
-	preview:SetPoint("CENTER")
-	preview:SetFrameStrata("DIALOG")
-	preview:Hide()
-	preview.tex = preview:CreateTexture(nil, "ARTWORK")
-	preview.tex:SetPoint("TOPLEFT", 14, -36)
+	local preview = P.Card(ADDON .. "ImagePreview", 548, 566, "")
+	preview.tex = preview.body:CreateTexture(nil, "ARTWORK")
+	preview.tex:SetPoint("TOP", 0, 0)
 	preview.tex:SetSize(512, 512)
-	tinsert(UISpecialFrames, ADDON .. "ImagePreview")
 	UI.imagePreview = preview
 
 	local thumbs = {}
 	for i = 1, MAX_THUMBS do
 		local b = CreateFrame("Button", nil, editor)
-		b:SetSize(96, 96)
-		b:SetPoint("TOPLEFT", imagesLabel, "BOTTOMLEFT", (i - 1) * 104, -6)
+		b:SetSize(64, 64)
+		b:SetPoint("TOPLEFT", imagesLabel, "BOTTOMLEFT", (i - 1) * 72, -6)
 		b.bg = b:CreateTexture(nil, "BACKGROUND")
 		b.bg:SetAllPoints()
-		b.bg:SetColorTexture(0, 0, 0, 0.4)
+		b.bg:SetColorTexture(0.23, 0.14, 0.07, 0.15)
 		b.tex = b:CreateTexture(nil, "ARTWORK")
 		b.tex:SetPoint("TOPLEFT", 2, -2)
 		b.tex:SetPoint("BOTTOMRIGHT", -2, 2)
-		b.name = UI.Label(b, "", "GameFontHighlightSmall", "CENTER")
-		b.name:SetPoint("BOTTOMLEFT", 2, 2)
-		b.name:SetPoint("BOTTOMRIGHT", -2, 2)
+		b.name = UI.Label(b, "", "small", "CENTER")
+		b.name:SetPoint("TOPLEFT", b, "BOTTOMLEFT", 0, -1)
+		b.name:SetPoint("TOPRIGHT", b, "BOTTOMRIGHT", 0, -1)
+		b.name:SetWordWrap(false)
 		b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 		b:SetScript("OnClick", function(self, button)
 			local note = current()
@@ -200,7 +182,7 @@ UI.RegisterTab("TAB_NOTES", "notes", function(panel)
 					end)
 				end)
 			else
-				preview.TitleText:SetText(self.file)
+				preview.title:SetText(self.file)
 				preview.tex:SetTexture(N.ImagePath(self.file))
 				preview:Show()
 			end
@@ -209,10 +191,29 @@ UI.RegisterTab("TAB_NOTES", "notes", function(panel)
 		thumbs[i] = b
 	end
 
+	-- the bottom row: scope, pin, attach, more
+	local more = UI.Button(editor, "…", 34, nil)
+	more:SetPoint("BOTTOMRIGHT", 0, 0)
+	local attach = UI.Button(editor, L.ATTACH, 100, nil)
+	attach:SetPoint("RIGHT", more, "LEFT", -6, 0)
+	local pin = UI.Button(editor, L.PIN, 80, function()
+		local note = current()
+		if note then
+			N.Update(note.id, { pinned = not note.pinned or nil })
+			view.ShowNote()
+		end
+	end)
+	pin:SetPoint("RIGHT", attach, "LEFT", -6, 0)
+
+	local nothing = UI.Label(right, L.NO_NOTE_OPEN, "muted", "CENTER")
+	nothing:SetPoint("CENTER", 0, 40)
+	nothing:SetPoint("LEFT", 20, 0)
+	nothing:SetPoint("RIGHT", -20, 0)
+
 	-- link insertion: shift-click while the note has focus (Forever's ChatFrameUtil.InsertLink)
 	if ChatFrameUtil and ChatFrameUtil.InsertLink then
 		hooksecurefunc(ChatFrameUtil, "InsertLink", function(text)
-			if not text or not panel:IsVisible() then
+			if not text or not left:IsVisible() then
 				return
 			end
 			if body:HasFocus() then
@@ -303,72 +304,65 @@ UI.RegisterTab("TAB_NOTES", "notes", function(panel)
 
 	-- refresh ----------------------------------------------------------------------------------------
 	function view.RefreshSections()
-		local sections = N.Sections()
+		local all = N.Sections()
 		if view.section and not N.Section(view.section) then
 			view.section = nil
 		end
-		local x = 0
-		local function button(i, text, selected, onClick)
-			local b = sectionButtons[i]
-			if not b then
-				b = CreateFrame("Button", nil, sectionBar, "UIPanelButtonTemplate")
-				b:SetHeight(22)
-				b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-				sectionButtons[i] = b
-			end
-			b:SetText(text)
-			b:SetWidth(math.max(50, b:GetFontString():GetStringWidth() + 24))
-			b:ClearAllPoints()
-			b:SetPoint("LEFT", sectionBar, "LEFT", x, 0)
-			x = x + b:GetWidth() + 4
-			if selected then
-				b:LockHighlight()
-			else
-				b:UnlockHighlight()
-			end
-			b:SetScript("OnClick", onClick)
-			b:Show()
-		end
-		button(1, L.FILTER_ALL, view.section == nil, function()
-			view.section = nil
-			view.Refresh()
-		end)
-		for i, s in ipairs(sections) do
-			button(i + 1, s.name, view.section == s.id, function(self, mouse)
-				if mouse == "RightButton" then
-					UI.Menu(self, function(root)
-						root:CreateTitle(s.name)
-						root:CreateButton(L.RENAME, function()
-							UI.Prompt(L.SECTION_NAME, s.name, function(text)
-								N.RenameSection(s.id, text)
-							end)
-						end)
-						if i > 1 then
-							root:CreateButton(L.DELETE, function()
-								UI.Confirm(L.DELETE_SECTION_CONFIRM:format(s.name, sections[1].name), function()
-									N.DeleteSection(s.id)
+		local items = {
+			{
+				text = L.FILTER_ALL,
+				selected = view.section == nil,
+				onClick = function()
+					view.section = nil
+					view.Refresh()
+				end,
+			},
+		}
+		for i, s in ipairs(all) do
+			table.insert(items, {
+				text = s.name,
+				selected = view.section == s.id,
+				onClick = function(self, mouse)
+					if mouse == "RightButton" then
+						UI.Menu(self, function(root)
+							root:CreateTitle(s.name)
+							root:CreateButton(L.RENAME, function()
+								UI.Prompt(L.SECTION_NAME, s.name, function(text)
+									N.RenameSection(s.id, text)
 								end)
 							end)
-						end
-					end)
-				else
-					view.section = s.id
-					view.Refresh()
-				end
-			end)
+							if i > 1 then
+								root:CreateButton(L.DELETE, function()
+									UI.Confirm(L.DELETE_SECTION_CONFIRM:format(s.name, all[1].name), function()
+										N.DeleteSection(s.id)
+									end)
+								end)
+							end
+						end)
+					else
+						view.section = s.id
+						view.Refresh()
+					end
+				end,
+			})
 		end
-		button(#sections + 2, "+", false, function()
-			UI.Prompt(L.SECTION_NAME, "", function(text)
-				local s = N.AddSection(text)
-				if s then
-					view.section = s.id
-					view.Refresh()
-				end
-			end)
-		end)
-		for i = #sections + 3, #sectionButtons do
-			sectionButtons[i]:Hide()
-		end
+		table.insert(items, {
+			text = "+",
+			selected = false,
+			onClick = function()
+				UI.Prompt(L.SECTION_NAME, "", function(text)
+					local s = N.AddSection(text)
+					if s then
+						view.section = s.id
+						view.Refresh()
+					end
+				end)
+			end,
+		})
+		sections:Set(items)
+		rule:ClearAllPoints()
+		rule:SetPoint("TOPLEFT", sections, "BOTTOMLEFT", 0, -8)
+		rule:SetPoint("RIGHT", left, "RIGHT", 0, 0)
 	end
 
 	function view.RefreshList(keepScroll)
@@ -380,6 +374,7 @@ UI.RegisterTab("TAB_NOTES", "notes", function(panel)
 	function view.ShowNote()
 		local note = current()
 		editor:SetShown(note ~= nil)
+		nothing:SetShown(note == nil)
 		if not note then
 			view.RefreshList(true)
 			return
@@ -387,8 +382,11 @@ UI.RegisterTab("TAB_NOTES", "notes", function(panel)
 		title:SetText(note.title or "")
 		body:SetText(note.body or "")
 		pin:SetText(note.pinned and L.UNPIN or L.PIN)
-		scopeLabel:SetText(note.char and L.CHAR_NOTE:format(note.char) or L.ACCOUNT_NOTE)
-		attachLabel:SetText(note.attach and L.ATTACHED_TO:format(note.attach.label or note.attach.key) or "")
+		local scope = note.char and L.CHAR_NOTE:format(note.char) or L.ACCOUNT_NOTE
+		if note.attach then
+			scope = scope .. " · " .. L.ATTACHED_TO:format(note.attach.label or note.attach.key)
+		end
+		scopeLabel:SetText(scope)
 		local images = note.images or {}
 		for i, b in ipairs(thumbs) do
 			local file = images[i]
@@ -405,7 +403,7 @@ UI.RegisterTab("TAB_NOTES", "notes", function(panel)
 		view.RefreshList(true)
 	end
 
-	view.title, view.body = title, body
+	view.title, view.body, view.sections, view.list = title, body, sections, list
 
 	function view.Select(id, focusTitle)
 		view.selected = id

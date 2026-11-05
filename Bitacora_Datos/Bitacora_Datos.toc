@@ -1,11 +1,12 @@
 ## Interface: 16001
 ## Title: Bitácora (datos)
-## Notes: Saved data and textures shared by Bitácora and its standalone parts. Install it with any of them.
-## Notes-esES: Datos y texturas que comparten Bitácora y sus partes sueltas. Se instala junto con cualquiera de ellos.
-## Notes-esMX: Datos y texturas que comparten Bitácora y sus partes sueltas. Se instala junto con cualquiera de ellos.
+## Notes: Saved data, the Pergamino look and textures shared by Bitácora and its standalone parts. Install it with any of them.
+## Notes-esES: Datos, la piel Pergamino y texturas que comparten Bitácora y sus partes sueltas. Se instala junto con cualquiera de ellos.
+## Notes-esMX: Datos, la piel Pergamino y texturas que comparten Bitácora y sus partes sueltas. Se instala junto con cualquiera de ellos.
 ## Author: José Argento
 ## Version: @project-version@
 ## SavedVariables: BitacoraDB
 ## Category: Roleplay
 
+Libs\Pergamino\Pergamino.lua
 Datos.lua

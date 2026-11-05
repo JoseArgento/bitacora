@@ -1,68 +1,54 @@
 local _, ns = ...
 local L = ns.L
 
+-- Thin wrappers over Pergamino (the shared book look, vendored in Bitacora_Datos/Libs/Pergamino), plus the
+-- popups and menus the tabs share. The old GameFont* names map to Pergamino roles so the tabs read the same.
+
+local P = Pergamino
 local UI = {}
 ns.UI = UI
+UI.P = P
 
--- Widgets the skin recolors (UI/Skin.lua). Weak keys: rows that go away are not kept alive.
-UI.labels = setmetatable({}, { __mode = "k" })
-UI.insets = setmetatable({}, { __mode = "k" })
+local ROLE = {
+	GameFontNormal = "heading",
+	GameFontNormalLarge = "big",
+	GameFontNormalSmall = "subheading",
+	GameFontHighlight = "body",
+	GameFontHighlightSmall = "small",
+	GameFontDisable = "muted",
+	GameFontDisableSmall = "small",
+}
 
 function UI.Label(parent, text, font, justify)
-	font = font or "GameFontNormal"
-	local fs = parent:CreateFontString(nil, "OVERLAY", font)
-	fs:SetText(text or "")
-	fs:SetJustifyH(justify or "LEFT")
-	UI.labels[fs] = font
-	if UI.SkinLabel then
-		UI.SkinLabel(fs, font)
-	end
-	return fs
+	return P.Label(parent, text, ROLE[font] or font or "body", justify)
 end
 
 function UI.Inset(parent)
-	local f = CreateFrame("Frame", nil, parent, "InsetFrameTemplate")
-	UI.insets[f] = true
-	if UI.SkinInset then
-		UI.SkinInset(f)
-	end
-	return f
+	return P.Panel(parent)
 end
 
 function UI.Button(parent, text, width, onClick)
-	local b = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
-	b:SetSize(width or 100, 22)
-	b:SetText(text)
-	if onClick then
-		b:SetScript("OnClick", onClick)
-	end
-	return b
+	return P.Button(parent, text, width, onClick)
 end
 
-function UI.Input(parent, width, onEnter)
-	local e = CreateFrame("EditBox", nil, parent, "InputBoxTemplate")
-	e:SetSize(width or 150, 20)
-	e:SetAutoFocus(false)
-	e:SetScript("OnEscapePressed", e.ClearFocus)
-	e:SetScript("OnEnterPressed", function(self)
-		if onEnter then
-			onEnter(self)
-		end
-		self:ClearFocus()
-	end)
-	return e
+function UI.Chip(parent, text, onClick)
+	return P.Chip(parent, text, onClick)
+end
+
+function UI.Input(parent, width, onEnter, placeholder)
+	return P.Edit(parent, width, { onEnter = onEnter, placeholder = placeholder })
 end
 
 function UI.Check(parent, text, onClick)
-	local c = CreateFrame("CheckButton", nil, parent, "UICheckButtonTemplate")
-	c:SetSize(24, 24)
-	local label = UI.Label(c, text, "GameFontHighlightSmall")
-	label:SetPoint("LEFT", c, "RIGHT", 2, 0)
-	c.label = label
-	if onClick then
-		c:SetScript("OnClick", onClick)
-	end
-	return c
+	return P.Check(parent, text, onClick)
+end
+
+function UI.Rule(parent)
+	return P.Rule(parent)
+end
+
+function UI.Tag(parent, text, kind)
+	return P.Tag(parent, text, kind)
 end
 
 -- Hyperlinks in a frame's font strings: hover shows the tooltip, click does what the chat does.
@@ -81,59 +67,43 @@ function UI.EnableLinks(frame)
 	end)
 end
 
--- Hover and selection colors of a list row: pale on the dark default, ink and gold on parchment.
-function UI.TintRow(row)
-	if UI.IsTavern and UI.IsTavern() then
-		row.highlight:SetColorTexture(0.23, 0.14, 0.07, 0.08)
-		row.selected:SetColorTexture(0.85, 0.66, 0.27, 0.28)
-	else
-		row.highlight:SetColorTexture(1, 1, 1, 0.08)
-		row.selected:SetColorTexture(0.56, 0.82, 0.77, 0.15)
-	end
+function UI.List(parent, rowHeight, init, onClick)
+	return P.List(parent, rowHeight, init, onClick)
 end
 
--- A scrolling list with the modern ScrollBox. init(row, item) fills a row; rows are plain Buttons.
-function UI.List(parent, rowHeight, init, onClick)
-	local box = CreateFrame("Frame", nil, parent, "WowScrollBoxList")
-	local bar = CreateFrame("EventFrame", nil, parent, "MinimalScrollBar")
-	bar:SetPoint("TOPLEFT", box, "TOPRIGHT", 6, 0)
-	bar:SetPoint("BOTTOMLEFT", box, "BOTTOMRIGHT", 6, 0)
-	local view = CreateScrollBoxListLinearView()
-	view:SetElementExtent(rowHeight)
-	view:SetElementInitializer("Button", function(row, item)
-		if not row.made then
-			row.made = true
-			local hl = row:CreateTexture(nil, "HIGHLIGHT")
-			hl:SetAllPoints()
-			hl:SetColorTexture(1, 1, 1, 0.08)
-			local sel = row:CreateTexture(nil, "BACKGROUND")
-			sel:SetAllPoints()
-			sel:SetColorTexture(0.56, 0.82, 0.77, 0.15)
-			sel:Hide()
-			row.selected = sel
-			row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+-- A row of chips that wraps when the page is too narrow. items = { { text, selected, onClick } }
+function UI.ChipRow(parent, width)
+	local row = CreateFrame("Frame", nil, parent)
+	row:SetWidth(width or 300)
+	row:SetHeight(20)
+	row.chips = {}
+	function row:Set(items)
+		local x, y, maxX = 0, 0, self:GetWidth()
+		for i, it in ipairs(items) do
+			local c = self.chips[i]
+			if not c then
+				c = P.Chip(self, "")
+				c:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+				self.chips[i] = c
+			end
+			c:SetText(it.text)
+			c:Fit()
+			c:SetPressed(it.selected)
+			c:SetScript("OnClick", it.onClick)
+			if x > 0 and x + c:GetWidth() > maxX then
+				x, y = 0, y + 24
+			end
+			c:ClearAllPoints()
+			c:SetPoint("TOPLEFT", self, "TOPLEFT", x, -y)
+			x = x + c:GetWidth() + 4
+			c:Show()
 		end
-		row.item = item
-		row:SetScript("OnClick", function(self, button)
-			if onClick then
-				onClick(self.item, button, self)
-			end
-		end)
-		init(row, item)
-	end)
-	ScrollUtil.InitScrollBoxListWithScrollBar(box, bar, view)
-	local list = { box = box, bar = bar }
-	function list:SetData(items, keepScroll)
-		box:SetDataProvider(CreateDataProvider(items), keepScroll and ScrollBoxConstants.RetainScrollPosition or nil)
+		for i = #items + 1, #self.chips do
+			self.chips[i]:Hide()
+		end
+		self:SetHeight(y + 20)
 	end
-	function list:Refresh()
-		box:ForEachFrame(function(row)
-			if row.item then
-				init(row, row.item)
-			end
-		end)
-	end
-	return list
+	return row
 end
 
 -- One reusable text prompt: UI.Prompt(L.SECTION_NAME, "old", function(text) ... end)

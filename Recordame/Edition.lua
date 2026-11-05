@@ -4,6 +4,7 @@ local _, ns = ...
 ns.edition = {
 	title = "Recordame",
 	slash = { "/recordame" },
+	single = true,
 	standalone = true,
 	db = "RecordameDB",
 	media = "Recordame",

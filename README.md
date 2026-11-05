@@ -57,14 +57,14 @@ El diario de a bordo de tus personajes de **WoW Forever**: una libreta, un diari
 - **Guild** (la crónica, apagada si no la prendés)
   - Si la prendés en las opciones, tus hitos (cada 10 niveles y el último, primeros jefes, logros, botín) les llegan a los de tu guild que tengan Bitácora, y ves los de ellos.
 
-**Aspecto "Taberna":** en las opciones podés cambiar la ventana a un libro de pergamino con barra de madera y tinta oscura. Al abrirla se ve la tapa del libro un instante y se abre (se puede apagar).
+**La ventana es un libro abierto:** dos páginas de pergamino dentro de una tapa de cuero, con el lomo en el medio, marcadores de tela que asoman por el borde derecho como pestañas (el de la página abierta es dorado), el título en una cinta y un sello de lacre para cerrar. Tinta oscura y tipografía de manuscrito (Cinzel para los títulos, Alegreya para el cuerpo; fuentes OFL que van dentro del addon). Cada pestaña usa las dos páginas: la libreta tiene la lista a la izquierda y la nota a la derecha; el diario, las entradas a la izquierda y el resumen del personaje más la entrada que tocaste a la derecha; el álbum, las capturas y la que elegiste; los recordatorios, el formulario y la lista; el progreso, tus números y las mazmorras; la crónica, los hitos y la semana. Al abrirla se ve la tapa un instante y se abre (se puede apagar). Es la piel **Pergamino**, que comparten todos los addons de la familia: vive en `Bitacora_Datos/Libs/Pergamino` (repo [pergamino](https://github.com/JoseArgento/pergamino)) y no usa ninguna plantilla ni arte de Blizzard.
 
 Se abre con `/bitacora` (o `/bita`), con una tecla (Opciones → Atajos → Bitácora) o desde el botón de addons junto al minimapa.
 
 - `/bita nota <texto>` guarda una nota rápida.
 - `/bita entrada <texto>` escribe en el diario.
 - `/bita a Nombre: texto` le manda un recordatorio a alguien de la guild o amigo.
-- `/bita opciones` abre su página en Opciones → AddOns: tooltips, avisos, misiones en el diario, calidad del botín y aspecto de la ventana.
+- `/bita opciones` abre su página en Opciones → AddOns: tooltips, avisos, misiones en el diario, calidad del botín, el reloj y la tapa del libro.
 
 ## Las partes sueltas
 
@@ -125,12 +125,12 @@ El addon no manda nada tuyo a nadie si no prendés la crónica de la guild. Lo �
 - ✅ **Cada función, evento y template existe en Forever 1.60.1.** Lo revisa `tools/check_api.py` contra los dumps de [Ketho/BlizzardInterfaceResources](https://github.com/Ketho/BlizzardInterfaceResources) y el código de la UI de [Gethe/wow-ui-source](https://github.com/Gethe/wow-ui-source), rama `forever`. Ejemplos: `ChatFrameUtil.InsertLink` (Forever no tiene `ChatEdit_InsertLink`), `RaidWarningUtil.AddMessage` (`RaidNotice_AddMessage` solo existe con los alias viejos), `TooltipDataProcessor`, `ScrollingEditBoxTemplate`, el compartimento de addons de Forever. El script encuentra nombres inventados o mal escritos.
 - ✅ [forever-lint](https://github.com/JoseArgento/forever-lint): solo la nota FL012 (las cuentas de prueba no pueden mandar mensajes de addon), que la crónica ya maneja. [Addon Sentry](https://github.com/JoseArgento/addon-sentry) da "Sin señales de riesgo".
 - ✅ **178 tests.**
-  - 142 corren el addon en Lua 5.1 (el Lua de WoW), con un reemplazo chico del cliente (`tests/wow_mock.lua`): eventos, datos guardados y recargados, recordatorios (incluido el semanal), tooltips, links con shift-click, nombres de imágenes, patrones de botín en varios idiomas, valores secretos, cada pestaña armándose sin errores de Lua, el progreso contra una guía de aventuras de prueba, la crónica (mensajes malos, con códigos de color o con código adentro, inundación, tope de 300, dos jugadores pasándose hitos), los reportes de la beta (muertes dobles, zona vieja al llegar), el tiempo por nivel (incluido el reajuste con `/played`), los compañeros (tope, valores secretos, otros reinos), los recordatorios que vencieron mientras no jugabas, posponer y el reloj del reino, el aspecto Taberna, y las partes sueltas: cada una sola, varias juntas compartiendo los datos, y el completo con una parte (la parte se hace a un lado).
+  - 147 corren el addon en Lua 5.1 (el Lua de WoW), con un reemplazo chico del cliente (`tests/wow_mock.lua`): eventos, datos guardados y recargados, recordatorios (incluido el semanal), tooltips, links con shift-click, nombres de imágenes, patrones de botín en varios idiomas, valores secretos, cada pestaña armándose sin errores de Lua, el progreso contra una guía de aventuras de prueba, la crónica (mensajes malos, con códigos de color o con código adentro, inundación, tope de 300, dos jugadores pasándose hitos), los reportes de la beta (muertes dobles, zona vieja al llegar), el tiempo por nivel (incluido el reajuste con `/played`), los compañeros (tope, valores secretos, otros reinos), los recordatorios que vencieron mientras no jugabas, posponer y el reloj del reino, el libro (páginas, marcadores, tapa, fuentes) y las partes sueltas: cada una sola, varias juntas compartiendo los datos, y el completo con una parte (la parte se hace a un lado).
   - El resto prueban la página: lee el archivo igual que Lua 5.1, empareja capturas y arma los textos.
 - ✅ Las dos páginas probadas en Chromium: cada pestaña, el tiempo por nivel y los compañeros, capturas y PNG reales, escritorio y celular, claro y oscuro, y que no aparezca ningún "null" ni "undefined" en pantalla.
 
 **Sin probar ⏳.** Todo esto se prueba dentro del juego, y yo no tengo Forever:
-- **La ventana:** que se vea bien (tamaños, anclas, pestañas, listas, menús, ventanas de texto), y el aspecto Taberna con su animación de tapa.
+- **La ventana:** cómo se ve de verdad el libro en el cliente (texturas TGA, fuentes TTF propias, marcadores, tamaños, anclas, listas, menús), y la animación de la tapa. Está verificado en una maqueta HTML con las mismas medidas y en el mock de Lua, no en el juego.
 - **Las imágenes:** que el juego cargue PNG desde `BitacoraImagenes`, una carpeta sin `.toc`.
 - **Los nombres de archivo:** que las capturas de Forever se llamen `WoWScrnShot_MMDDYY_HHMMSS`.
 - **Los eventos:** que `ENCOUNTER_END` o `BOSS_KILL` salten en las mazmorras de Forever.
@@ -151,7 +151,7 @@ pip install pytest lupa
 pytest                                        # addon en Lua 5.1 + página
 python tools/make_demo_db.py                  # regenera el ejemplo (tests/fixtures/BitacoraDB.lua) jugando con el addon real
 python tools/build_editions.py                # rearma las partes sueltas desde Bitacora/ (un test avisa si te olvidaste)
-python tools/make_textures.py                 # texturas del aspecto Taberna (Bitacora_Datos/Media)
+python tools/make_textures.py                 # la tapa del libro (Bitacora_Datos/Media); la piel viene de Libs/Pergamino
 python tools/build_web.py                     # dist/bitacora.html y dist/taberna.html
 python tools/check_api.py --bir ../BlizzardInterfaceResources --ui ../wow-ui-source --scanner ../addon-sentry/src --addon Bitacora_Diario
 ```

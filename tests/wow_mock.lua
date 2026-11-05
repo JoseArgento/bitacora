@@ -111,11 +111,77 @@ local function newObject(kind, name, parent, template)
 		rawset(parent, "Tabs", rawget(parent, "Tabs") or {})
 		table.insert(rawget(parent, "Tabs"), o)
 	end
-	if template == "UIPanelButtonTemplate" then
+	if template == "UIPanelButtonTemplate" or kind == "Button" or kind == "CheckButton" then
 		o.fontString = newObject("FontString", nil, o)
 	end
 	return o
 end
+
+function CreateFont(name)
+	local f = newObject("Font", name)
+	f._font = {}
+	return f
+end
+function Frame:SetFont(path, size, flags)
+	self._font = { path, size, flags }
+end
+function Frame:GetFont()
+	return unpack(self._font or {})
+end
+function Frame:SetFontObject(font)
+	self._fontObject = font
+end
+function Frame:GetFontObject()
+	return self._fontObject
+end
+function Frame:SetNormalFontObject(font)
+	self._normalFont = font
+end
+function Frame:GetNormalFontObject()
+	return self._normalFont
+end
+function Frame:GetObjectType()
+	return self._kind
+end
+function Frame:ClearAllPoints()
+	self._points = {}
+end
+function Frame:SetPoint(...)
+	self._points = self._points or {}
+	table.insert(self._points, { ... })
+end
+function Frame:GetNumPoints()
+	return #(self._points or {})
+end
+function Frame:SetTexCoord(...)
+	self._texCoord = { ... }
+end
+function Frame:GetTexCoord()
+	return unpack(self._texCoord or { 0, 1, 0, 1 })
+end
+function Frame:SetVertexColor(r, g, b, a)
+	self._vertex = { r, g, b, a or 1 }
+end
+function Frame:SetAlpha(a)
+	self._alpha = a
+end
+function Frame:GetAlpha()
+	return self._alpha or 1
+end
+function Frame:SetNormalTexture(t)
+	self._normalTexture = t
+end
+function Frame:SetCheckedTexture(t)
+	self._checkedTexture = t
+end
+function Frame:SetEnabled(v)
+	self._enabled = v and true or false
+end
+function Frame:IsEnabled()
+	return self._enabled ~= false
+end
+function Frame:GetRegions() end
+function Frame:GetChildren() end
 MOCK.newObject = newObject
 
 function Frame:SetScript(event, fn)
@@ -181,6 +247,9 @@ function Frame:IsVisible()
 end
 function Frame:SetText(t)
 	self._text = t or ""
+	if self.fontString then
+		self.fontString._text = self._text
+	end
 	if self.editBox then
 		self.editBox._text = self._text
 	end

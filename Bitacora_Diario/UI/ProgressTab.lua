@@ -100,43 +100,78 @@ function P.Rows(charKey)
 	return rows
 end
 
-UI.RegisterTab("TAB_PROGRESS", "progress", function(panel)
-	local view = {}
-	local inset = UI.Inset(panel)
-	inset:SetAllPoints()
+-- Which rows open the right page: everything from the dungeons on.
+local RIGHT_HEADERS = { "PROG_DUNGEONS", "PROG_RAIDS", "PROG_ACHIEVEMENTS" }
 
-	local list = UI.List(inset, 20, function(row, item)
-		if not row.left then
-			row.left = UI.Label(row, "", "GameFontHighlight")
-			row.left:SetPoint("LEFT", 8, 0)
-			row.left:SetPoint("RIGHT", -110, 0)
-			row.left:SetWordWrap(false)
-			row.right = UI.Label(row, "", "GameFontHighlight", "RIGHT")
-			row.right:SetPoint("RIGHT", -8, 0)
+function P.SplitRows(rows)
+	local left, right = {}, {}
+	local onRight = false
+	for _, row in ipairs(rows) do
+		if row.header then
+			onRight = false
+			for _, key in ipairs(RIGHT_HEADERS) do
+				if row.header == L[key] then
+					onRight = true
+				end
+			end
 		end
-		if item.header then
-			row.left:SetFontObject("GameFontNormal")
-			row.left:SetText(item.header)
-			row.right:SetText("")
-		else
-			row.left:SetFontObject("GameFontHighlight")
-			row.left:SetText("  " .. item.left)
-			row.right:SetText(item.right)
-		end
-	end)
-	list.box:SetPoint("TOPLEFT", 4, -4)
-	list.box:SetPoint("BOTTOMRIGHT", -20, 4)
+		table.insert(onRight and right or left, row)
+	end
+	return left, right
+end
+
+-- Left page: your numbers, time per level, companions. Right page: dungeons, raids, achievements.
+UI.RegisterTab("TAB_PROGRESS", "progress", function(page)
+	local view = {}
+	local function makeList(parent)
+		local holder = CreateFrame("Frame", nil, parent)
+		holder:SetAllPoints()
+		local list = UI.List(holder, 22, function(row, item)
+			if not row.left then
+				row.left = UI.Label(row, "", "body")
+				row.left:SetPoint("LEFT", 4, 0)
+				row.left:SetPoint("RIGHT", -120, 0)
+				row.left:SetWordWrap(false)
+				row.right = UI.Label(row, "", "body", "RIGHT")
+				row.right:SetPoint("RIGHT", -4, 0)
+			end
+			if item.header then
+				row.left:SetFontObject(UI.P.fonts.heading)
+				row.left:SetText(item.header)
+				row.right:SetText("")
+				row.rule:SetAlpha(0.6)
+			else
+				row.left:SetFontObject(UI.P.fonts.body)
+				row.left:SetText(item.left)
+				row.right:SetText(item.right)
+				row.rule:SetAlpha(0.2)
+			end
+		end)
+		list.box:SetPoint("TOPLEFT", 0, 0)
+		list.box:SetPoint("BOTTOMRIGHT", -16, 0)
+		return list
+	end
+	local leftList = makeList(page.left)
+	local rightList = page.right and makeList(page.right)
 
 	function view.Refresh()
-		list:SetData(P.Rows())
+		local rows = P.Rows()
+		if rightList then
+			local l, r = P.SplitRows(rows)
+			leftList:SetData(l)
+			rightList:SetData(r)
+		else
+			leftList:SetData(rows)
+		end
 	end
+	view.list, view.rightList = leftList, rightList
 	return view
 end)
 
 -- A kill, a new zone or a new companion changes the numbers.
 local function refresh()
 	local i = UI.tabOfTopic.progress
-	if i and UI.frame:IsShown() and PanelTemplates_GetSelectedTab(UI.frame) == i and UI.views[i] then
+	if i and UI.frame:IsShown() and UI.SelectedTab() == i and UI.views[i] then
 		UI.views[i].Refresh()
 	end
 end

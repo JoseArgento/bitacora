@@ -53,15 +53,10 @@ loot:SetPoint("TOPLEFT", lootLabel, "BOTTOMLEFT", 0, -6)
 lootLabel:SetShown(ns.Journal ~= nil)
 loot:SetShown(ns.Journal ~= nil)
 
-local skinLabel = UI.Label(panel, L.OPT_SKIN, "GameFontNormal")
-skinLabel:SetPoint("TOPLEFT", ns.Journal and loot or lootLabel, ns.Journal and "BOTTOMLEFT" or "TOPLEFT", 0, ns.Journal and -18 or 0)
-local skin = UI.Button(panel, "", 160, nil)
-skin:SetPoint("TOPLEFT", skinLabel, "BOTTOMLEFT", 0, -6)
-
 -- which clock the day-and-time reminders follow
 local CLOCKS = { { "local", "CLOCK_LOCAL" }, { "realm", "CLOCK_REALM" } }
 local clockLabel = UI.Label(panel, L.OPT_CLOCK, "GameFontNormal")
-clockLabel:SetPoint("TOPLEFT", skin, "BOTTOMLEFT", 0, -18)
+clockLabel:SetPoint("TOPLEFT", ns.Journal and loot or lootLabel, ns.Journal and "BOTTOMLEFT" or "TOPLEFT", 0, ns.Journal and -18 or 0)
 local clock = UI.Button(panel, "", 200, nil)
 clock:SetPoint("TOPLEFT", clockLabel, "BOTTOMLEFT", 0, -6)
 clockLabel:SetShown(ns.Reminders ~= nil)
@@ -94,7 +89,6 @@ function panel.Refresh()
 		c:SetChecked(ns.db.settings[key] and true or false)
 	end
 	loot:SetText(qualityText(ns.db.settings.lootQuality or 4))
-	skin:SetText(L["SKIN_" .. string.upper(ns.db.settings.skin or "classic")] or ns.db.settings.skin)
 	clock:SetText(L["CLOCK_" .. string.upper(ns.db.settings.clock or "local")] or L.CLOCK_LOCAL)
 end
 
@@ -111,21 +105,7 @@ loot:SetScript("OnClick", function(self)
 	end)
 end)
 
-skin:SetScript("OnClick", function(self)
-	UI.Menu(self, function(root)
-		for _, name in ipairs({ "classic", "tavern" }) do
-			root:CreateRadio(L["SKIN_" .. string.upper(name)], function()
-				return (ns.db.settings.skin or "classic") == name
-			end, function()
-				ns.db.settings.skin = name
-				panel.Refresh()
-				ns.Fire("settings", "skin")
-			end)
-		end
-	end)
-end)
-
-panel.loot, panel.skin, panel.clock, panel.checks = loot, skin, clock, checks
+panel.loot, panel.clock, panel.checks = loot, clock, checks
 panel:SetScript("OnShow", panel.Refresh)
 
 function UI.RegisterOptions()
