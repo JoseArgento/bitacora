@@ -41,9 +41,12 @@ class Game:
         for name in self.addons:
             toc = ROOT / name / f"{name}.toc"
             if toc.is_file():
+                fields = {}
                 for line in toc.read_text(encoding="utf-8").splitlines():
-                    if line.startswith("## Title:"):
-                        titles[name] = self.lua.table_from({"Title": line.split(":", 1)[1].strip()})
+                    for field in ("Title", "IconTexture"):
+                        if line.startswith(f"## {field}:"):
+                            fields[field] = line.split(":", 1)[1].strip()
+                titles[name] = self.lua.table_from(fields)
         self.m.metadata = self.lua.table_from(titles)
         self.nss = {}
         loader = self.lua.eval("function(src, name) return assert(loadstring(src, '@' .. name)) end")

@@ -59,7 +59,7 @@ El diario de a bordo de tus personajes de **WoW Forever**: una libreta, un diari
 
 **La ventana es un libro abierto:** dos páginas de pergamino dentro de una tapa de cuero, con el lomo en el medio, marcadores de tela que asoman por el borde derecho como pestañas (el de la página abierta es dorado), el título en una cinta y un sello de lacre para cerrar. Tinta oscura y tipografía de manuscrito (Cinzel para los títulos, Alegreya para el cuerpo; fuentes OFL que van dentro del addon). Cada pestaña usa las dos páginas: la libreta tiene la lista a la izquierda y la nota a la derecha; el diario, las entradas a la izquierda y el resumen del personaje más la entrada que tocaste a la derecha; el álbum, las capturas y la que elegiste; los recordatorios, el formulario y la lista; el progreso, tus números y las mazmorras; la crónica, los hitos y la semana. Al abrirla se ve la tapa un instante y se abre (se puede apagar). Es la piel **Pergamino**, que comparten todos los addons de la familia: vive en `Bitacora_Datos/Libs/Pergamino` (repo [pergamino](https://github.com/JoseArgento/pergamino)) y no usa ninguna plantilla ni arte de Blizzard.
 
-Se abre con `/bitacora` (o `/bita`), con una tecla (Opciones → Atajos → Bitácora) o desde el botón de addons junto al minimapa.
+Se abre con `/bitacora` (o `/bita`), con una tecla (Opciones → Atajos → Bitácora), con **su botón redondo en el borde del minimapa** (clic: el libro; clic derecho: opciones; se arrastra alrededor del minimapa y se esconde en Opciones) o desde el botón de addons junto al minimapa. Las opciones también están en el marcador chico **Opciones**, debajo de los demás.
 
 - `/bita nota <texto>` guarda una nota rápida.
 - `/bita entrada <texto>` escribe en el diario.
@@ -86,8 +86,8 @@ Las partes de arriba usan `Bitacora_Datos`, que es donde se guardan tus cosas. P
 
 ## Instalar
 
-1. Copiá a `Interface\AddOns\`, dentro de la carpeta de Forever del juego, la carpeta `Bitacora_Datos` y además `Bitacora` (todo junto) o las partes que quieras.
-2. Si vas a usar imágenes, creá también `Interface\AddOns\BitacoraImagenes\`. Está afuera de la carpeta del addon para que una actualización no te borre las imágenes.
+1. **Creá la carpeta `Interface\AddOns\BitacoraImagenes\`** (vacía, a mano: un addon no puede crear carpetas). Ahí van las imágenes que ponés en las notas; está afuera de la carpeta del addon para que una actualización no te las borre. Si no vas a usar imágenes, igual no molesta.
+2. Copiá a `Interface\AddOns\`, dentro de la carpeta de Forever del juego (`World of Warcraft\_forever_\`), la carpeta `Bitacora_Datos` y además `Bitacora` (todo junto) o las partes que quieras.
 
 ## Imágenes en la libreta
 
@@ -115,7 +115,7 @@ La pestaña **Imágenes** de la página web lleva cualquier imagen a potencia de
 
 ## ¿Y Forever Journal o Forever Told?
 
-Hay otros diarios para Forever, y son buenos: [Forever Journal](https://www.curseforge.com/wow/addons/forever-journal) tiene el viaje por capítulos, metas, compañeros, un libro de misiones y recordatorios dentro del juego; [Forever Told](https://www.curseforge.com/wow/addons/forever-told) tiene crónica de guild, "se busca", epitafios Hardcore y capturas automáticas. Si querés eso, instalalos. Lo que Bitácora tiene y ellos no: **la página web** (el libro de a bordo, las postales, el álbum armado con tus capturas reales, los personajes lado a lado, la crónica de la guild semana a semana), las **notas que salen en el tooltip** del PNJ o del ítem, **imágenes** en las notas, los hitos propios de Forever (Legado, campamento, planos), el calendario del juego como recordatorios, castellano de verdad, y 178 tests que se corren contra la API de Forever antes de cada versión.
+Hay otros diarios para Forever, y son buenos: [Forever Journal](https://www.curseforge.com/wow/addons/forever-journal) tiene el viaje por capítulos, metas, compañeros, un libro de misiones y recordatorios dentro del juego; [Forever Told](https://www.curseforge.com/wow/addons/forever-told) tiene crónica de guild, "se busca", epitafios Hardcore y capturas automáticas. Si querés eso, instalalos. Lo que Bitácora tiene y ellos no: **la página web** (el libro de a bordo, las postales, el álbum armado con tus capturas reales, los personajes lado a lado, la crónica de la guild semana a semana), las **notas que salen en el tooltip** del PNJ o del ítem, **imágenes** en las notas, los hitos propios de Forever (Legado, campamento, planos), el calendario del juego como recordatorios, castellano de verdad, y 210 tests que se corren contra la API de Forever antes de cada versión.
 
 ## Privacidad
 
@@ -128,7 +128,7 @@ El addon no manda nada tuyo a nadie si no prendés la crónica de la guild. Lo �
 **Probado:**
 - ✅ **Cada función, evento y template existe en Forever 1.60.1.** Lo revisa `tools/check_api.py` contra los dumps de [Ketho/BlizzardInterfaceResources](https://github.com/Ketho/BlizzardInterfaceResources) y el código de la UI de [Gethe/wow-ui-source](https://github.com/Gethe/wow-ui-source), rama `forever`. Ejemplos: `ChatFrameUtil.InsertLink` (Forever no tiene `ChatEdit_InsertLink`), `RaidWarningUtil.AddMessage` (`RaidNotice_AddMessage` solo existe con los alias viejos), `TooltipDataProcessor`, `ScrollingEditBoxTemplate`, el compartimento de addons de Forever. El script encuentra nombres inventados o mal escritos.
 - ✅ [forever-lint](https://github.com/JoseArgento/forever-lint): solo la nota FL012 (las cuentas de prueba no pueden mandar mensajes de addon), que la crónica ya maneja. [Addon Sentry](https://github.com/JoseArgento/addon-sentry) da "Sin señales de riesgo".
-- ✅ **178 tests.**
+- ✅ **210 tests.**
   - 147 corren el addon en Lua 5.1 (el Lua de WoW), con un reemplazo chico del cliente (`tests/wow_mock.lua`): eventos, datos guardados y recargados, recordatorios (incluido el semanal), tooltips, links con shift-click, nombres de imágenes, patrones de botín en varios idiomas, valores secretos, cada pestaña armándose sin errores de Lua, el progreso contra una guía de aventuras de prueba, la crónica (mensajes malos, con códigos de color o con código adentro, inundación, tope de 300, dos jugadores pasándose hitos), los reportes de la beta (muertes dobles, zona vieja al llegar), el tiempo por nivel (incluido el reajuste con `/played`), los compañeros (tope, valores secretos, otros reinos), los recordatorios que vencieron mientras no jugabas, posponer y el reloj del reino, el libro (páginas, marcadores, tapa, fuentes) y las partes sueltas: cada una sola, varias juntas compartiendo los datos, y el completo con una parte (la parte se hace a un lado).
   - El resto prueban la página: lee el archivo igual que Lua 5.1, empareja capturas y arma los textos.
 - ✅ Las dos páginas probadas en Chromium: cada pestaña, el tiempo por nivel y los compañeros, capturas y PNG reales, escritorio y celular, claro y oscuro, y que no aparezca ningún "null" ni "undefined" en pantalla.

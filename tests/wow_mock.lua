@@ -270,11 +270,20 @@ function Frame:Insert(t)
 	end
 end
 function Frame:SetFocus()
+	if MOCK.focus and MOCK.focus ~= self then
+		MOCK.focus:ClearFocus()
+	end
 	MOCK.focus = self
+	if self._scripts.OnEditFocusGained then
+		self._scripts.OnEditFocusGained(self)
+	end
 end
 function Frame:ClearFocus()
 	if MOCK.focus == self then
 		MOCK.focus = nil
+		if self._scripts.OnEditFocusLost then
+			self._scripts.OnEditFocusLost(self)
+		end
 	end
 end
 function Frame:HasFocus()
@@ -301,6 +310,18 @@ end
 function Frame:SetHeight(h)
 	self.height = h
 end
+function Frame:GetCenter()
+	return self._cx or 0, self._cy or 0
+end
+function Frame:GetEffectiveScale()
+	return self._scale or 1
+end
+function Frame:SetMask(path)
+	self.mask = path
+end
+function Frame:SetCursorPosition(n)
+	self._cursor = n
+end
 function Frame:GetHeight()
 	return self.height or 100
 end
@@ -312,16 +333,6 @@ function Frame:GetSize()
 end
 function Frame:GetStringWidth()
 	return #(self._text or "") * 6
-end
-function Frame:GetStringHeight()
-	-- rough: 14 px per wrapped line of (width / 6) characters
-	local text = self._text or ""
-	local perLine = math.max(1, math.floor((self.width or 400) / 6))
-	local lines = 0
-	for line in (text .. "\n"):gmatch("(.-)\n") do
-		lines = lines + math.max(1, math.ceil(#line / perLine))
-	end
-	return lines * 14
 end
 function Frame:GetFontString()
 	return self.fontString
@@ -357,6 +368,9 @@ function Frame:SetDataProvider(provider)
 			self.rows[i] = row
 			self.view.init(row, item)
 		end
+	end
+	if self.managedBar and self.view then
+		self.managedBar:SetShown(#self.data * (self.view.extent or 0) > self:GetHeight())
 	end
 end
 function Frame:ForEachFrame(fn)
@@ -416,6 +430,11 @@ function CreateFrame(kind, name, parent, template)
 end
 
 UIParent = newObject("Frame", "UIParent")
+Minimap = newObject("Frame", "Minimap")
+Minimap.width, Minimap.height, Minimap._cx, Minimap._cy = 140, 140, 1000, 500
+function GetCursorPosition()
+	return MOCK.cursorX or 0, MOCK.cursorY or 0
+end
 GameTooltip = newObject("GameTooltip", "GameTooltip")
 ItemRefTooltip = newObject("GameTooltip", "ItemRefTooltip")
 DEFAULT_CHAT_FRAME = newObject("ScrollingMessageFrame", "ChatFrame1")
@@ -515,6 +534,10 @@ ScrollUtil = {
 		box.view = view
 	end,
 	RegisterScrollBoxWithScrollBar = function() end,
+	-- like the client's: the bar shows only while the rows overflow the box (checked when data is set)
+	AddManagedScrollBarVisibilityBehavior = function(box, bar)
+		box.managedBar = bar
+	end,
 }
 function PanelTemplates_SetNumTabs(f, n)
 	f.numTabs = n
@@ -664,9 +687,6 @@ C_AddOns = {
 	IsAddOnLoaded = function(name)
 		return MOCK.loaded and MOCK.loaded[name] == true
 	end,
-	GetAddOnMetadata = function(name, field)
-		return MOCK.metadata and MOCK.metadata[name] and MOCK.metadata[name][field]
-	end,
 }
 
 -- driving -----------------------------------------------------------------------------------------
@@ -741,6 +761,24 @@ function MOCK.savedVariables(name)
 	serializeValue(_G[name], out, "")
 	table.insert(out, "\n")
 	return table.concat(out)
+end
+
+-- Bitácora's own additions to the shared mock -------------------------------------------------------
+
+-- rough: 14 px per wrapped line of (width / 6) characters
+function Frame:GetStringHeight()
+	local text = self._text or ""
+	local perLine = math.max(1, math.floor((self.width or 400) / 6))
+	local lines = 0
+	for line in (text .. "\n"):gmatch("(.-)\n") do
+		lines = lines + math.max(1, math.ceil(#line / perLine))
+	end
+	return lines * 14
+end
+
+-- the TOC fields, as C_AddOns.GetAddOnMetadata gives them (MOCK.metadata[addon][field])
+C_AddOns.GetAddOnMetadata = function(name, field)
+	return MOCK.metadata and MOCK.metadata[name] and MOCK.metadata[name][field]
 end
 
 -- key bindings (MOCK.bindings["BITACORA_TOGGLE"] = "F9")

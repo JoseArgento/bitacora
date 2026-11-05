@@ -163,6 +163,53 @@ ns.On("locale", function()
 	end
 end)
 
+-- The round button on the minimap's edge (Pergamino.MinimapButton): left click opens the book, right click
+-- the options. Each addon keeps its own angle, so parts loaded together do not sit on top of each other.
+local DEFAULT_ANGLE = {
+	Bitacora = 200,
+	Bitacora_Diario = 215,
+	Bitacora_Libreta = 230,
+	Bitacora_Album = 245,
+	Bitacora_Recordatorios = 260,
+	Recordame = 230,
+}
+function UI.MinimapButton()
+	if UI.minimap or not P.MinimapButton then
+		return UI.minimap
+	end
+	local settings = ns.db.settings
+	if type(settings.minimapAngle) ~= "table" then
+		settings.minimapAngle = {}
+	end
+	local icon = C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(ADDON, "IconTexture")
+	UI.minimap = P.MinimapButton(ADDON .. "MinimapButton", {
+		icon = icon or (ns.MEDIA .. "icon"),
+		angle = settings.minimapAngle[ADDON] or DEFAULT_ANGLE[ADDON] or 200,
+		shown = settings.minimap ~= false,
+		onMove = function(angle)
+			settings.minimapAngle[ADDON] = angle
+		end,
+		onClick = function(button)
+			if button == "RightButton" then
+				ns.OpenOptions()
+			else
+				ns.Toggle()
+			end
+		end,
+		tooltip = function(tip)
+			tip:SetText(ns.edition.title or L.TITLE)
+			tip:AddLine(L.MINIMAP_TIP, 1, 1, 1, true)
+		end,
+	})
+	return UI.minimap
+end
+
+ns.On("settings", function(key)
+	if key == "minimap" and UI.minimap then
+		UI.minimap:SetShown(ns.db.settings.minimap ~= false)
+	end
+end)
+
 -- The first time the book opens after installing: a card with what each bookmark holds.
 function UI.Welcome()
 	if ns.db.settings.welcomed or ns.edition.single then

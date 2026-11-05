@@ -87,3 +87,14 @@ def test_on_the_single_page_the_button_sits_under_the_checks():
     assert anchored == "TOPLEFT:true:BOTTOMLEFT"
     # heading, text, when, value, checks and the button all fit in the form
     assert view.form.height >= 20 + 10 + 24 + 14 + 26 + 12 + 26 + 14 + 18 + 14 + 26
+
+
+def test_recordame_has_its_own_minimap_button_with_the_bell():
+    g = recordame()
+    b = g.run("return RecordameMinimapButton")
+    assert b is not None and b.icon.texture == "Interface\\AddOns\\Recordame\\Media\\icon_bell"
+    g.run("RecordameMinimapButton:GetScript('OnClick')(RecordameMinimapButton, 'LeftButton')")
+    assert g.run("return RecordameFrame:IsShown()") is True
+    # next to the full Bitácora each has its own button, in a different place
+    g2 = recordame(also=("Bitacora",))
+    assert g2.run("return BitacoraMinimapButton.angle") != g2.run("return RecordameMinimapButton.angle")

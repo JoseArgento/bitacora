@@ -95,6 +95,12 @@ UI.RegisterTab("TAB_ALBUM", "album", function(page)
 	nothing:SetPoint("CENTER", 0, 40)
 	nothing:SetPoint("LEFT", 20, 0)
 	nothing:SetPoint("RIGHT", -20, 0)
+	-- where the pictures are, and the folder for notes' images that the player has to create
+	local folder = UI.Label(right, L.ALBUM_FOLDER, "small")
+	folder:SetPoint("BOTTOMLEFT", 0, 0)
+	folder:SetPoint("RIGHT", 0, 0)
+	folder:SetWordWrap(true)
+	view.folder = folder
 
 	function view.ShowShot()
 		local shot = view.selected and A.List()[view.selected]

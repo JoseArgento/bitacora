@@ -195,3 +195,52 @@ def test_no_options_bookmark_on_a_single_page_part():
     g.login()
     g.run("ns.Toggle()")
     assert g.run("return ns.UI.optionsTab") is None
+
+
+# minimap button ---------------------------------------------------------------------------------------
+
+
+def test_a_minimap_button_opens_the_book_and_the_options(game):
+    b = game.run("return BitacoraMinimapButton")
+    assert b is not None and b._shown is not False
+    assert b.icon.texture == "Interface\\AddOns\\Bitacora_Datos\\Media\\icon"
+    game.run("BitacoraMinimapButton:GetScript('OnClick')(BitacoraMinimapButton, 'LeftButton')")
+    assert game.run("return BitacoraFrame:IsShown()") is True
+    hit = game.run("local hit; local real = ns.OpenOptions; ns.OpenOptions = function() hit = true end; BitacoraMinimapButton:GetScript('OnClick')(BitacoraMinimapButton, 'RightButton'); ns.OpenOptions = real; return hit")
+    assert hit is True
+
+
+def test_the_minimap_button_keeps_where_you_dragged_it(game):
+    game.m.cursorX, game.m.cursorY = 1000, 600  # straight above the minimap's centre (1000, 500)
+    game.run("local b = BitacoraMinimapButton; b:GetScript('OnDragStart')(b); b:GetScript('OnUpdate')(b); b:GetScript('OnDragStop')(b)")
+    assert round(game.db.settings.minimapAngle.Bitacora) == 90
+    g2 = Game(saved=game.m.savedVariables("BitacoraDB"))
+    g2.login()
+    assert round(g2.run("return BitacoraMinimapButton.angle")) == 90
+
+
+def test_the_option_hides_the_minimap_button(game):
+    game.run('ns.db.settings.minimap = false; ns.Fire("settings", "minimap")')
+    assert game.run("return BitacoraMinimapButton._shown") is False
+
+
+def test_parts_turned_off_by_the_full_addon_draw_no_button():
+    g = Game(addons=("Bitacora", "Bitacora_Diario"))
+    g.login()
+    assert g.run("return BitacoraMinimapButton") is not None
+    assert g.run("return Bitacora_DiarioMinimapButton") is None
+
+
+def test_parts_together_without_the_full_addon_do_not_overlap():
+    g = Game(addons=("Bitacora_Diario", "Bitacora_Recordatorios"))
+    g.login()
+    a = g.run("return Bitacora_DiarioMinimapButton.angle")
+    b = g.run("return Bitacora_RecordatoriosMinimapButton.angle")
+    assert a != b
+    assert g.run("return Bitacora_RecordatoriosMinimapButton.icon.texture").endswith("icon_bell")
+
+
+def test_the_album_says_where_pictures_for_notes_go(game):
+    game.run("ns.Toggle('album')")
+    text = game.run("return ns.UI.views[ns.UI.tabOfTopic.album].folder:GetText()")
+    assert "BitacoraImagenes" in text and "cannot create folders" in text

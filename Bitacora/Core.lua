@@ -130,6 +130,8 @@ ns.DEFAULTS = {
 		calendarMinutes = 60, -- how long before the event
 		campBuff = true, -- say when the campsite buff is about to end
 		whereDays = 2, -- after this many days away, "where was I" at login
+		minimap = true, -- a round button on the minimap's edge
+		minimapAngle = {}, -- addon folder -> degrees around the minimap, where you dragged its button
 	},
 	sections = {},
 	notes = {},

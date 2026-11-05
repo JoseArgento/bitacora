@@ -82,6 +82,7 @@ function panel.Build()
 	add("calendarAuto", L.OPT_CALENDAR_AUTO, ns.Reminders)
 	add("campBuff", L.OPT_CAMP_BUFF, ns.Reminders)
 	add("bookIntro", L.OPT_BOOK_INTRO, true)
+	add("minimap", L.OPT_MINIMAP, true)
 
 	-- the pickers: a label and a button each, one under the other
 	local last

@@ -97,6 +97,9 @@ on("PLAYER_LOGIN", function()
 		end
 		return
 	end
+	if ns.UI and ns.UI.MinimapButton then
+		ns.UI.MinimapButton()
+	end
 	ns.Char() -- creates this character's record on first use
 	if ns.Journal then
 		ns.Journal.OnLogin()
