@@ -16,9 +16,13 @@ function P.Stats(charKey)
 		return s
 	end
 	local days, deathsBy = {}, {}
+	s.legacy = 0
 	for _, e in ipairs(c.journal) do
 		if e.d then
 			days[e.d] = true
+		end
+		if e.kind == "achievement" and type(e.legacy) == "number" then
+			s.legacy = s.legacy + e.legacy
 		end
 		if e.kind == "death" then
 			s.deaths = s.deaths + 1
@@ -50,6 +54,15 @@ function P.Stats(charKey)
 	s.played = c.played and c.played.total
 	s.level = c.level
 	return s
+end
+
+-- Legacy points earned on the whole account, from every character's journal.
+function P.LegacyPoints()
+	local total = 0
+	for key in pairs(ns.db.chars) do
+		total = total + P.Stats(key).legacy
+	end
+	return total
 end
 
 -- How long each level took: from the "played" seconds the journal writes at the start and at every level-up.

@@ -61,3 +61,25 @@ assert.deepStrictEqual(core.splits(db.chars.find((c) => c.name === "Anabel")).ma
 const best = core.bestSplits(db.chars);
 assert.strictEqual(best.get(1).name, "Anabel");
 assert.deepStrictEqual(db.companions.map((p) => [p.name, p.class, p.times]), [["Beto", "PRIEST", 1], ["Caro", "ROGUE", 1], ["Ana", "WARRIOR", 1]]);
+
+// round 8: Legacy points, campsite and blueprint entries, characters side by side, the guild chronicle
+assert.strictEqual(core.summary(jose).legacy, 3);
+assert.ok(core.entryText(jose.journal.find((e) => e.legacy), "en").includes("Legacy challenge") && core.entryText(jose.journal.find((e) => e.legacy), "en").includes("+3"));
+assert.strictEqual(core.entryText(jose.journal.find((e) => e.kind === "camp"), "es"), "Armó su primer campamento.");
+assert.strictEqual(core.entryText(jose.journal.find((e) => e.kind === "blueprint"), "en"), "Learned the Anvil blueprint (Blacksmithing).");
+const cmp = core.compareChars(db.chars);
+assert.deepStrictEqual(cmp.map((c) => c.name).sort(), ["Anabel", "Josecito"]);
+const cj = cmp.find((c) => c.name === "Josecito");
+assert.deepStrictEqual([cj.legacy, cj.distinctBosses, cj.quests, cj.levelsTimed], [3, 1, 2, 6]);
+assert.strictEqual(cmp.reduce((n, c) => n + c.bests, 0), core.bestSplits(db.chars).size);
+assert.strictEqual(db.guilds.length, 1);
+assert.strictEqual(db.guilds[0].name, "Los Del Fondo");
+assert.strictEqual(db.guilds[0].entries.length, 6);
+assert.strictEqual(core.chronicleText(db.guilds[0].entries.find((e) => e.kind === "boss"), "es"), "Caro mató por primera vez a Edwin VanCleef");
+assert.strictEqual(core.chronicleText(db.guilds[0].entries.find((e) => e.kind === "loot"), "en"), "Ana got Sapphiron Drape");
+assert.strictEqual(core.chronicleText(db.guilds[0].entries.find((e) => e.kind === "achievement"), "en"), "Beto earned Diez misiones");
+const last = db.guilds[0].entries[db.guilds[0].entries.length - 1].t;
+const week = core.guildWeek(db.guilds[0].entries, last);
+assert.strictEqual(week.entries.length, 6);
+assert.deepStrictEqual(week.people[0], { who: "Ana", n: 3 });
+assert.strictEqual(core.guildWeek(db.guilds[0].entries, last - 7 * 86400).entries.length, 0);

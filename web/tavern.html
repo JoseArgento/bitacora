@@ -245,6 +245,10 @@ article.note .meta { font: 500 13px/1.5 var(--mono); color: var(--ink-soft); }
 code, .mono { font: 600 14px var(--mono); overflow-wrap: anywhere; }
 .copy-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .privacy { text-align: center; font-size: 14px; color: #d8c49a; margin: 0; }
+.ledger.compare .num { text-align: right; white-space: nowrap; }
+.ledger.compare tr[aria-current="true"] td { background: rgba(216,168,69,0.18); }
+.linkish { border: 0; background: none; padding: 0; font: inherit; font-weight: 700; color: var(--crimson); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.k-camp, .k-blueprint { background: var(--gold-deep); }
 </style>
 
 <div class="book">
@@ -274,7 +278,9 @@ code, .mono { font: 600 14px var(--mono); overflow-wrap: anywhere; }
 
   <section class="page parchment">
     <nav class="tabs" aria-label="Secciones">
-      <a href="#diario" data-view="diario" data-t="tabJournal"></a>
+        <a href="#diario" data-view="diario" data-t="tabJournal"></a>
+      <a href="#personajes" data-view="personajes" data-t="tabChars"></a>
+      <a href="#guild" data-view="guild" data-t="tabGuild"></a>
       <a href="#album" data-view="album" data-t="tabAlbum"></a>
       <a href="#libreta" data-view="libreta" data-t="tabNotes"></a>
       <a href="#imagenes" data-view="imagenes" data-t="tabImages"></a>
@@ -291,13 +297,13 @@ var BITACORA_SKIN_TEXTS = {
     tagline: "Pasá, sentate cerca del fuego. Acá están tus personajes, lo que vivieron en Forever, sus fotos y tus anotaciones.",
     loadDemo: "Ver una mesa de ejemplo",
     demoNotice: "<strong>Mesa de ejemplo.</strong> Son personajes de prueba. Abrí tu archivo y se sientan los tuyos.",
-    tabJournal: "Diario", tabAlbum: "Retratos", tabNotes: "Tablón", tabImages: "Taller",
+    tabJournal: "Diario", tabAlbum: "Retratos", tabNotes: "Tablón", tabImages: "Taller", tabChars: "La mesa", tabGuild: "La hermandad",
   },
   en: {
     tagline: "Come in, sit by the fire. Here are your characters, what they lived through in Forever, their pictures and your notes.",
     loadDemo: "See an example table",
     demoNotice: "<strong>Example table.</strong> These are test characters. Open your file and yours take a seat.",
-    tabJournal: "Journal", tabAlbum: "Portraits", tabNotes: "Notice board", tabImages: "Workshop",
+    tabJournal: "Journal", tabAlbum: "Portraits", tabNotes: "Notice board", tabImages: "Workshop", tabChars: "The table", tabGuild: "The fellowship",
   },
 };
 </script>

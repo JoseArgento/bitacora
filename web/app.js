@@ -12,14 +12,14 @@
       demoNotice: "<strong>Ejemplo.</strong> Son datos de prueba que generó el addon. Abrí tu archivo para ver los tuyos.",
       fileNotice: (n) => `Abierto: ${n}.`,
       readError: "No se pudo leer el archivo",
-      tabJournal: "Diario", tabAlbum: "Álbum", tabNotes: "Libreta", tabImages: "Imágenes",
+      tabJournal: "Diario", tabAlbum: "Álbum", tabNotes: "Libreta", tabImages: "Imágenes", tabChars: "Personajes", tabGuild: "Guild",
       privacy: "Todo se lee dentro de esta página: el archivo y las capturas no salen de tu compu ni se suben a ningún lado.",
       level: "Nivel", played: "jugado", bosses: (n) => `${n} jefe${n === 1 ? "" : "s"}`, deaths: (n) => `${n} muerte${n === 1 ? "" : "s"}`,
       zones: (n) => `${n} zona${n === 1 ? "" : "s"}`, loot: (n) => `${n} botín`, since: "desde",
       milestones: "Hitos", all: "Todo",
       copyJournal: "Copiar el diario", downloadJournal: "Bajar .md", postcard: "Postal", postcardSaved: "Postal guardada", postcardLevel: (a, b) => (a === b ? `Nivel ${a}` : `Nivel ${a} → ${b}`), postcardMore: (n) => `y ${n} más`, copied: "Copiado", copyFail: "No se pudo copiar: seleccioná el texto",
       colHour: "Hora", colLevel: "Nv.", colEntry: "Anotación", colPlace: "Lugar",
-      kinds: { start: "inicio", level: "nivel", zone: "zona", boss: "jefe", death: "muerte", quest: "misión", loot: "botín", achievement: "logro", money: "oro", played: "tiempo", note: "nota" },
+      kinds: { start: "inicio", level: "nivel", zone: "zona", boss: "jefe", death: "muerte", quest: "misión", loot: "botín", achievement: "logro", money: "oro", played: "tiempo", note: "nota", camp: "campamento", blueprint: "plano" },
       journalEmpty: "Todavía no hay nada anotado para este personaje.",
       noMatches: "Nada coincide con la búsqueda.",
       searchJournal: "Buscar en el diario",
@@ -28,6 +28,13 @@
       tripBosses: "Jefes", tripDeaths: "Dónde más moriste", tripLoot: "Botín",
       splitsTitle: "Tiempo por nivel", splitLevel: (n) => `Nivel ${n}`, splitBest: (name, t) => `mejor: ${name} ${t}`,
       companions: "Compañeros", companionTimes: (n) => `${n} grupo${n === 1 ? "" : "s"}`,
+      legacy: (n) => `${n} punto${n === 1 ? "" : "s"} del Legado`,
+      charsTitle: "Tus personajes, lado a lado", charsEmpty: "Todavía no hay personajes en el archivo.",
+      colChar: "Personaje", colClass: "Clase", colPlayed: "Jugado", colDeaths: "Muertes", colBosses: "Jefes", colZones: "Zonas", colQuests: "Misiones", colLegacy: "Legado", colBests: "Mejores tiempos",
+      bestsOf: (n, total) => `${n} de ${total} nivel${total === 1 ? "" : "es"}`,
+      guildTitle: (g) => `Crónica de ${g}`, guildEmpty: "No hay crónica de guild en este archivo. En el juego, prendé «Crónica de la guild» en las opciones de Bitácora: los hitos de tu guild quedan acá.",
+      guildWeek: "Postal de la semana", guildWeekSaved: "Postal guardada", weekOf: (a, b) => `Semana del ${a} al ${b}`, weekEmpty: "Nada en esos siete días.", weekPeople: (n) => `${n} de la guild`, weekMore: (n) => `y ${n} hitos más`,
+      prevWeek: "Semana anterior", nextWeek: "Semana siguiente",
       dropShots: "Soltá acá tus capturas (la carpeta Screenshots del juego) o elegilas. Las juntamos con lo que anotó el addon por la hora del nombre del archivo.",
       chooseShots: "Elegir capturas",
       missing: (f) => `${f}`,
@@ -66,14 +73,14 @@
       demoNotice: "<strong>Example.</strong> Test data made by the addon. Open your file to see yours.",
       fileNotice: (n) => `Opened: ${n}.`,
       readError: "The file could not be read",
-      tabJournal: "Journal", tabAlbum: "Album", tabNotes: "Notebook", tabImages: "Images",
+      tabJournal: "Journal", tabAlbum: "Album", tabNotes: "Notebook", tabImages: "Images", tabChars: "Characters", tabGuild: "Guild",
       privacy: "Everything is read inside this page: the file and the screenshots never leave your computer and are not uploaded anywhere.",
       level: "Level", played: "played", bosses: (n) => `${n} boss${n === 1 ? "" : "es"}`, deaths: (n) => `${n} death${n === 1 ? "" : "s"}`,
       zones: (n) => `${n} zone${n === 1 ? "" : "s"}`, loot: (n) => `${n} loot`, since: "since",
       milestones: "Milestones", all: "All",
       copyJournal: "Copy the journal", downloadJournal: "Download .md", postcard: "Postcard", postcardSaved: "Postcard saved", postcardLevel: (a, b) => (a === b ? `Level ${a}` : `Level ${a} → ${b}`), postcardMore: (n) => `and ${n} more`, copied: "Copied", copyFail: "Could not copy: select the text",
       colHour: "Time", colLevel: "Lv.", colEntry: "Entry", colPlace: "Place",
-      kinds: { start: "start", level: "level", zone: "zone", boss: "boss", death: "death", quest: "quest", loot: "loot", achievement: "achievement", money: "gold", played: "played", note: "note" },
+      kinds: { start: "start", level: "level", zone: "zone", boss: "boss", death: "death", quest: "quest", loot: "loot", achievement: "achievement", money: "gold", played: "played", note: "note", camp: "camp", blueprint: "blueprint" },
       journalEmpty: "Nothing written down for this character yet.",
       noMatches: "Nothing matches the search.",
       searchJournal: "Search the journal",
@@ -82,6 +89,13 @@
       tripBosses: "Bosses", tripDeaths: "Where you died most", tripLoot: "Loot",
       splitsTitle: "Time per level", splitLevel: (n) => `Level ${n}`, splitBest: (name, t) => `best: ${name} ${t}`,
       companions: "Companions", companionTimes: (n) => `${n} group${n === 1 ? "" : "s"}`,
+      legacy: (n) => `${n} Legacy point${n === 1 ? "" : "s"}`,
+      charsTitle: "Your characters, side by side", charsEmpty: "No characters in the file yet.",
+      colChar: "Character", colClass: "Class", colPlayed: "Played", colDeaths: "Deaths", colBosses: "Bosses", colZones: "Zones", colQuests: "Quests", colLegacy: "Legacy", colBests: "Best times",
+      bestsOf: (n, total) => `${n} of ${total} level${total === 1 ? "" : "s"}`,
+      guildTitle: (g) => `${g} chronicle`, guildEmpty: "No guild chronicle in this file. In the game, turn on “Guild chronicle” in Bitácora's options: your guild's milestones land here.",
+      guildWeek: "Postcard of the week", guildWeekSaved: "Postcard saved", weekOf: (a, b) => `Week of ${a} to ${b}`, weekEmpty: "Nothing in those seven days.", weekPeople: (n) => `${n} guildmates`, weekMore: (n) => `and ${n} more`,
+      prevWeek: "Previous week", nextWeek: "Next week",
       dropShots: "Drop your screenshots here (the game's Screenshots folder) or pick them. They are matched to the addon's notes by the time in the file name.",
       chooseShots: "Choose screenshots",
       missing: (f) => `${f}`,
@@ -190,6 +204,7 @@
       el("li", { text: L().bosses(s.bosses) }),
       el("li", { text: L().deaths(s.deaths) }),
       el("li", { text: L().zones(s.zones) }),
+      s.legacy ? el("li", { text: L().legacy(s.legacy) }) : null,
       s.since ? item(L().since, fmtDate(s.since)) : null);
   }
 
@@ -249,6 +264,28 @@
   // and fonts. With a screenshot of that day (from the album), the photo takes the right side.
   async function postcard(c, day, button) {
     const p = C.postcardData(c, day, lang);
+    const counts = [p.deaths ? L().deaths(p.deaths) : null, p.bosses ? L().bosses(p.bosses) : null].filter(Boolean).join("  ·  ");
+    const sub = [p.levelFrom != null ? L().postcardLevel(p.levelFrom, p.levelTo) : null, p.zones.join(", ")].filter(Boolean).join("  ·  ");
+    const blob = await drawCard({ kicker: p.name.toUpperCase(), title: fmtDay(day), sub, lines: p.lines, more: p.more ? L().postcardMore(p.more) : null, moreCount: p.more, counts, shotStamp: p.shotStamp });
+    await showCard(blob, button, `postal-${p.name}-${day}.png`, `${L().postcard}: ${fmtDay(day)}`, L().postcardSaved, L().postcard);
+  }
+
+  // The painted card goes under the button's section, and is offered as a file.
+  async function showCard(blob, button, filename, alt, savedLabel, label) {
+    const section = button.closest("section");
+    const old = section.querySelector("figure.postcard");
+    if (old) old.remove();
+    section.append(el("figure", { class: "postcard" }, el("img", { src: URL.createObjectURL(blob), alt, style: "max-width:100%;height:auto;display:block;border:1px solid var(--rule)" })));
+    try {
+      if (await saveFile(filename, blob)) button.textContent = savedLabel;
+    } catch (e) { /* declined: the preview stays */ }
+    setTimeout(() => { button.textContent = label; }, 2500);
+  }
+
+  // A 1200x630 card (the size Discord and most sites preview well) in the page's own colors and fonts:
+  // a kicker, a title, a line under it, up to six lines, a count line at the foot. With a screenshot
+  // (an album stamp matched to a dropped file), the photo takes the right side.
+  async function drawCard({ kicker, title, sub, lines, more, moreCount, counts, shotStamp }) {
     const css = getComputedStyle(document.documentElement);
     const v = (name, fallback) => (css.getPropertyValue(name) || "").trim() || fallback;
     const ink = v("--ink", "#222"), muted = v("--muted", "#666"), mark = v("--mark", "#9a6b17"), rule = v("--rule", "#ccc");
@@ -260,7 +297,7 @@
     g.fillStyle = sheet; g.fillRect(24, 24, W - 48, H - 48);
     g.strokeStyle = rule; g.lineWidth = 2; g.strokeRect(36, 36, W - 72, H - 72);
     let textW = W - 160;
-    const pair = p.shotStamp && C.matchShots([{ stamp: p.shotStamp }], state.shots).pairs[0];
+    const pair = shotStamp && C.matchShots([{ stamp: shotStamp }], state.shots).pairs[0];
     if (pair && pair.file) {
       try {
         const img = await loadImage(pair.file);
@@ -287,32 +324,27 @@
     };
     g.textBaseline = "alphabetic";
     g.fillStyle = mark; g.font = `500 22px ${mono}`;
-    g.fillText(p.name.toUpperCase(), 80, 104);
+    g.fillText(kicker, 80, 104);
     g.fillStyle = ink; g.font = `400 56px ${display}`;
-    let y = wrap(fmtDay(day), 80, 168, textW, 62, 2);
-    const sub = [p.levelFrom != null ? L().postcardLevel(p.levelFrom, p.levelTo) : null, p.zones.join(", ")].filter(Boolean).join("  ·  ");
+    let y = wrap(title, 80, 168, textW, 62, 2);
     g.fillStyle = muted; g.font = `400 26px ${body}`;
-    y = wrap(sub, 80, y + 6, textW, 32, 2);
+    y = wrap(sub || "", 80, y + 6, textW, 32, 2);
     g.fillStyle = mark; g.fillRect(80, y + 4, 120, 3);
     y += 50;
     g.fillStyle = ink; g.font = `400 27px ${body}`;
-    for (const line of p.lines) {
-      if (y > H - 130) break;
+    let drawn = 0;
+    for (const line of lines) {
+      if (y > H - 150) break;
       y = wrap("·  " + line, 80, y, textW, 36, 2) + 4;
+      drawn++;
     }
-    if (p.more) { g.fillStyle = muted; g.fillText(L().postcardMore(p.more), 80, Math.min(y, H - 110)); }
-    const counts = [p.deaths ? L().deaths(p.deaths) : null, p.bosses ? L().bosses(p.bosses) : null].filter(Boolean).join("  ·  ");
+    // what did not fit counts as "more" too
+    const left = lines.length - drawn;
+    if (left > 0) more = L().postcardMore(left + (moreCount || 0));
+    if (more) { g.fillStyle = muted; g.fillText(more, 80, Math.min(y + 8, H - 110)); }
     g.fillStyle = muted; g.font = `400 20px ${mono}`;
     g.fillText(["Bitácora · WoW Forever", counts].filter(Boolean).join("   ·   "), 80, H - 72);
-    const blob = await new Promise((res) => canvas.toBlob(res, "image/png"));
-    const section = button.closest("section");
-    const old = section.querySelector("figure.postcard");
-    if (old) old.remove();
-    section.append(el("figure", { class: "postcard" }, el("img", { src: URL.createObjectURL(blob), alt: `${L().postcard}: ${fmtDay(day)}`, style: "max-width:100%;height:auto;display:block;border:1px solid var(--rule)" })));
-    try {
-      if (await saveFile(`postal-${p.name}-${day}.png`, blob)) button.textContent = L().postcardSaved;
-    } catch (e) { /* declined: the preview stays */ }
-    setTimeout(() => { button.textContent = L().postcard; }, 2500);
+    return new Promise((res) => canvas.toBlob(res, "image/png"));
   }
 
   // Level over time, drawn to scale: x = days since the journal started, y = level. One series, so no legend.
@@ -396,6 +428,73 @@
       block(L().tripBosses, s.bosses.map((b) => el("li", {}, el("span", { text: b.name }), el("span", { class: "n", text: b.count > 1 ? `×${b.count}` : (b.first || "").slice(0, 10) })))),
       block(L().tripDeaths, s.deaths.slice(0, 5).map((d) => el("li", {}, el("span", { text: d.zone }), el("span", { class: "n", text: `×${d.count}` })))),
       block(L().tripLoot, s.loot.slice(-5).reverse().map((l) => el("li", {}, el("span", { html: C.markupToHtml(l.link) }), el("span", { class: "n", text: (l.d || "").slice(0, 10) })))));
+  }
+
+  // ------------------------------------------------------------ characters, side by side
+  function renderChars() {
+    const rows = C.compareChars(state.db.chars);
+    const root = el("div", { class: "chars", style: "display:grid;gap:16px" });
+    root.append(el("h2", { class: "day", style: "margin:0", text: L().charsTitle }));
+    if (!rows.length) {
+      root.append(el("p", { class: "empty", text: L().charsEmpty }));
+      return root;
+    }
+    const th = (key, cls) => el("th", { class: cls || "", text: L()[key] });
+    const td = (text, cls) => el("td", { class: cls || "", text });
+    root.append(el("div", { class: "ledger-wrap" }, el("table", { class: "ledger compare" },
+      el("thead", {}, el("tr", {}, th("colChar"), th("colLevel", "num"), th("colPlayed", "num"), th("colDeaths", "num"), th("colBosses", "num"), th("colZones", "num"), th("colQuests", "num"), th("colLegacy", "num"), th("colBests"))),
+      el("tbody", {}, rows.map((r) => el("tr", { "aria-current": r.key === state.char ? "true" : "false" },
+        el("td", {}, el("button", { type: "button", class: "linkish", "data-class": (r.class || "").toLowerCase(), text: r.name, onclick: () => { state.char = r.key; location.hash = "#diario"; render(); } }),
+          el("span", { class: "inline-place", text: [r.realm, r.class ? r.class.charAt(0) + r.class.slice(1).toLowerCase() : null].filter(Boolean).join(" · ") })),
+        td(String(r.level || "?"), "num"), td(r.played != null ? C.duration(r.played, lang) : "—", "num"), td(String(r.deaths), "num"), td(String(r.distinctBosses), "num"),
+        td(String(r.zones), "num"), td(String(r.quests), "num"), td(r.legacy ? String(r.legacy) : "—", "num"),
+        td(r.levelsTimed ? L().bestsOf(r.bests, r.levelsTimed) : "—")))))));
+    return root;
+  }
+
+  // ------------------------------------------------------------ the guild's chronicle
+  function renderGuild() {
+    const root = el("div", { class: "guild", style: "display:grid;gap:18px" });
+    const guilds = state.db.guilds || [];
+    if (!guilds.length) {
+      root.append(el("p", { class: "empty", text: L().guildEmpty }));
+      return root;
+    }
+    if (!guilds.some((g) => g.key === state.guild)) state.guild = guilds[0].key;
+    const guild = guilds.find((g) => g.key === state.guild);
+    if (guilds.length > 1) {
+      root.append(el("div", { class: "chips", role: "group" }, guilds.map((g) =>
+        el("button", { type: "button", "aria-pressed": String(g.key === state.guild), text: g.name, onclick: () => { state.guild = g.key; render(); } }))));
+    }
+    // the week shown: ends at the newest entry by default; arrows move a week at a time
+    const newest = guild.entries[guild.entries.length - 1].t;
+    if (!state.weekEnd || state.weekEndGuild !== guild.key) { state.weekEnd = newest; state.weekEndGuild = guild.key; }
+    const week = C.guildWeek(guild.entries, state.weekEnd);
+    const button = el("button", { type: "button", class: "btn quiet", text: L().guildWeek, onclick: () => guildPostcard(guild, week, button) });
+    const nav = el("div", { class: "copy-row" },
+      el("button", { type: "button", class: "btn quiet", text: "‹ " + L().prevWeek, onclick: () => { state.weekEnd -= 7 * 86400; render(); } }),
+      el("button", { type: "button", class: "btn quiet", text: L().nextWeek + " ›", disabled: state.weekEnd >= newest, onclick: () => { state.weekEnd = Math.min(newest, state.weekEnd + 7 * 86400); render(); } }),
+      button);
+    const section = el("section", { class: "day" },
+      el("h2", {}, L().guildTitle(guild.name), el("small", { text: L().weekOf(fmtDate(week.from + 86400), fmtDate(week.end)) })),
+      nav);
+    if (!week.entries.length) section.append(el("p", { class: "empty", text: L().weekEmpty }));
+    else {
+      section.append(el("div", { class: "ledger-wrap" }, el("table", { class: "ledger" },
+        el("thead", {}, el("tr", {}, el("th", { text: L().colHour }), el("th", { text: L().colEntry }))),
+        el("tbody", {}, week.entries.slice().reverse().map((e) => el("tr", {},
+          el("td", { class: "t", text: new Date(e.t * 1000).toLocaleDateString(lang === "es" ? "es-AR" : "en-US", { day: "2-digit", month: "2-digit" }) + " " + new Date(e.t * 1000).toLocaleTimeString(lang === "es" ? "es-AR" : "en-US", { hour: "2-digit", minute: "2-digit" }) }),
+          el("td", { class: "entry" }, el("span", { class: `kind k-${e.kind}`, text: L().kinds[e.kind] || e.kind }), el("span", { text: C.chronicleText(e, lang) }))))))));
+    }
+    root.append(section);
+    return root;
+  }
+  async function guildPostcard(guild, week, button) {
+    const lines = week.entries.slice().reverse().slice(0, 6).map((e) => C.chronicleText(e, lang));
+    const sub = week.people.slice(0, 4).map((p) => `${p.who} ×${p.n}`).join("  ·  ");
+    const blob = await drawCard({ kicker: guild.name.toUpperCase(), title: L().weekOf(fmtDate(week.from + 86400), fmtDate(week.end)), sub, lines,
+      more: week.entries.length > lines.length ? L().weekMore(week.entries.length - lines.length) : null, moreCount: week.entries.length - lines.length, counts: L().weekPeople(week.people.length) });
+    await showCard(blob, button, `guild-${guild.name}-${new Date(week.end * 1000).toISOString().slice(0, 10)}.png`, L().guildWeek, L().guildWeekSaved, L().guildWeek);
   }
 
   // ------------------------------------------------------------ album
@@ -590,7 +689,7 @@
   }
 
   // ------------------------------------------------------------ routing
-  const VIEWS = { diario: renderJournal, album: renderAlbum, libreta: renderNotes, imagenes: renderImages };
+  const VIEWS = { diario: renderJournal, personajes: renderChars, guild: renderGuild, album: renderAlbum, libreta: renderNotes, imagenes: renderImages };
   function viewName() {
     const h = location.hash.replace("#", "");
     return VIEWS[h] ? h : "diario";

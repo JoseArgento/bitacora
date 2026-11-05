@@ -94,10 +94,15 @@ on("PLAYER_LOGIN", function()
 				ns.GuildReminders.Ask()
 			end)
 		end
+		-- the game's calendar: a little later still, once its data has arrived
+		C_Timer.After(12, function()
+			ns.Reminders.ScanCalendar()
+		end)
 	end
 	C_Timer.NewTicker(30, function()
 		if ns.Reminders then
 			ns.Reminders.Check({ event = "tick", now = time() }, ns.CharKey())
+			ns.Reminders.CheckCampBuff()
 		end
 		if ns.GuildReminders then
 			ns.GuildReminders.Check("tick")
@@ -179,12 +184,23 @@ if ns.Journal then
 	on("ACHIEVEMENT_EARNED", ns.Journal.OnAchievement)
 	on("PLAYER_MONEY", ns.Journal.OnMoney)
 	on("TIME_PLAYED_MSG", ns.Journal.OnTimePlayed)
+	on("UNIT_SPELLCAST_SUCCEEDED", ns.Journal.OnSpellcast)
+	on("NEW_RECIPE_LEARNED", ns.Journal.OnRecipeLearned)
 end
 if ns.Album then
 	on("SCREENSHOT_SUCCEEDED", ns.Album.OnScreenshot)
 end
 if ns.Companions then
 	on("GROUP_ROSTER_UPDATE", ns.Companions.OnRoster)
+end
+if ns.Reminders then
+	on("CALENDAR_UPDATE_EVENT_LIST", function()
+		-- the calendar's data arrives after OpenCalendar(): look again, once it is there
+		if ns.calendarWanted then
+			ns.calendarWanted = nil
+			ns.Reminders.ScanCalendar()
+		end
+	end)
 end
 if ns.Chronicle or ns.GuildReminders then
 	on("CHAT_MSG_ADDON", function(...)
@@ -233,6 +249,14 @@ SlashCmdList[KEY] = function(msg)
 	elseif (cmd == "entrada" or cmd == "entry") and ns.Journal then
 		if ns.Journal.AddManual(rest) then
 			ns.Print(L.ENTRY_SAVED)
+		end
+	elseif (cmd == "a" or cmd == "to") and ns.GuildReminders then
+		local name, text = ns.GuildReminders.ParseWhisper(rest)
+		if not name then
+			ns.Print(L.WHISPER_USAGE:format(ns.edition.slash[1]))
+		else
+			local _, reply = ns.GuildReminders.Whisper(name, text)
+			ns.Print(reply)
 		end
 	elseif cmd == "opciones" or cmd == "options" or cmd == "config" then
 		ns.OpenOptions()

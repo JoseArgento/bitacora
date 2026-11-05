@@ -106,6 +106,11 @@ ns.DEFAULTS = {
 		guildReminders = true, -- officers' guild reminders: asks the guild for them at login (an empty "Q|1")
 		clock = "local", -- day-and-time reminders go by your computer's clock, or the realm's ("realm")
 		reminderPopup = true, -- a reminder also opens a small window with Snooze buttons
+		calendar = true, -- look at the game's calendar for guild events and offer a reminder for each
+		calendarAuto = false, -- make those reminders without asking ("Always" in the popup)
+		calendarMinutes = 60, -- how long before the event
+		campBuff = true, -- say when the campsite buff is about to end
+		whereDays = 2, -- after this many days away, "where was I" at login
 	},
 	sections = {},
 	notes = {},

@@ -251,10 +251,14 @@
       .map(([key, c]) => ({ key, name: c.name || key.split("-")[0], realm: c.realm || "", class: c.class || "", first: c.first || 0, last: c.last || 0, zone: c.zone || "", times: c.times || 0 }))
       .sort((a, b) => b.last - a.last || a.key.localeCompare(b.key));
     chars.sort((a, b) => (b.journal.length ? b.journal[b.journal.length - 1].t : 0) - (a.journal.length ? a.journal[a.journal.length - 1].t : 0));
+    // the guild chronicle: one list per guild the account's characters were in ({ who, kind, n, name, t })
+    const guilds = Object.entries(db.guild && !Array.isArray(db.guild) ? db.guild : {}).map(([key, entries]) => ({
+      key, name: key.split("-")[0], entries: list(entries).filter((e) => e && e.who && e.kind).sort((a, b) => (a.t || 0) - (b.t || 0)),
+    })).filter((g) => g.entries.length).sort((a, b) => b.entries[b.entries.length - 1].t - a.entries[a.entries.length - 1].t);
     const sections = list(db.sections);
     const notes = Object.values(db.notes && !Array.isArray(db.notes) ? db.notes : {}).map((x) => ({ ...x, images: list(x.images) }));
     const reminders = list(db.reminders);
-    return { version: db.version || 0, settings: db.settings || {}, chars, sections, notes, reminders, companions };
+    return { version: db.version || 0, settings: db.settings || {}, chars, sections, notes, reminders, companions, guilds };
   }
 
   // ---------------------------------------------------------------- screenshots
@@ -331,10 +335,12 @@
       death: (e) => `Murió en ${e.zone || "?"}.`,
       quest: (e) => (e.title ? `Completó: ${e.title}.` : `Completó la misión ${e.quest}.`),
       loot: (e) => `Consiguió ${e.link || e.name}.`,
-      achievement: (e) => `Logro: ${e.link || e.name}.`,
+      achievement: (e) => (e.legacy ? `Desafío del Legado: ${e.link || e.name} (+${e.legacy} puntos).` : `Logro: ${e.link || e.name}.`),
       money: (e) => `Primera vez con ${Math.floor((e.amount || 0) / 10000)} de oro.`,
       played: (e) => `Tiempo jugado: ${duration(e.total, "es")}.`,
       note: (e) => e.text || "",
+      camp: () => "Armó su primer campamento.",
+      blueprint: (e) => `Aprendió el plano de ${e.name} (${e.profession}).`,
     },
     en: {
       start: (e) => `Started the journal at level ${e.level || 1} in ${e.zone || "?"}.`,
@@ -344,13 +350,15 @@
       death: (e) => `Died in ${e.zone || "?"}.`,
       quest: (e) => (e.title ? `Completed: ${e.title}.` : `Completed quest ${e.quest}.`),
       loot: (e) => `Got ${e.link || e.name}.`,
-      achievement: (e) => `Achievement: ${e.link || e.name}.`,
+      achievement: (e) => (e.legacy ? `Legacy challenge: ${e.link || e.name} (+${e.legacy} points).` : `Achievement: ${e.link || e.name}.`),
       money: (e) => `First time with ${Math.floor((e.amount || 0) / 10000)} gold.`,
       played: (e) => `Time played: ${duration(e.total, "en")}.`,
       note: (e) => e.text || "",
+      camp: () => "Built a first campsite.",
+      blueprint: (e) => `Learned the ${e.name} blueprint (${e.profession}).`,
     },
   };
-  const MILESTONES = new Set(["start", "level", "zone", "boss", "death", "achievement", "loot", "money", "note"]);
+  const MILESTONES = new Set(["start", "level", "zone", "boss", "death", "achievement", "loot", "money", "note", "camp", "blueprint"]);
   function entryText(e, lang) {
     const f = (TEXT[lang] || TEXT.es)[e.kind];
     return f ? f(e) : e.kind;
@@ -369,13 +377,60 @@
   }
 
   function summary(c) {
-    let bosses = 0, deaths = 0, loot = 0;
+    let bosses = 0, deaths = 0, loot = 0, legacy = 0, quests = 0;
+    const distinct = new Set();
     for (const e of c.journal) {
-      if (e.kind === "boss") bosses++;
+      if (e.kind === "boss") { bosses++; distinct.add(e.boss != null ? e.boss : e.name); }
       else if (e.kind === "death") deaths++;
       else if (e.kind === "loot") loot++;
+      else if (e.kind === "quest") quests++;
+      else if (e.kind === "achievement" && typeof e.legacy === "number") legacy += e.legacy;
     }
-    return { level: c.level, bosses, deaths, loot, zones: c.visited, played: c.played ? c.played.total : null, since: c.journal.length ? c.journal[0].t : c.created };
+    const played = c.played ? c.played.total : null;
+    return { level: c.level, bosses, distinctBosses: distinct.size, deaths, loot, quests, legacy, zones: c.visited, played, since: c.journal.length ? c.journal[0].t : c.created };
+  }
+
+  // Every character side by side (mirrors the Progress tab's numbers), plus how many levels each holds
+  // the account's best time for.
+  function compareChars(chars) {
+    const best = bestSplits(chars);
+    return chars.map((c) => {
+      const s = summary(c);
+      let bests = 0;
+      for (const b of best.values()) if (b.name === c.name) bests++;
+      return { key: c.key, name: c.name, realm: c.realm, class: c.class, ...s, bests, levelsTimed: splits(c).length };
+    });
+  }
+
+  // The guild chronicle's text (mirrors Chronicle.lua C.Describe); names were looked up by the addon.
+  const CHRON = {
+    es: {
+      level: (e) => `${e.who} llegó a nivel ${e.n}`,
+      boss: (e) => `${e.who} mató por primera vez a ${e.name || "#" + e.n}`,
+      achievement: (e) => `${e.who} consiguió ${e.name || "el logro #" + e.n}`,
+      loot: (e) => `${e.who} consiguió ${e.name || "el objeto #" + e.n}`,
+      start: (e) => `${e.who} empezó una aventura nueva`,
+    },
+    en: {
+      level: (e) => `${e.who} reached level ${e.n}`,
+      boss: (e) => `${e.who} killed ${e.name || "#" + e.n} for the first time`,
+      achievement: (e) => `${e.who} earned ${e.name || "achievement #" + e.n}`,
+      loot: (e) => `${e.who} got ${e.name || "item #" + e.n}`,
+      start: (e) => `${e.who} started a new adventure`,
+    },
+  };
+  function chronicleText(e, lang) {
+    const f = (CHRON[lang] || CHRON.es)[e.kind];
+    return f ? f(e) : `${e.who} · ${e.kind}`;
+  }
+  // The chronicle's entries of the 7 days ending at `end` (epoch), oldest first; who did the most.
+  function guildWeek(entries, end) {
+    const from = end - 7 * 86400;
+    const week = entries.filter((e) => e.t > from && e.t <= end);
+    const by = new Map();
+    for (const e of week) by.set(e.who, (by.get(e.who) || 0) + 1);
+    const people = [...by].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([who, n]) => ({ who, n }));
+    return { from, end, entries: week, people };
   }
 
   // Level over time: the journal's start and every level-up, never going down (a re-rolled journal could).
@@ -514,5 +569,5 @@
     };
   }
 
-  return { splits, bestSplits, postcardData, levelSeries, tripStats, searchEntries, LuaError, parseLua, readDB, stampSeconds, shotStamp, matchShots, markupToHtml, plain, entryText, isMilestone, duration, summary, groupByDay, powerOfTwoAtMost, imageName, notesMarkdown, journalMarkdown };
+  return { compareChars, chronicleText, guildWeek, splits, bestSplits, postcardData, levelSeries, tripStats, searchEntries, LuaError, parseLua, readDB, stampSeconds, shotStamp, matchShots, markupToHtml, plain, entryText, isMilestone, duration, summary, groupByDay, powerOfTwoAtMost, imageName, notesMarkdown, journalMarkdown };
 });

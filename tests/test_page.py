@@ -31,7 +31,7 @@ def test_no_stray_null_in_any_view(pages):
             bad = []
             for who in ["Anabel", "Josecito"]:
                 pg.click(f'#crew button:has-text("{who}")')
-                for view in ["diario", "album", "libreta", "imagenes"]:
+                for view in ["diario", "personajes", "guild", "album", "libreta", "imagenes"]:
                     pg.click(f".tabs a[data-view={view}]")
                     pg.wait_for_timeout(50)
                     for lang in ["es", "en"]:
@@ -52,7 +52,7 @@ def test_no_sideways_scroll_on_a_phone(pages):
             pg.set_default_timeout(90_000)  # a busy machine can be slow; a real failure still shows
             pg.goto(page_file.as_uri())
             pg.wait_for_selector("#particulars li")
-            for view in ["diario", "album", "libreta", "imagenes"]:
+            for view in ["diario", "personajes", "guild", "album", "libreta", "imagenes"]:
                 pg.click(f".tabs a[data-view={view}]")
                 pg.wait_for_timeout(50)
                 width = pg.evaluate("document.documentElement.scrollWidth")
@@ -108,5 +108,54 @@ def test_time_per_level_and_companions_show_up(pages):
                 people = pg.inner_text(".companions")
                 assert "Beto" in people and "Caro" in people and "Ana" in people, people
                 assert pg.evaluate("document.documentElement.scrollWidth") <= width
+                pg.close()
+        browser.close()
+
+
+def test_characters_side_by_side_and_the_guild_week(pages):
+    with sync_api.sync_playwright() as p:
+        browser = p.chromium.launch()
+        for page_file in pages:
+            for width in (1200, 375):
+                pg = browser.new_page(viewport={"width": width, "height": 800}, accept_downloads=True)
+                errors: list[str] = []
+                pg.on("pageerror", lambda e, errors=errors: errors.append(str(e)))
+                pg.set_default_timeout(90_000)
+                pg.goto(page_file.as_uri())
+                pg.wait_for_selector("#particulars li")
+                pg.click('#crew button:has-text("Josecito")')
+                # the Legacy points of the demo character show in the header and the journal
+                assert "3 puntos del Legado" in pg.inner_text("#particulars")
+                pg.click(".tabs a[data-view=diario]")
+                pg.wait_for_timeout(50)
+                journal = pg.inner_text("#view")
+                assert "Desafío del Legado" in journal and "campamento" in journal and "plano de Anvil" in journal, journal
+                # every character in one table; a name there picks the character
+                pg.click(".tabs a[data-view=personajes]")
+                pg.wait_for_selector(".compare")
+                table = pg.inner_text(".compare")
+                assert "Josecito" in table and "Anabel" in table and "6 h 30 min" in table, table
+                pg.click('.compare button:has-text("Anabel")')
+                pg.wait_for_timeout(50)
+                assert "Anabel" in pg.inner_text('#crew button[aria-pressed="true"]') and pg.evaluate("location.hash") == "#diario"
+                # the guild's chronicle, and its week as a 1200x630 card
+                pg.click(".tabs a[data-view=guild]")
+                pg.wait_for_selector(".guild")
+                guild = pg.inner_text("#view")
+                assert "Los Del Fondo" in guild and "Caro mató por primera vez a Edwin VanCleef" in guild, guild
+                with pg.expect_download() as dl:
+                    pg.click('button:has-text("Postal de la semana")')
+                assert dl.value.suggested_filename.startswith("guild-") and dl.value.suggested_filename.endswith(".png")
+                pg.wait_for_selector("figure.postcard img")
+                size = pg.evaluate(
+                    "(() => { const i = document.querySelector('figure.postcard img'); return [i.naturalWidth, i.naturalHeight]; })()"
+                )
+                assert size == [1200, 630]
+                # a week back there is less; forward is capped at the newest entry
+                pg.click('button:has-text("Semana anterior")')
+                pg.wait_for_timeout(50)
+                assert "Ana empezó una aventura nueva" in pg.inner_text("#view") or "Nada en esos siete días" in pg.inner_text("#view")
+                assert pg.evaluate("document.documentElement.scrollWidth") <= width
+                assert not errors, errors
                 pg.close()
         browser.close()

@@ -29,6 +29,10 @@ function P.Rows(charKey)
 	line(L.STAT_FIRSTS, s.firsts)
 	line(L.STAT_LOOT, s.loot)
 	line(L.STAT_DEATHS, s.deaths)
+	if s.legacy > 0 or P.LegacyPoints() > 0 then
+		line(L.STAT_LEGACY, s.legacy)
+		line(L.STAT_LEGACY_ACCOUNT, P.LegacyPoints())
+	end
 	if s.worstZone then
 		line(L.STAT_WORST:format(s.worstZone, s.worstDeaths))
 	end

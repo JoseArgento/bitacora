@@ -1,5 +1,7 @@
 
 BitacoraDB = {
+	["calendarSeen"] = {
+	},
 	["chars"] = {
 		["Anabel-Forever"] = {
 			["album"] = {
@@ -112,9 +114,13 @@ BitacoraDB = {
 					["zone"] = "Las Minas de la Muerte",
 				}, -- [2]
 			},
+			["blueprints"] = {
+				[279988] = true,
+			},
 			["bosses"] = {
 				[2969] = 1,
 			},
+			["camped"] = true,
 			["class"] = "MAGE",
 			["created"] = 1793805000,
 			["guildFired"] = {
@@ -204,6 +210,16 @@ BitacoraDB = {
 				}, -- [9]
 				{
 					["d"] = "2026-11-04 18:00",
+					["kind"] = "zone",
+					["level"] = 10,
+					["mapID"] = 1436,
+					["name"] = "Páramos de Poniente",
+					["sub"] = "Colina del Centinela",
+					["t"] = 1793815200,
+					["zone"] = "Páramos de Poniente",
+				}, -- [10]
+				{
+					["d"] = "2026-11-04 18:00",
 					["kind"] = "quest",
 					["level"] = 10,
 					["quest"] = 184,
@@ -211,7 +227,7 @@ BitacoraDB = {
 					["t"] = 1793815200,
 					["title"] = "Las tierras de Furlbrow",
 					["zone"] = "Páramos de Poniente",
-				}, -- [10]
+				}, -- [11]
 				{
 					["d"] = "2026-11-04 18:20",
 					["kind"] = "death",
@@ -219,7 +235,7 @@ BitacoraDB = {
 					["sub"] = "Colina del Centinela",
 					["t"] = 1793816400,
 					["zone"] = "Páramos de Poniente",
-				}, -- [11]
+				}, -- [12]
 				{
 					["d"] = "2026-11-04 18:20",
 					["kind"] = "note",
@@ -228,7 +244,7 @@ BitacoraDB = {
 					["t"] = 1793816400,
 					["text"] = "Me mató un murloc. Otra vez.",
 					["zone"] = "Páramos de Poniente",
-				}, -- [12]
+				}, -- [13]
 				{
 					["d"] = "2026-11-05 21:00",
 					["kind"] = "level",
@@ -237,7 +253,16 @@ BitacoraDB = {
 					["sub"] = "Colina del Centinela",
 					["t"] = 1793912400,
 					["zone"] = "Páramos de Poniente",
-				}, -- [13]
+				}, -- [14]
+				{
+					["d"] = "2026-11-05 21:00",
+					["kind"] = "zone",
+					["level"] = 18,
+					["mapID"] = 291,
+					["name"] = "Las Minas de la Muerte",
+					["t"] = 1793912400,
+					["zone"] = "Las Minas de la Muerte",
+				}, -- [15]
 				{
 					["boss"] = 2969,
 					["d"] = "2026-11-05 22:10",
@@ -248,7 +273,7 @@ BitacoraDB = {
 					["name"] = "Edwin VanCleef",
 					["t"] = 1793916600,
 					["zone"] = "Las Minas de la Muerte",
-				}, -- [14]
+				}, -- [16]
 				{
 					["d"] = "2026-11-05 22:10",
 					["item"] = 2244,
@@ -259,7 +284,7 @@ BitacoraDB = {
 					["quality"] = 3,
 					["t"] = 1793916600,
 					["zone"] = "Las Minas de la Muerte",
-				}, -- [15]
+				}, -- [17]
 				{
 					["d"] = "2026-11-05 23:00",
 					["kind"] = "played",
@@ -267,7 +292,36 @@ BitacoraDB = {
 					["t"] = 1793919600,
 					["total"] = 23400,
 					["zone"] = "Las Minas de la Muerte",
-				}, -- [16]
+				}, -- [18]
+				{
+					["achievement"] = 7001,
+					["d"] = "2026-11-05 23:05",
+					["kind"] = "achievement",
+					["legacy"] = 3,
+					["level"] = 18,
+					["link"] = "|cffffff00|Hachievement:7001|h[Level 10]|h|r",
+					["name"] = "Explorador de Elwynn",
+					["t"] = 1793919900,
+					["zone"] = "Las Minas de la Muerte",
+				}, -- [19]
+				{
+					["d"] = "2026-11-05 23:12",
+					["kind"] = "camp",
+					["level"] = 18,
+					["spell"] = 91100,
+					["t"] = 1793920320,
+					["zone"] = "Las Minas de la Muerte",
+				}, -- [20]
+				{
+					["d"] = "2026-11-05 23:20",
+					["item"] = 279988,
+					["kind"] = "blueprint",
+					["level"] = 18,
+					["name"] = "Anvil",
+					["profession"] = "Blacksmithing",
+					["t"] = 1793920800,
+					["zone"] = "Las Minas de la Muerte",
+				}, -- [21]
 			},
 			["level"] = 18,
 			["money"] = {
@@ -287,6 +341,8 @@ BitacoraDB = {
 			["realm"] = "Forever",
 			["visited"] = {
 				["m1429"] = true,
+				["m1436"] = true,
+				["m291"] = true,
 			},
 		},
 	},
@@ -328,6 +384,49 @@ BitacoraDB = {
 			["zone"] = "Las Minas de la Muerte",
 		},
 	},
+	["guild"] = {
+		["Los Del Fondo-Forever"] = {
+			{
+				["kind"] = "start",
+				["n"] = 0,
+				["t"] = 1793740500,
+				["who"] = "Ana",
+			}, -- [1]
+			{
+				["kind"] = "level",
+				["n"] = 10,
+				["t"] = 1793823300,
+				["who"] = "Beto",
+			}, -- [2]
+			{
+				["kind"] = "level",
+				["n"] = 20,
+				["t"] = 1793830500,
+				["who"] = "Ana",
+			}, -- [3]
+			{
+				["kind"] = "boss",
+				["n"] = 2969,
+				["name"] = "Edwin VanCleef",
+				["t"] = 1793913300,
+				["who"] = "Caro",
+			}, -- [4]
+			{
+				["kind"] = "achievement",
+				["n"] = 7002,
+				["name"] = "Diez misiones",
+				["t"] = 1793916900,
+				["who"] = "Beto",
+			}, -- [5]
+			{
+				["kind"] = "loot",
+				["n"] = 17078,
+				["name"] = "Sapphiron Drape",
+				["t"] = 1793992500,
+				["who"] = "Ana",
+			}, -- [6]
+		},
+	},
 	["guildReminders"] = {
 		["Los Del Fondo-Forever"] = {
 		},
@@ -336,7 +435,7 @@ BitacoraDB = {
 	["notes"] = {
 		["n3"] = {
 			["body"] = "1. Misión en Ventormenta\n2. Hablar con Marshal Windsor\n3. |cffffff00|Hquest:4182|h[Dragonkin Menace]|h|r",
-			["created"] = 1793919600,
+			["created"] = 1793921400,
 			["id"] = "n3",
 			["images"] = {
 				"amuleto_ruta.png", -- [1]
@@ -344,7 +443,7 @@ BitacoraDB = {
 			["pinned"] = true,
 			["section"] = "s2",
 			["title"] = "Pasos del amuleto",
-			["updated"] = 1793919600,
+			["updated"] = 1793921400,
 		},
 		["n4"] = {
 			["attach"] = {
@@ -353,13 +452,13 @@ BitacoraDB = {
 				["label"] = "Forjaz",
 			},
 			["body"] = "En Forjaz, el vendedor de la zona de los enanos.\nNecesito |cffa335ee|Hitem:17078::::::::60:::::|h[Sapphiron Drape]|h|r",
-			["created"] = 1793919600,
+			["created"] = 1793921400,
 			["id"] = "n4",
 			["images"] = {
 			},
 			["section"] = "s1",
 			["title"] = "Recetas a comprar",
-			["updated"] = 1793919600,
+			["updated"] = 1793921400,
 		},
 		["n5"] = {
 			["attach"] = {
@@ -369,25 +468,25 @@ BitacoraDB = {
 			},
 			["body"] = "Al sur, cerca del río. Ir con grupo.",
 			["char"] = "Josecito-Forever",
-			["created"] = 1793919600,
+			["created"] = 1793921400,
 			["id"] = "n5",
 			["images"] = {
 			},
 			["section"] = "s1",
 			["title"] = "Hogger",
-			["updated"] = 1793919600,
+			["updated"] = 1793921400,
 		},
 	},
 	["reminders"] = {
 		{
-			["created"] = 1793919600,
+			["created"] = 1793921400,
 			["id"] = "r6",
 			["kind"] = "zone",
 			["text"] = "Vender el paño",
 			["value"] = "Forjaz",
 		}, -- [1]
 		{
-			["created"] = 1793919600,
+			["created"] = 1793921400,
 			["id"] = "r7",
 			["kind"] = "time",
 			["repeating"] = true,
@@ -400,7 +499,7 @@ BitacoraDB = {
 		}, -- [2]
 		{
 			["char"] = "Josecito-Forever",
-			["created"] = 1793919600,
+			["created"] = 1793921400,
 			["id"] = "r8",
 			["kind"] = "level",
 			["text"] = "La montura",
@@ -419,7 +518,11 @@ BitacoraDB = {
 	},
 	["settings"] = {
 		["bookIntro"] = true,
-		["chronicle"] = false,
+		["calendar"] = true,
+		["calendarAuto"] = false,
+		["calendarMinutes"] = 60,
+		["campBuff"] = true,
+		["chronicle"] = true,
 		["clock"] = "local",
 		["guildReminders"] = true,
 		["journalQuests"] = true,
@@ -429,6 +532,7 @@ BitacoraDB = {
 		["screenshotChat"] = true,
 		["skin"] = "classic",
 		["tooltipNotes"] = true,
+		["whereDays"] = 2,
 		["zoneNotes"] = true,
 	},
 	["version"] = 1,

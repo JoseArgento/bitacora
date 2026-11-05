@@ -31,6 +31,8 @@ El diario de a bordo de tus personajes de **WoW Forever**: una libreta, un diari
   - **Imágenes:** hasta 4 por nota (ver más abajo).
 - **Diario**
   - Se escribe solo: el día que empezó, cada nivel, la primera vez en cada zona, jefes (marca la primera vez), muertes, misiones, botín de la calidad que elijas (épico por defecto), logros, oro (1, 10, 100, 1000) y tiempo jugado.
+  - **Lo de Forever:** los desafíos del Legado salen con sus puntos ("Desafío del Legado: Explorador (+3 puntos)"), tu primer campamento y cada plano de campamento que aprendés.
+  - **"Dónde estaba":** si volvés a un personaje después de unos días (2 por defecto), una línea en el chat te dice cuándo fue la última vez, dónde, en qué nivel y tu última nota.
   - Podés escribir tus propias entradas.
   - Filtro de "hitos" para leerlo como una historia.
 - **Álbum**
@@ -43,8 +45,11 @@ El diario de a bordo de tus personajes de **WoW Forever**: una libreta, un diari
   - Avisan en el centro de la pantalla, con sonido, y en una ventanita con botones para **posponer** 5, 10 o 15 minutos (se puede apagar).
   - Los de día y hora van por el reloj de tu compu o, si lo elegís en las opciones, por el del reino. Si uno venció mientras no jugabas, salta al entrar (una vez; mira hasta 30 días atrás, desde la última vez que corrió el addon).
   - **De la guild:** un oficial (rango 0 o 1) puede mandar uno por día y hora a toda la guild ("jueves 19:45, raid: traigan pociones"). Salta a la misma hora para todos, se muestra en tu hora local, y solo lo puede borrar quien lo creó.
+  - **Del calendario del juego:** al entrar mira los eventos de la guild (y los que te invitaron) de los próximos 7 días y, por cada uno nuevo, pregunta "¿Te aviso antes de «Onyxia» (jue 12/11 20:30)?" con Sí / No / Siempre. "Siempre" los crea sin preguntar de ahí en más; se apaga en las opciones. El aviso salta 60 minutos antes (en tu hora local).
+  - **"Recordale a":** `/bita a Pepito: traé agua` le manda el recordatorio a alguien de tu guild o de tu lista de amigos por mensaje de addon (susurro), y le salta al instante. Solo se aceptan de gente de la guild o amigos; de cualquier otro se ignora en silencio.
+  - **El campamento:** 5 minutos antes de que venza el buff del campamento te avisa (se apaga en las opciones). ⏳ Los hechizos y buffs de Forever todavía no tienen IDs conocidos: se reconocen por nombre.
 - **Progreso**
-  - Tus números: días jugados, zonas pisadas, misiones, jefes distintos, primeras muertes de jefes, botín, muertes y dónde más moriste.
+  - Tus números: días jugados, zonas pisadas, misiones, jefes distintos, primeras muertes de jefes, botín, muertes, dónde más moriste y los puntos del Legado (del personaje y de la cuenta).
   - Cada mazmorra y banda de la guía de aventuras del juego, con cuántos jefes mataste ("Minas de la Muerte: 2 de 3").
   - Logros por categoría.
   - **Tiempo por nivel:** cuánto tardaste en cada nivel y, si otro personaje tuyo lo hizo más rápido, cuál y en cuánto. Se cuenta desde que el addon vio el nivel; si escribís `/played`, el conteo del juego manda.
@@ -58,6 +63,7 @@ Se abre con `/bitacora` (o `/bita`), con una tecla (Opciones → Atajos → Bit�
 
 - `/bita nota <texto>` guarda una nota rápida.
 - `/bita entrada <texto>` escribe en el diario.
+- `/bita a Nombre: texto` le manda un recordatorio a alguien de la guild o amigo.
 - `/bita opciones` abre su página en Opciones → AddOns: tooltips, avisos, misiones en el diario, calidad del botín y aspecto de la ventana.
 
 ## Las partes sueltas
@@ -96,10 +102,16 @@ La pestaña **Imágenes** de la página web lleva cualquier imagen a potencia de
 - **postales:** cada día tiene un botón "Postal" que arma una imagen de 1200×630 (el tamaño que Discord muestra bien) con el día, los niveles, las zonas y lo más importante, y la captura de ese día si la soltaste en el álbum;
 - el diario entero para copiar o bajar como Markdown (`.md`), para un blog o un Discord;
 - el álbum con tus capturas: las soltás y se emparejan por la hora del nombre del archivo (`WoWScrnShot_MMDDYY_HHMMSS.jpg`);
+- **tus personajes lado a lado:** nivel, jugado, muertes, jefes, zonas, misiones, puntos del Legado y en cuántos niveles tiene el mejor tiempo de la cuenta;
+- **la crónica de la guild**, semana por semana, con una "Postal de la semana" (1200×630) con los hitos de todos para pegar en Discord;
 - la libreta y los recordatorios, con "Copiar como Markdown";
 - la herramienta de imágenes.
 
 `dist/taberna.html` es la misma página con otro look: madera, pergamino y cartas con el color de la clase de cada compañero. Nada sale de tu compu.
+
+## ¿Y Forever Journal o Forever Told?
+
+Hay otros diarios para Forever, y son buenos: [Forever Journal](https://www.curseforge.com/wow/addons/forever-journal) tiene el viaje por capítulos, metas, compañeros, un libro de misiones y recordatorios dentro del juego; [Forever Told](https://www.curseforge.com/wow/addons/forever-told) tiene crónica de guild, "se busca", epitafios Hardcore y capturas automáticas. Si querés eso, instalalos. Lo que Bitácora tiene y ellos no: **la página web** (el libro de a bordo, las postales, el álbum armado con tus capturas reales, los personajes lado a lado, la crónica de la guild semana a semana), las **notas que salen en el tooltip** del PNJ o del ítem, **imágenes** en las notas, los hitos propios de Forever (Legado, campamento, planos), el calendario del juego como recordatorios, castellano de verdad, y 178 tests que se corren contra la API de Forever antes de cada versión.
 
 ## Privacidad
 
@@ -112,7 +124,7 @@ El addon no manda nada tuyo a nadie si no prendés la crónica de la guild. Lo �
 **Probado:**
 - ✅ **Cada función, evento y template existe en Forever 1.60.1.** Lo revisa `tools/check_api.py` contra los dumps de [Ketho/BlizzardInterfaceResources](https://github.com/Ketho/BlizzardInterfaceResources) y el código de la UI de [Gethe/wow-ui-source](https://github.com/Gethe/wow-ui-source), rama `forever`. Ejemplos: `ChatFrameUtil.InsertLink` (Forever no tiene `ChatEdit_InsertLink`), `RaidWarningUtil.AddMessage` (`RaidNotice_AddMessage` solo existe con los alias viejos), `TooltipDataProcessor`, `ScrollingEditBoxTemplate`, el compartimento de addons de Forever. El script encuentra nombres inventados o mal escritos.
 - ✅ [forever-lint](https://github.com/JoseArgento/forever-lint): solo la nota FL012 (las cuentas de prueba no pueden mandar mensajes de addon), que la crónica ya maneja. [Addon Sentry](https://github.com/JoseArgento/addon-sentry) da "Sin señales de riesgo".
-- ✅ **154 tests.**
+- ✅ **178 tests.**
   - 142 corren el addon en Lua 5.1 (el Lua de WoW), con un reemplazo chico del cliente (`tests/wow_mock.lua`): eventos, datos guardados y recargados, recordatorios (incluido el semanal), tooltips, links con shift-click, nombres de imágenes, patrones de botín en varios idiomas, valores secretos, cada pestaña armándose sin errores de Lua, el progreso contra una guía de aventuras de prueba, la crónica (mensajes malos, con códigos de color o con código adentro, inundación, tope de 300, dos jugadores pasándose hitos), los reportes de la beta (muertes dobles, zona vieja al llegar), el tiempo por nivel (incluido el reajuste con `/played`), los compañeros (tope, valores secretos, otros reinos), los recordatorios que vencieron mientras no jugabas, posponer y el reloj del reino, el aspecto Taberna, y las partes sueltas: cada una sola, varias juntas compartiendo los datos, y el completo con una parte (la parte se hace a un lado).
   - El resto prueban la página: lee el archivo igual que Lua 5.1, empareja capturas y arma los textos.
 - ✅ Las dos páginas probadas en Chromium: cada pestaña, el tiempo por nivel y los compañeros, capturas y PNG reales, escritorio y celular, claro y oscuro, y que no aparezca ningún "null" ni "undefined" en pantalla.

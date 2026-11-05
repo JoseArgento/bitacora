@@ -60,7 +60,7 @@ def main() -> None:
     g.fire("PLAYER_MONEY")
     t(g, 4, 18, 0)
     m.where.mapID, m.where.zone, m.where.sub = 1436, "Páramos de Poniente", "Colina del Centinela"
-    g.fire("ZONE_CHANGED_NEW_AREA")
+    g.arrive()  # the zone is read a moment after arriving
     g.fire("QUEST_TURNED_IN", 184, 900, 0)
     t(g, 4, 18, 20)
     g.fire("PLAYER_DEAD")
@@ -73,7 +73,7 @@ def main() -> None:
     m.groupClass["party2"], m.groupClass["party3"] = "PRIEST", "ROGUE"
     m.where.mapID, m.where.zone, m.where.sub, m.where.x = 291, "Las Minas de la Muerte", "", None
     m.maps[291] = "Las Minas de la Muerte"
-    g.fire("ZONE_CHANGED_NEW_AREA")
+    g.arrive()  # the zone is read a moment after arriving
     g.fire("GROUP_ROSTER_UPDATE")
     t(g, 5, 22, 10)
     g.fire("ENCOUNTER_END", 2969, "Edwin VanCleef", 1, 5, 1)
@@ -83,6 +83,33 @@ def main() -> None:
     g.run("ns.Album.SetCaption(2, 'VanCleef caído, primer intento')")
     t(g, 5, 23, 0)
     g.fire("TIME_PLAYED_MSG", 6 * 3600 + 1800, 1200)
+    # Forever's own things: a Legacy challenge (an achievement that pays points), the first campsite, a blueprint
+    gl.GetAchievementInfo = g.lua.eval(
+        'function(id) return id, ({ [7001] = "Explorador de Elwynn", [7002] = "Diez misiones" })[id] or "Logro" end'
+    )
+    m.legacy[7001] = 3
+    t(g, 5, 23, 5)
+    g.fire("ACHIEVEMENT_EARNED", 7001)
+    m.spells[91100] = "Fogata básica"
+    t(g, 5, 23, 12)
+    g.fire("UNIT_SPELLCAST_SUCCEEDED", "player", "cast-1", 91100)
+    m.recipes[500] = 279988
+    t(g, 5, 23, 20)
+    g.fire("NEW_RECIPE_LEARNED", 500, 1, 500)
+    # the guild chronicle: what guildmates with Bitácora shared this week
+    g.db.settings.chronicle = True
+    m.itemNamesByID = g.lua.table_from({17078: "Sapphiron Drape"})
+    for day, hour, sender, msg in (
+        (3, 21, "Ana-Forever", "M|1|start|0"),
+        (4, 20, "Beto-Forever", "M|1|level|10"),
+        (4, 22, "Ana-Forever", "M|1|level|20"),
+        (5, 21, "Caro-Forever", "M|1|boss|2969|Edwin VanCleef"),
+        (5, 22, "Beto-Forever", "M|1|achievement|7002"),
+        (6, 19, "Ana-Forever", "M|1|loot|17078"),
+    ):
+        t(g, day, hour, 15)
+        g.fire("CHAT_MSG_ADDON", "BitacoraCron1", msg, "GUILD", sender, "", 0, 0, "", 0)
+    t(g, 5, 23, 30)
 
     # notebook and reminders
     g.run(

@@ -219,3 +219,113 @@ function GetGuildRosterInfo(i)
 		return r[1], "Rank" .. r[2], r[2]
 	end
 end
+
+-- Forever's Legacy: challenges are achievements that pay Legacy points (MOCK.legacy[achievementID] = points).
+MOCK.legacy = {}
+Constants = Constants or {}
+Constants.LegacyConsts = { LEGACY_POINTS_TRAIT_CURRENCY_ID = 4225 }
+C_Traits = {
+	GetTraitCurrencyForAchievement = function(currencyID, achievementID)
+		assert(currencyID == 4225, "Legacy points are trait currency 4225")
+		return MOCK.legacy[achievementID] or 0
+	end,
+}
+function GetAchievementCategory(id)
+	return MOCK.legacy[id] and 15577 or 92
+end
+
+-- The game's calendar: MOCK.calendar = { { title, year, month, day, hour, min, kind } } in the realm's clock.
+MOCK.calendar = {}
+MOCK.calendarOpened = 0
+local function calendarDay(offset, monthDay)
+	local t = date("*t", MOCK.now + MOCK.realmOffset)
+	local month, year = t.month + offset, t.year
+	while month > 12 do
+		month, year = month - 12, year + 1
+	end
+	local out = {}
+	for _, e in ipairs(MOCK.calendar) do
+		if e[2] == year and e[3] == month and e[4] == monthDay then
+			out[#out + 1] = e
+		end
+	end
+	return out
+end
+C_Calendar = {
+	OpenCalendar = function()
+		MOCK.calendarOpened = MOCK.calendarOpened + 1
+	end,
+	GetMonthInfo = function(offset)
+		local t = date("*t", MOCK.now + MOCK.realmOffset)
+		local month, year = t.month + (offset or 0), t.year
+		while month > 12 do
+			month, year = month - 12, year + 1
+		end
+		local days = date("*t", time({ year = year, month = month + 1, day = 0, hour = 12 })).day
+		return { month = month, year = year, numDays = days, firstWeekday = 1 }
+	end,
+	GetNumDayEvents = function(offset, monthDay)
+		return #calendarDay(offset, monthDay)
+	end,
+	GetDayEvent = function(offset, monthDay, index)
+		local e = calendarDay(offset, monthDay)[index]
+		if not e then
+			return nil
+		end
+		return {
+			eventID = index,
+			title = e[1],
+			startTime = { year = e[2], month = e[3], monthDay = e[4], hour = e[5], minute = e[6] },
+			calendarType = e[7] or "GUILD_EVENT",
+			inviteStatus = 1,
+		}
+	end,
+}
+
+-- Friends list: MOCK.friends = { "Name" }
+MOCK.friends = {}
+C_FriendList = {
+	GetNumFriends = function()
+		return #MOCK.friends
+	end,
+	GetFriendInfoByIndex = function(i)
+		local n = MOCK.friends[i]
+		return n and { name = n, connected = true } or nil
+	end,
+	GetFriendInfo = function(name)
+		for _, n in ipairs(MOCK.friends) do
+			if n == name then
+				return { name = n, connected = true }
+			end
+		end
+		return nil
+	end,
+}
+
+-- Player auras: MOCK.auras = { { name, spellId, expirationTime, auraInstanceID } }
+MOCK.auras = {}
+C_UnitAuras = {
+	GetAuraDataByIndex = function(unit, i, filter)
+		assert(unit == "player" and filter == "HELPFUL", "the player's buffs")
+		local a = MOCK.auras[i]
+		if not a then
+			return nil
+		end
+		return { name = a[1], spellId = a[2], expirationTime = a[3], auraInstanceID = a[4] or i, duration = 3600 }
+	end,
+}
+
+-- Spells and recipes: MOCK.spells[id] = name; MOCK.recipes[id] = output item ID
+MOCK.spells = {}
+MOCK.recipes = {}
+C_Spell = {
+	GetSpellName = function(id)
+		return MOCK.spells[id]
+	end,
+}
+C_TradeSkillUI = {
+	GetRecipeSchematic = function(id, isRecraft)
+		assert(isRecraft == false, "GetRecipeSchematic(recipeID, isRecraft)")
+		return { recipeID = id, outputItemID = MOCK.recipes[id] }
+	end,
+}

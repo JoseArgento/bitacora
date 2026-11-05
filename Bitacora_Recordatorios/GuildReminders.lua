@@ -9,6 +9,7 @@ local L = ns.L
 --   A|1|<id>|<at>|<every>|<text>   a reminder: first time, then every <every> seconds (0 = once, 86400, 604800)
 --   X|1|<id>                       the officer deleted it
 --   Q|1                            "send me the guild's reminders"
+--   W|1|<text>                     a reminder for one person, whispered: only taken from guildmates and friends
 -- What arrives is parsed with patterns; the text loses "|" (the game's escape character) and control
 -- characters and is cut to 120 bytes. Nothing received is run.
 
@@ -197,7 +198,7 @@ end
 
 local lastReply = 0
 function G.OnAddonMessage(prefix, text, channel, sender)
-	if prefix ~= G.PREFIX or channel ~= "GUILD" then
+	if prefix ~= G.PREFIX or (channel ~= "GUILD" and channel ~= "WHISPER") then
 		return
 	end
 	if issecretvalue(text) or issecretvalue(sender) or type(text) ~= "string" or type(sender) ~= "string" then
@@ -208,6 +209,13 @@ function G.OnAddonMessage(prefix, text, channel, sender)
 	end
 	sender = Ambiguate(sender, "none")
 	if sender == UnitName("player") or not allowed(sender) then
+		return
+	end
+	if channel == "WHISPER" then
+		local body = text:match("^W|1|(.+)$")
+		if body then
+			G.OnWhisper(sender, body)
+		end
 		return
 	end
 	if text == "Q|1" then
@@ -263,6 +271,97 @@ end
 
 function G.Ask()
 	return send("Q|1")
+end
+
+-- Whispered reminders ---------------------------------------------------------------------------
+-- "/recordame a Pepito: traé agua": the text goes to Pepito as an addon message on the whisper channel and
+-- rings on his side right away (he is online, or the game says he is not). Only guildmates and friends
+-- are listened to; anyone else is ignored without a word.
+
+local TARGET_OFFLINE = Enum.SendAddonMessageResult and Enum.SendAddonMessageResult.TargetOffline or 12
+local NOT_IN_GROUP = Enum.SendAddonMessageResult and Enum.SendAddonMessageResult.NotInGroup or 7
+
+function G.IsFriend(sender)
+	if not sender or sender == "" then
+		return false
+	end
+	if C_FriendList and C_FriendList.GetFriendInfo then
+		local info = C_FriendList.GetFriendInfo(sender)
+		if type(info) == "table" and ns.Plain(info.name) then
+			return true
+		end
+	end
+	for i = 1, (C_FriendList and C_FriendList.GetNumFriends and C_FriendList.GetNumFriends()) or 0 do
+		local info = C_FriendList.GetFriendInfoByIndex and C_FriendList.GetFriendInfoByIndex(i)
+		local name = info and ns.Plain(info.name)
+		if type(name) == "string" and Ambiguate(name, "none") == sender then
+			return true
+		end
+	end
+	return false
+end
+
+function G.IsGuildmate(sender)
+	if not IsInGuild() then
+		return false
+	end
+	for i = 1, GetNumGuildMembers() or 0 do
+		local name = GetGuildRosterInfo(i)
+		if name and not issecretvalue(name) and Ambiguate(name, "none") == sender then
+			return true
+		end
+	end
+	return false
+end
+
+-- "Name: text" or "Name text" -> name, text
+function G.ParseWhisper(rest)
+	rest = ns.Trim(rest)
+	local name, text = rest:match("^([^%s:]+)%s*:%s*(.+)$")
+	if not name then
+		name, text = rest:match("^(%S+)%s+(.+)$")
+	end
+	if not name or not text then
+		return nil
+	end
+	return name, text
+end
+
+function G.Whisper(target, text)
+	text = G.Clean(text)
+	target = ns.Trim(target)
+	if not text or target == "" or G.IsTrial() then
+		return false, L.WHISPER_CANNOT
+	end
+	if C_ChatInfo.InChatMessagingLockdown and C_ChatInfo.InChatMessagingLockdown() then
+		return false, L.WHISPER_CANNOT
+	end
+	local r = C_ChatInfo.SendAddonMessage(G.PREFIX, "W|1|" .. text, "WHISPER", target)
+	if r == TARGET_OFFLINE or r == NOT_IN_GROUP then
+		return false, L.WHISPER_OFFLINE:format(target)
+	end
+	if r ~= nil and r ~= SUCCESS then
+		return false, L.WHISPER_CANNOT
+	end
+	return true, L.WHISPER_SENT:format(target)
+end
+
+-- A whispered reminder arrives: kept as a one-time reminder (so it shows in the list) and rung now.
+function G.OnWhisper(sender, body)
+	if not ns.Reminders or not (G.IsGuildmate(sender) or G.IsFriend(sender)) then
+		return nil
+	end
+	body = G.Clean(body)
+	if not body then
+		return nil
+	end
+	local r = ns.Reminders.Create({ text = L.WHISPER_FROM:format(sender, body), kind = "login" })
+	if r then
+		r.done, r.fired, r.from = true, time(), sender
+		ns.Alert(L.REMINDER_FIRED:format(r.text))
+		ns.Fire("reminders")
+	end
+	return r
 end
 
 C_ChatInfo.RegisterAddonMessagePrefix(G.PREFIX)

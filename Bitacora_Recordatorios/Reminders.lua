@@ -11,6 +11,8 @@ ns.Reminders = R
 --   kind "place": value = "MAIL" | "BANK" | "MERCHANT" | "AUCTION"
 --   kind "time":  value = { wday = 1-7 (1 = Sunday) or 0 for every day, hour = 0-23, min = 0-59 }
 --   kind "reset": value = hours before the weekly reset (1-168); week = the reset it last fired for
+--   kind "calendar": value = { at = epoch (on your computer's clock), title, minutes }: an event of the game's
+--                    calendar, rung `minutes` before it starts (once)
 
 R.PLACES = { "MAIL", "BANK", "MERCHANT", "AUCTION" }
 R.PLACE_LABEL = { MAIL = "PLACE_MAIL", BANK = "PLACE_BANK", MERCHANT = "PLACE_MERCHANT", AUCTION = "PLACE_AUCTION" }
@@ -52,6 +54,12 @@ function R.Create(fields)
 			return nil
 		end
 		r.value = { wday = tonumber(v.wday) or 0, hour = tonumber(v.hour) % 24, min = tonumber(v.min) % 60 }
+	elseif r.kind == "calendar" then
+		local v = r.value
+		if type(v) ~= "table" or not tonumber(v.at) then
+			return nil
+		end
+		r.value = { at = math.floor(tonumber(v.at)), title = ns.Trim(v.title), minutes = math.max(1, math.floor(tonumber(v.minutes) or 60)) }
 	end
 	table.insert(ns.db.reminders, r)
 	ns.Fire("reminders")
@@ -95,6 +103,9 @@ function R.Describe(r)
 	elseif r.kind == "level" then
 		return L.R_DESC_LEVEL:format(r.value)
 	elseif r.kind == "login" then
+		if r.from then
+			return L.R_DESC_FROM:format(r.from)
+		end
 		return L.R_DESC_LOGIN
 	elseif r.kind == "place" then
 		return L.R_DESC_PLACE:format(L[R.PLACE_LABEL[r.value] or "PLACE_MAIL"])
@@ -104,6 +115,9 @@ function R.Describe(r)
 		return L.R_DESC_TIME:format(day, v.hour, v.min)
 	elseif r.kind == "reset" then
 		return L.R_DESC_RESET:format(r.value)
+	elseif r.kind == "calendar" then
+		local v = r.value
+		return L.R_DESC_CALENDAR:format(v.minutes or 60, date("%d/%m %H:%M", v.at or 0))
 	end
 	return r.kind
 end
@@ -247,6 +261,10 @@ function R.Check(ctx, charKey)
 				if hit then
 					r.week = nextReset
 				end
+			elseif r.kind == "calendar" and (ctx.event == "tick" or ctx.event == "login") then
+				local v = r.value
+				-- from `minutes` before the event until it starts; not again once rung
+				hit = type(v) == "table" and v.at ~= nil and real >= v.at - (v.minutes or 60) * 60 and real <= v.at and not r.fired
 			elseif r.kind == "time" and (ctx.event == "tick" or ctx.event == "login") then
 				local due = R.LastDue(r.value, now)
 				-- due now (within 10 minutes), or while you were out (since the addon last ran) when logging in;
@@ -264,4 +282,180 @@ function R.Check(ctx, charKey)
 		ns.db.settings.lastSeen = real
 	end
 	return fired
+end
+
+-- The game's calendar ---------------------------------------------------------------------------
+-- Guild events (and the ones you were invited to) of the next 7 days. Each new one is offered once as a
+-- reminder `settings.calendarMinutes` before it starts: a popup with Yes / No / Always, or made without
+-- asking once "Always" was chosen (settings.calendarAuto). Times come in the realm's clock
+-- (C_DateAndTime.GetCurrentCalendarTime) and are moved to your computer's.
+
+R.CALENDAR_DAYS = 7
+local CALENDAR_TYPES = { GUILD_EVENT = true, GUILD_ANNOUNCEMENT = true, PLAYER = true }
+local CALENDAR_POPUP = string.upper(ADDON) .. "_CALENDAR"
+
+-- seconds the realm's calendar clock is ahead of your computer's (0 when the game does not say)
+local function realmShift()
+	local ct = C_DateAndTime and C_DateAndTime.GetCurrentCalendarTime and C_DateAndTime.GetCurrentCalendarTime()
+	if type(ct) ~= "table" or not tonumber(ct.year) then
+		return 0
+	end
+	return time({ year = ct.year, month = ct.month, day = ct.monthDay, hour = ct.hour, min = ct.minute, sec = 0 }) - time()
+end
+
+local function calendarTime(t)
+	if type(t) ~= "table" or not tonumber(t.year) or not tonumber(t.month) or not tonumber(t.monthDay) then
+		return nil
+	end
+	return time({ year = t.year, month = t.month, day = t.monthDay, hour = tonumber(t.hour) or 0, min = tonumber(t.minute) or 0, sec = 0 })
+end
+
+-- The upcoming events as { key, title, at (your clock), kind }; empty when the calendar is not there.
+function R.CalendarEvents()
+	local out = {}
+	local C = C_Calendar
+	if not C or not C.GetNumDayEvents or not C.GetDayEvent or not C.GetMonthInfo then
+		return out
+	end
+	local today = C_DateAndTime and C_DateAndTime.GetCurrentCalendarTime and C_DateAndTime.GetCurrentCalendarTime()
+	if type(today) ~= "table" or not tonumber(today.monthDay) then
+		return out
+	end
+	local shift = realmShift()
+	local offset, day = 0, today.monthDay
+	local month = C.GetMonthInfo(0)
+	local numDays = type(month) == "table" and tonumber(month.numDays) or 31
+	for _ = 1, R.CALENDAR_DAYS do
+		local n = ns.Plain(C.GetNumDayEvents(offset, day))
+		for i = 1, (type(n) == "number" and n or 0) do
+			local e = C.GetDayEvent(offset, day, i)
+			local title = e and ns.Plain(e.title)
+			local at = e and calendarTime(e.startTime)
+			local kind = e and ns.Plain(e.calendarType)
+			if type(title) == "string" and title ~= "" and at and CALENDAR_TYPES[kind] then
+				at = at - shift
+				local key = string.format("%s@%d", title, at)
+				table.insert(out, { key = key, title = title, at = at, kind = kind })
+			end
+		end
+		day = day + 1
+		if day > numDays then
+			offset, day = offset + 1, 1
+			local next = C.GetMonthInfo(offset)
+			numDays = type(next) == "table" and tonumber(next.numDays) or 31
+		end
+	end
+	return out
+end
+
+-- A reminder for one event, if none exists for it yet.
+function R.FromCalendar(e)
+	for _, r in ipairs(ns.db.reminders) do
+		if r.kind == "calendar" and r.value and r.value.key == e.key then
+			return nil
+		end
+	end
+	local r = R.Create({ text = e.title, kind = "calendar", value = { at = e.at, title = e.title, minutes = ns.db.settings.calendarMinutes or 60 } })
+	if r then
+		r.value.key = e.key
+	end
+	return r
+end
+
+-- Look at the calendar: new events are offered (or taken, with calendarAuto); each event is offered once.
+function R.ScanCalendar()
+	if ns.db.settings.calendar == false then
+		return {}
+	end
+	if C_Calendar and C_Calendar.OpenCalendar then
+		C_Calendar.OpenCalendar()
+		ns.calendarWanted = true -- CALENDAR_UPDATE_EVENT_LIST brings the data; Events.lua looks again then
+	end
+	ns.db.calendarSeen = ns.db.calendarSeen or {}
+	local seen = ns.db.calendarSeen
+	local now = time()
+	-- forget the ones that went by
+	for key, at in pairs(seen) do
+		if type(at) == "number" and at < now - 86400 then
+			seen[key] = nil
+		end
+	end
+	local new = {}
+	for _, e in ipairs(R.CalendarEvents()) do
+		if not seen[e.key] and e.at > now then
+			seen[e.key] = e.at
+			table.insert(new, e)
+		end
+	end
+	table.sort(new, function(a, b)
+		return a.at < b.at
+	end)
+	for i, e in ipairs(new) do
+		if ns.db.settings.calendarAuto then
+			R.FromCalendar(e)
+		elseif StaticPopupDialogs[CALENDAR_POPUP] then
+			-- one popup per event, a moment apart so they stack in order
+			C_Timer.After(0.2 * (i - 1), function()
+				StaticPopup_Show(CALENDAR_POPUP, e.title, date("%a %d/%m %H:%M", e.at), { event = e })
+			end)
+		end
+	end
+	return new
+end
+
+StaticPopupDialogs[CALENDAR_POPUP] = {
+	text = L.CALENDAR_ASK,
+	button1 = YES,
+	button2 = NO,
+	button3 = L.CALENDAR_ALWAYS,
+	OnAccept = function(_, data)
+		if data and data.event then
+			R.FromCalendar(data.event)
+		end
+	end,
+	OnAlt = function(_, data)
+		ns.db.settings.calendarAuto = true
+		if data and data.event then
+			R.FromCalendar(data.event)
+		end
+	end,
+	timeout = 0,
+	whileDead = true,
+	hideOnEscape = true,
+	preferredIndex = 3,
+}
+
+-- The campsite buff -------------------------------------------------------------------------------
+-- "Your camp is almost over": 5 minutes before the campsite buff ends, once per buff. Aura times can be
+-- secret (in combat, in instances): then nothing is said. ⏳ The buffs' spell IDs are not known yet:
+-- matched by ID when the table has one, else by name.
+
+R.CAMP_BUFF_SPELLS = {}
+R.CAMP_BUFF_NAMES = { ["campsite"] = true, ["campfire"] = true, ["well rested"] = true, ["campamento"] = true, ["fogata"] = true, ["hoguera"] = true }
+R.CAMP_WARN = 5 * 60
+local campWarned = {} -- auraInstanceID -> true
+
+function R.CheckCampBuff(now)
+	if ns.db.settings.campBuff == false or not (C_UnitAuras and C_UnitAuras.GetAuraDataByIndex) then
+		return nil
+	end
+	now = now or GetTime()
+	for i = 1, 40 do
+		local a = C_UnitAuras.GetAuraDataByIndex("player", i, "HELPFUL")
+		if not a then
+			break
+		end
+		local spellId, name, expires, instance = ns.Plain(a.spellId), ns.Plain(a.name), ns.Plain(a.expirationTime), ns.Plain(a.auraInstanceID)
+		local isCamp = (type(spellId) == "number" and R.CAMP_BUFF_SPELLS[spellId]) or (type(name) == "string" and R.CAMP_BUFF_NAMES[string.lower(name)])
+		if isCamp and type(expires) == "number" and expires > 0 then
+			local key = instance or spellId or name
+			local left = expires - now
+			if left > 0 and left <= R.CAMP_WARN and not campWarned[key] then
+				campWarned[key] = true
+				ns.Alert(L.CAMP_ENDING:format(math.ceil(left / 60)))
+				return key
+			end
+		end
+	end
+	return nil
 end

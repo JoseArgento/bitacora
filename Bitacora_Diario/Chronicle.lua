@@ -133,7 +133,18 @@ function C.OnAddonMessage(prefix, text, channel, sender)
 		return
 	end
 	local list = C.Entries()
-	table.insert(list, { who = sender, kind = kind, n = number, name = kind == "boss" and C.Clean(name) or nil, t = time() })
+	-- the boss name travels in the message; achievement and item names are looked up here, so the web page
+	-- (which has no client to ask) can word the entry too
+	local label
+	if kind == "boss" then
+		label = C.Clean(name)
+	elseif kind == "achievement" then
+		local _, aname = GetAchievementInfo(number)
+		label = ns.Plain(aname)
+	elseif kind == "loot" then
+		label = ns.Plain(C_Item.GetItemNameByID(number))
+	end
+	table.insert(list, { who = sender, kind = kind, n = number, name = type(label) == "string" and label or nil, t = time() })
 	while #list > KEEP do
 		table.remove(list, 1)
 	end
