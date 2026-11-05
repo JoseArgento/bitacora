@@ -78,8 +78,9 @@ def test_the_fastest_character_of_the_account_wins():
     best = g.ns.Progress.BestSplits()
     assert best[10].seconds == 1800 and best[10].name == "Anabel"
     # Josecito's row says who did it faster; Anabel's row is just green
-    assert ("Level 10", "7200s · your best: Anabel 1800s") in rows_for(g, "Josecito-Forever")
-    assert ("Level 10", "|cff40c0401800s|r") in rows_for(g, "Anabel-Forever")
+    crimson = g.run("return ns.UI.INK_COLORS.bad")
+    assert ("Level 10", f"|c{crimson}7200s|r · your best: Anabel 1800s") in rows_for(g, "Josecito-Forever")
+    assert ("Level 10", "|cff1c6e0f1800s|r") in rows_for(g, "Anabel-Forever")
 
 
 def rows_for(g, key):
@@ -109,7 +110,8 @@ def test_grouping_with_someone_writes_them_down(game):
     p = people[0]
     assert (p.key, p.label, p["class"], p.times, p.zone) == ("Ana-Forever", "Ana", "WARRIOR", 1, "Elwynn Forest")
     today = game.run('return date("%d/%m")')
-    assert ("#", "Companions") in rows(game) and ("|cffc69b6dAna|r", f"1 group · {today} · Elwynn Forest") in rows(game)
+    warrior = game.run("return select(4, ns.UI.InkClassColor('WARRIOR'))")
+    assert ("#", "Companions") in rows(game) and (f"|c{warrior}Ana|r", f"1 group · {today} · Elwynn Forest") in rows(game)
 
 
 def test_a_member_whose_name_has_not_arrived_is_not_written_down(game):
@@ -268,3 +270,31 @@ def test_the_options_page_shows_the_clock(game):
     panel.Refresh()
     assert panel.clock._text == "The realm's clock"
     assert panel.checks.reminderPopup is not None
+
+
+
+def test_class_colours_are_darkened_for_the_parchment(game):
+    for cls in ("MAGE", "PRIEST", "WARRIOR", "ROGUE", "HUNTER", "DRUID", "PALADIN", "SHAMAN", "WARLOCK", None):
+        r, g, b, hexstr = game.run(f"return ns.UI.InkClassColor({repr(cls) if cls else 'nil'})")
+        lum = 0.2126 * r + 0.7152 * g + 0.0722 * b
+        assert lum <= 0.45, (cls, lum)
+        assert hexstr.startswith("ff") and len(hexstr) == 8
+    # the hue stays: a mage is still bluer than red, a druid still redder than blue
+    r, g, b, _ = game.run("return ns.UI.InkClassColor('MAGE')")
+    assert b > r
+    r, g, b, _ = game.run("return ns.UI.InkClassColor('DRUID')")
+    assert r > b
+    # a class colour given only as a string still works
+    game.run("RAID_CLASS_COLORS.TEST = { colorStr = 'ffffffff' }")
+    r, g, b, _ = game.run("return ns.UI.InkClassColor('TEST')")
+    assert abs(r - 0.40) < 0.01 and abs(r - g) < 1e-9
+
+
+def test_unknown_companions_saved_before_the_filter_are_dropped():
+    from test_addon import Game
+
+    g = Game()
+    g.run("BitacoraDB = { companions = { ['Unknown-Forever'] = { name = 'Unknown', times = 1 }, ['-Forever'] = { name = '', times = 1 }, ['Ana-Forever'] = { name = 'Ana', times = 2 } } }")
+    g.login()
+    names = g.run("local t = {} for _, c in pairs(ns.Companions.List()) do t[#t + 1] = c.name end table.sort(t) return table.concat(t, ',')")
+    assert names == "Ana"

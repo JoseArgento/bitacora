@@ -60,15 +60,15 @@ def test_dungeons_and_raids_from_the_encounter_journal(game):
     game.fire("ENCOUNTER_END", 2746, "Edwin VanCleef", 1, 5, 1)
     r = rows(game)
     assert ("#", "Dungeons") in r and ("#", "Raids") in r
-    assert ("Deadmines", "|cffffd1002 of 3|r") in r
-    assert ("Shadowfang Keep", "|cff9d9d9d0 of 1|r") in r
-    assert ("Onyxia's Lair", "|cff9d9d9d0 of 1|r") in r
+    assert ("Deadmines", "|cff94701f2 of 3|r") in r
+    assert ("Shadowfang Keep", "|cff6b4f300 of 1|r") in r
+    assert ("Onyxia's Lair", "|cff6b4f300 of 1|r") in r
     assert game.m.ej.tier == 1  # the Encounter Journal's own selection was put back
 
 
 def test_a_full_clear_is_green(game):
     game.fire("ENCOUNTER_END", 2750, "Arugal", 1, 5, 1)
-    assert ("Shadowfang Keep", "|cff40c0401 of 1|r") in rows(game)
+    assert ("Shadowfang Keep", "|cff1c6e0f1 of 1|r") in rows(game)
 
 
 def test_the_encounter_journal_is_left_alone_while_it_is_open():
@@ -82,8 +82,10 @@ def test_the_encounter_journal_is_left_alone_while_it_is_open():
 
 def test_achievement_categories_add_up_their_subcategories(game):
     r = rows(game)
-    assert ("General", "3 of 10") in r
-    assert ("Quests", "7 of 28") in r
+    # some done: deep gold; with a note first that says where they come from
+    assert ("General", "|cff94701f3 of 10|r") in r
+    assert ("Quests", "|cff94701f7 of 28|r") in r
+    assert ("The game's Legacy challenges (Y), by category.", "") in r
     assert not any(left == "Eastern Kingdoms" for left, _ in r)
 
 
@@ -99,7 +101,7 @@ def test_spanish():
     g.login()
     r = rows(g)
     assert ("#", "Tus números") in r and ("#", "Mazmorras") in r
-    assert ("Deadmines", "|cff9d9d9d0 de 3|r") in r
+    assert ("Deadmines", "|cff6b4f300 de 3|r") in r
 
 
 # Chronicle ----------------------------------------------------------------------------------------

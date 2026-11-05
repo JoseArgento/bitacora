@@ -112,7 +112,9 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 
 	local area = P.TextArea(editor)
 	area:SetPoint("TOPLEFT", scopeLabel, "BOTTOMLEFT", -2, -8)
-	area:SetPoint("BOTTOMRIGHT", editor, "BOTTOMRIGHT", 0, 150)
+	-- room under the text for: the hint (14), 12, the images row (28), 8, thumbnails with names (78), and
+	-- the bottom buttons (28) with a gap
+	area:SetPoint("BOTTOMRIGHT", editor, "BOTTOMRIGHT", 0, 176)
 	local body = area.box
 	body:RegisterCallback("OnTextChanged", function(_, editBox, userChanged)
 		local note = current()
@@ -127,9 +129,15 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 	hint:SetPoint("RIGHT", 0, 0)
 	hint:SetWordWrap(false)
 
-	-- images strip
-	local imagesLabel = UI.Label(editor, L.IMAGES, "subheading")
-	imagesLabel:SetPoint("TOPLEFT", hint, "BOTTOMLEFT", 0, -10)
+	-- images strip: one row with the label and the button centred on each other, 12 px under the hint
+	local imagesRow = CreateFrame("Frame", nil, editor)
+	imagesRow:SetPoint("TOPLEFT", hint, "BOTTOMLEFT", 0, -12)
+	imagesRow:SetPoint("RIGHT", 0, 0)
+	imagesRow:SetHeight(28)
+	view.imagesRow = imagesRow
+	local imagesLabel = UI.Label(imagesRow, L.IMAGES, "subheading")
+	imagesLabel:SetPoint("LEFT", imagesRow, "LEFT", 0, 0)
+	view.imagesLabel = imagesLabel
 	local addImage = UI.Button(editor, L.ADD_IMAGE, 130, function()
 		local note = current()
 		if not note then
@@ -144,7 +152,8 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 			view.ShowNote()
 		end)
 	end)
-	addImage:SetPoint("LEFT", imagesLabel, "RIGHT", 10, 0)
+	addImage:SetPoint("LEFT", imagesLabel, "RIGHT", 12, 0)
+	view.addImage = addImage
 
 	local preview = P.Card(ADDON .. "ImagePreview", 548, 566, "")
 	preview.tex = preview.body:CreateTexture(nil, "ARTWORK")
@@ -156,7 +165,7 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 	for i = 1, MAX_THUMBS do
 		local b = CreateFrame("Button", nil, editor)
 		b:SetSize(64, 64)
-		b:SetPoint("TOPLEFT", imagesLabel, "BOTTOMLEFT", (i - 1) * 72, -6)
+		b:SetPoint("TOPLEFT", imagesRow, "BOTTOMLEFT", (i - 1) * 72, -8)
 		b.bg = b:CreateTexture(nil, "BACKGROUND")
 		b.bg:SetAllPoints()
 		b.bg:SetColorTexture(0.23, 0.14, 0.07, 0.15)

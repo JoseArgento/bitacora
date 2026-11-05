@@ -83,10 +83,14 @@ def test_on_the_single_page_the_button_sits_under_the_checks():
     i = g.run("return ns.UI.tabOfTopic.reminders")
     view = g.run(f"return ns.UI.views[{i}]")
     assert view.onlyChar._shown is True and view.repeating._shown is True
-    anchored = g.run(f"local v = ns.UI.views[{i}]; local p = v.create._points[1]; return p[1] .. ':' .. tostring(p[2] == v.onlyChar) .. ':' .. p[3]")
-    assert anchored == "TOPLEFT:true:BOTTOMLEFT"
-    # heading, text, when, value, checks and the button all fit in the form
-    assert view.form.height >= 20 + 10 + 24 + 14 + 26 + 12 + 26 + 14 + 18 + 14 + 26
+    # the checks share a row; the button goes under that row, on the right
+    assert g.run(f"local v = ns.UI.views[{i}]; return v.onlyChar._points[1][2] == v.checks and v.repeating._points[1][1] == 'LEFT'") is True
+    anchored = g.run(f"local v = ns.UI.views[{i}]; local p = v.create._points[#v.create._points]; return p[1] .. ':' .. tostring(p[2] == v.checks) .. ':' .. p[3]")
+    assert anchored == "TOPRIGHT:true:BOTTOMRIGHT"
+    # heading, text, when and its chips, the field, its help, the checks and the button all fit in the form
+    assert view.form.height >= 20 + 12 + 26 + 14 + 14 + 6 + 20 + 10 + 26 + 4 + 14 + 12 + 20 + 12 + 26
+    # and a rule separates the form from the list
+    assert g.run(f"return ns.UI.views[{i}].sep ~= nil") is True
 
 
 def test_recordame_has_its_own_minimap_button_with_the_bell():
@@ -114,7 +118,7 @@ def test_the_zone_help_goes_under_the_field_and_stays_on_the_page():
         g.run("ns.Toggle(); ns.UI.SelectTab('reminders')")
         i = g.run("return ns.UI.tabOfTopic.reminders")
         got = g.run(
-            f"local v = ns.UI.views[{i}]; local hint = v.onlyChar._points[1][2];"
+            f"local v = ns.UI.views[{i}]; local hint = v.valueHint;"
             " local a, b = hint._points[1], hint._points[2];"
             " return hint._text .. '|' .. a[1] .. ':' .. a[3] .. '|' .. b[1] .. ':' .. tostring(b[2] == v.form)"
         )

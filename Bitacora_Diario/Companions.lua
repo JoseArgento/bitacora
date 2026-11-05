@@ -15,7 +15,7 @@ local function keyOf(unit)
 	local name, realm = UnitName(unit)
 	name = ns.Plain(name)
 	-- a member whose name has not arrived yet is "Unknown" (UNKNOWNOBJECT); the next roster update retries
-	if not name or name == "" or name == (UNKNOWNOBJECT or "Unknown") or name == "Unknown" then
+	if Co.IsUnknown(name) then
 		return nil
 	end
 	realm = ns.Plain(realm)
@@ -25,8 +25,23 @@ local function keyOf(unit)
 	return name .. "-" .. realm, name, realm
 end
 
+-- A name that never arrived: the game's "Unknown" (UNKNOWNOBJECT, translated in other clients) or empty.
+local NOT_A_NAME = { Unknown = true, Desconocido = true, [""] = true }
+function Co.IsUnknown(name)
+	return not name or NOT_A_NAME[name] or name == UNKNOWNOBJECT
+end
+
 function Co.List()
 	ns.db.companions = ns.db.companions or {}
+	if not Co.cleaned then
+		-- records saved before the filter (or from a client in another language) are dropped once per session
+		Co.cleaned = true
+		for key, c in pairs(ns.db.companions) do
+			if type(c) ~= "table" or Co.IsUnknown(c.name) then
+				ns.db.companions[key] = nil
+			end
+		end
+	end
 	return ns.db.companions
 end
 

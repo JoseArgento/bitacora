@@ -450,7 +450,18 @@ UISpecialFrames = {}
 StaticPopupDialogs = {}
 SlashCmdList = {}
 ACCEPT, CANCEL, YES, NO, OKAY = "Accept", "Cancel", "Yes", "No", "Okay"
-RAID_CLASS_COLORS = { MAGE = { colorStr = "ff3fc7eb" }, PRIEST = { colorStr = "ffffffff" }, WARRIOR = { colorStr = "ffc69b6d" } }
+-- the game's values (r, g, b and the colour string)
+RAID_CLASS_COLORS = {
+	MAGE = { r = 0.25, g = 0.78, b = 0.92, colorStr = "ff3fc7eb" },
+	PRIEST = { r = 1, g = 1, b = 1, colorStr = "ffffffff" },
+	WARRIOR = { r = 0.78, g = 0.61, b = 0.43, colorStr = "ffc69b6d" },
+	ROGUE = { r = 1, g = 0.96, b = 0.41, colorStr = "fffff468" },
+	HUNTER = { r = 0.67, g = 0.83, b = 0.45, colorStr = "ffaad372" },
+	DRUID = { r = 1, g = 0.49, b = 0.04, colorStr = "ffff7c0a" },
+	PALADIN = { r = 0.96, g = 0.55, b = 0.73, colorStr = "fff48cba" },
+	SHAMAN = { r = 0, g = 0.44, b = 0.87, colorStr = "ff0070dd" },
+	WARLOCK = { r = 0.53, g = 0.53, b = 0.93, colorStr = "ff8788ee" },
+}
 SOUNDKIT = { RAID_WARNING = 8959, IG_CHARACTER_INFO_TAB = 841, IG_CHARACTER_INFO_OPEN = 839, IG_CHARACTER_INFO_CLOSE = 840 }
 ChatTypeInfo = { RAID_WARNING = { r = 1, g = 0.28, b = 0 } }
 function PlaySound(id)

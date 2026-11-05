@@ -17,7 +17,8 @@ ns.Reminders = R
 R.PLACES = { "MAIL", "BANK", "MERCHANT", "AUCTION" }
 R.PLACE_LABEL = { MAIL = "PLACE_MAIL", BANK = "PLACE_BANK", MERCHANT = "PLACE_MERCHANT", AUCTION = "PLACE_AUCTION" }
 
-function R.Create(fields)
+-- A checked reminder from the form's fields, not stored yet (nil when something is missing or out of range).
+local function normalize(fields)
 	local text = ns.Trim(fields.text)
 	if text == "" or not fields.kind then
 		return nil
@@ -61,9 +62,41 @@ function R.Create(fields)
 		end
 		r.value = { at = math.floor(tonumber(v.at)), title = ns.Trim(v.title), minutes = math.max(1, math.floor(tonumber(v.minutes) or 60)) }
 	end
+	return r
+end
+R.Normalize = normalize
+
+function R.Create(fields)
+	local r = normalize(fields)
+	if not r then
+		return nil
+	end
 	table.insert(ns.db.reminders, r)
 	ns.Fire("reminders")
 	return r
+end
+
+function R.Get(id)
+	for _, r in ipairs(ns.db.reminders) do
+		if r.id == id then
+			return r
+		end
+	end
+end
+
+-- Edit one in place: same id and creation time, the new text and "when"; it is active again.
+function R.Update(id, fields)
+	local old = R.Get(id)
+	local r = old and normalize(fields)
+	if not r then
+		return nil
+	end
+	for _, key in ipairs({ "text", "kind", "value", "mapID", "char", "repeating" }) do
+		old[key] = r[key]
+	end
+	old.done, old.fired, old.snooze = nil, nil, nil
+	ns.Fire("reminders")
+	return old
 end
 
 function R.Delete(id)

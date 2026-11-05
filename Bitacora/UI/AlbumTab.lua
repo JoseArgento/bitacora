@@ -1,6 +1,7 @@
 local _, ns = ...
 local L = ns.L
 local UI = ns.UI
+local P = UI.P
 local A = ns.Album
 
 -- Left page: the screenshots, newest first. Right page: the one you clicked, with its caption.
@@ -83,7 +84,6 @@ UI.RegisterTab("TAB_ALBUM", "album", function(page)
 			end)
 		end
 	end)
-	setCaption:SetPoint("BOTTOMLEFT", 0, 0)
 	local delete = UI.Button(detail, L.DELETE, 90, function()
 		if view.selected then
 			A.Delete(view.selected)
@@ -101,6 +101,12 @@ UI.RegisterTab("TAB_ALBUM", "album", function(page)
 	folder:SetPoint("RIGHT", 0, 0)
 	folder:SetWordWrap(true)
 	view.folder = folder
+	-- the buttons sit above the folder note, never on it: the note wraps to its own height at the bottom
+	local footRule = P.Rule(right)
+	footRule:SetPoint("BOTTOMLEFT", folder, "TOPLEFT", 0, 8)
+	footRule:SetPoint("RIGHT", right, "RIGHT", 0, 0)
+	setCaption:SetPoint("BOTTOMLEFT", footRule, "TOPLEFT", 0, 10)
+	view.setCaption, view.footRule = setCaption, footRule
 
 	function view.ShowShot()
 		local shot = view.selected and A.List()[view.selected]
