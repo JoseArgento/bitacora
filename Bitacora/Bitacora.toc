@@ -5,6 +5,7 @@
 ## Notes-esMX: Libreta, diario, álbum de capturas y recordatorios para tus personajes.
 ## Author: José Argento
 ## Version: @project-version@
+## X-Curse-Project-ID: 1785816
 ## Dependencies: Bitacora_Datos
 ## IconTexture: Interface\AddOns\Bitacora_Datos\Media\icon
 ## AddonCompartmentFunc: Bitacora_OnAddonCompartmentClick
