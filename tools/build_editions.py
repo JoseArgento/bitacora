@@ -72,7 +72,7 @@ EDITIONS = {
         "icon": "Interface\\AddOns\\Recordame\\Media\\icon_bell",
         "standalone": True,
         "single": True,
-        # "curse": 123456,  # Recordame's own CurseForge project, once it exists (then run this script)
+        "curse": 1787036,  # Recordame's own CurseForge project
     },
 }
 

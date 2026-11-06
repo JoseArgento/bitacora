@@ -7,6 +7,7 @@
 ## Version: @project-version@
 ## SavedVariables: RecordameDB
 ## IconTexture: Interface\AddOns\Recordame\Media\icon_bell
+## X-Curse-Project-ID: 1787036
 ## AddonCompartmentFunc: Recordame_OnAddonCompartmentClick
 ## AddonCompartmentFuncOnEnter: Recordame_OnAddonCompartmentEnter
 ## AddonCompartmentFuncOnLeave: Recordame_OnAddonCompartmentLeave
