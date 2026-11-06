@@ -242,6 +242,54 @@ def test_parts_together_without_the_full_addon_do_not_overlap():
     assert g.run("return Bitacora_RecordatoriosMinimapButton.icon.texture").endswith("icon_bell")
 
 
+def test_merging_the_minimap_buttons_hides_ours_and_the_hub_lists_the_family(game):
+    game.lua.globals().SlashCmdList.BITACORA("minimapa juntar on")
+    assert game.db.settings.minimapMerged is True
+    assert game.run("return BitacoraMinimapButton._shown") is False
+    assert game.run("return PergaminoMinimapHub._shown") is not False
+    assert [e.label for e in game.run("return Pergamino.MinimapHub.Entries()").values()] == ["Bitácora"]
+    assert any("minimapa juntar off" in line for line in game.m.chat.values())
+    # the hub opens the book like the button did, and the setting survives a relog
+    game.run("Pergamino.MinimapHub.Entries()[1].onClick()")
+    assert game.run("return BitacoraFrame:IsShown()") is True
+    g2 = Game(saved=game.m.savedVariables("BitacoraDB"))
+    g2.login()
+    assert g2.run("return BitacoraMinimapButton._shown") is False
+    # the option in the panel splits them again
+    g2.run('ns.db.settings.minimapMerged = false; ns.Fire("settings", "minimapMerged")')
+    assert g2.run("return BitacoraMinimapButton._shown") is not False
+    assert g2.run("return PergaminoMinimapHub._shown") is False
+
+
+def test_recordame_registers_in_the_hub_after_bitacora():
+    g = Game(addons=("Recordame",))
+    g.login()
+    entries = g.run("return Pergamino.MinimapHub.Entries()")
+    assert [(e.label, e.order) for e in entries.values()] == [("Recordame", 2)]
+
+
+def test_an_error_in_the_minimap_click_or_the_compartment_is_kept(game):
+    game.run("ns.Toggle = function() error('se rompio el libro') end")
+    game.run("BitacoraMinimapButton:GetScript('OnClick')(BitacoraMinimapButton, 'LeftButton')")  # does not raise
+    game.run("Bitacora_OnAddonCompartmentClick()")
+    errs = game.run("return ns.guard.Errors()")
+    assert sorted(e.label for e in errs.values()) == ["compartment", "minimap"]
+    assert all("se rompio el libro" in e.message for e in errs.values())
+
+
+def test_shift_click_on_a_focused_note_does_not_split_the_stack(game):
+    # Pergamino.AcceptLinks: ChatFrameUtil.InsertLink returns true only while our box has focus, so the game
+    # does not go on to split the stack in the bag
+    link = "|cffa335ee|Hitem:17078::|h[Sapphiron Drape]|h|r"
+    game.run("ns.Toggle(1); local n = ns.Notes.Create({ title = 'Links' }); ns.UI.views[1].Select(n.id)")
+    insert = game.lua.globals().ChatFrameUtil.InsertLink
+    assert not insert(link)
+    game.run("ns.UI.views[1].body:SetFocus()")
+    assert insert(link) is True
+    game.run("ns.UI.views[1].body:ClearFocus(); ns.UI.views[1].title:SetFocus()")
+    assert insert(link) is True
+
+
 def test_the_album_says_where_pictures_for_notes_go(game):
     game.run("ns.Toggle('album')")
     text = game.run("return ns.UI.views[ns.UI.tabOfTopic.album].folder:GetText()")

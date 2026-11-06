@@ -215,7 +215,9 @@ ns.On("locale", function()
 end)
 
 -- The round button on the minimap's edge (Pergamino.MinimapButton): left click opens the book, right click
--- the options. Each addon keeps its own angle, so parts loaded together do not sit on top of each other.
+-- the options. Each addon keeps its own angle, so parts loaded together do not sit on top of each other. Every
+-- edition registers in the family's hub (settings.minimapMerged = one button for all the addons that share
+-- the lib), and the clicks go through the guard: an error is kept, not thrown.
 local DEFAULT_ANGLE = {
 	Bitacora = 200,
 	Bitacora_Diario = 215,
@@ -223,6 +225,15 @@ local DEFAULT_ANGLE = {
 	Bitacora_Album = 245,
 	Bitacora_Recordatorios = 260,
 	Recordame = 230,
+}
+-- the place of each edition in the hub's menu (Bitácora first, Recordame second, the parts after)
+local HUB_ORDER = {
+	Bitacora = 1,
+	Recordame = 2,
+	Bitacora_Diario = 11,
+	Bitacora_Libreta = 12,
+	Bitacora_Album = 13,
+	Bitacora_Recordatorios = 14,
 }
 function UI.MinimapButton()
 	if UI.minimap or not P.MinimapButton then
@@ -240,24 +251,37 @@ function UI.MinimapButton()
 		onMove = function(angle)
 			settings.minimapAngle[ADDON] = angle
 		end,
-		onClick = function(button)
-			if button == "RightButton" then
-				ns.OpenOptions()
-			else
-				ns.Toggle()
-			end
+		onClick = function()
+			ns.Toggle()
+		end,
+		onRightClick = function()
+			ns.OpenOptions()
 		end,
 		tooltip = function(tip)
 			tip:SetText(ns.edition.title or L.TITLE)
 			tip:AddLine(L.MINIMAP_TIP, 1, 1, 1, true)
 		end,
+		guard = ns.guard,
+		hub = { addon = ns.edition.title or ADDON, label = ns.edition.title or L.TITLE, order = HUB_ORDER[ADDON] or 15 },
 	})
+	if settings.minimapMerged ~= nil then
+		P.MinimapHub.SetMerged(settings.minimapMerged)
+	end
 	return UI.minimap
+end
+
+-- One button for the whole family (settings.minimapMerged, shared by every edition through Bitacora_Datos):
+-- the option in the panel and /bita minimapa juntar on|off.
+function UI.SetMinimapMerged(merged)
+	ns.db.settings.minimapMerged = merged and true or false
+	P.MinimapHub.SetMerged(merged)
 end
 
 ns.On("settings", function(key)
 	if key == "minimap" and UI.minimap then
 		UI.minimap:SetShown(ns.db.settings.minimap ~= false)
+	elseif key == "minimapMerged" then
+		P.MinimapHub.SetMerged(ns.db.settings.minimapMerged)
 	end
 end)
 

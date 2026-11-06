@@ -302,6 +302,21 @@ onSlash = function(msg)
 			ns.SetLocale(code)
 		end
 		ns.Print(L.LANG_SET:format(L["LANG_" .. string.upper(ns.db.settings.lang or "auto")]))
+	elseif cmd == "minimapa" or cmd == "minimap" then
+		local sub, val = rest:match("^(%S+)%s*(%S*)$")
+		if sub == "juntar" or sub == "merge" then
+			if val == "on" or val == "off" then
+				ns.UI.SetMinimapMerged(val == "on")
+			else
+				ns.UI.SetMinimapMerged(not ns.db.settings.minimapMerged)
+			end
+			ns.Print(ns.db.settings.minimapMerged and L.MINIMAP_MERGED_ON or L.MINIMAP_MERGED_OFF)
+		else
+			local on = sub == "on" or (sub ~= "off" and ns.db.settings.minimap == false)
+			ns.db.settings.minimap = on
+			ns.Fire("settings", "minimap")
+			ns.Print(on and L.MINIMAP_ON or L.MINIMAP_OFF)
+		end
 	elseif cmd == "opciones" or cmd == "options" or cmd == "config" then
 		ns.OpenOptions()
 	elseif cmd == "errores" or cmd == "errors" then
@@ -323,7 +338,14 @@ local function toggle()
 	ns.Toggle()
 end
 _G[ADDON .. "_Toggle"] = toggle
-_G[ADDON .. "_OnAddonCompartmentClick"] = toggle
+-- the addon compartment is not a frame, so its click is wrapped by hand (an error is kept, not thrown)
+_G[ADDON .. "_OnAddonCompartmentClick"] = function()
+	if ns.guard then
+		ns.guard.Wrap(toggle, "compartment")()
+	else
+		toggle()
+	end
+end
 _G[ADDON .. "_OnAddonCompartmentEnter"] = function(_, button)
 	GameTooltip:SetOwner(button or UIParent, "ANCHOR_LEFT")
 	GameTooltip:SetText(ns.edition.title or L.TITLE)

@@ -343,6 +343,12 @@ end
 function Frame:GetPoint()
 	return "CENTER", nil, "CENTER", 10, 20
 end
+function Frame:IsMouseOver()
+	return self._mouseOver == true
+end
+function Frame:GetName()
+	return self._name
+end
 function Frame:CreateFontString(name, layer, template)
 	local fs = newObject("FontString", name, self)
 	fs._fontObject = template

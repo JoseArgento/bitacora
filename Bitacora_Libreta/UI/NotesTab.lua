@@ -219,19 +219,18 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 	nothing:SetPoint("LEFT", 20, 0)
 	nothing:SetPoint("RIGHT", -20, 0)
 
-	-- link insertion: shift-click while the note has focus (Forever's ChatFrameUtil.InsertLink)
-	if ChatFrameUtil and ChatFrameUtil.InsertLink then
-		hooksecurefunc(ChatFrameUtil, "InsertLink", function(text)
-			if not text or not left:IsVisible() then
-				return
-			end
-			if body:HasFocus() then
-				body:Insert(text)
-			elseif title:HasFocus() then
-				title:Insert(ns.PlainText(text))
-			end
-		end)
-	end
+	-- link insertion: shift-click on an item while the note has focus. Pergamino takes the link for us and
+	-- tells the game it was used, so shift-clicking a stack no longer opens the split dialog.
+	P.AcceptLinks(body, function(text)
+		if left:IsVisible() then
+			body:Insert(text)
+		end
+	end)
+	P.AcceptLinks(title, function(text)
+		if left:IsVisible() then
+			title:Insert(ns.PlainText(text))
+		end
+	end)
 
 	-- menus ----------------------------------------------------------------------------------------
 	attach:SetScript("OnClick", function(self)

@@ -136,6 +136,7 @@ function panel.Build()
 	add("campBuff", L.OPT_CAMP_BUFF, ns.Reminders)
 	add("bookIntro", L.OPT_BOOK_INTRO, true)
 	add("minimap", L.OPT_MINIMAP, true)
+	add("minimapMerged", L.OPT_MINIMAP_MERGED, true)
 
 	-- the pickers: a label and a button each, one under the other
 	local last
