@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.0 (unreleased)
+## 0.2.0 (2026-11-07)
 
 - **Minimap, polished** (Pergamino 7): the round button now has a bevelled gold ring, a dark leather disc and a cream icon, like the game's own; it can be hidden with `/bita minimapa on|off` as well as in Options. **One button for the whole family**: Options → "One minimap button for the whole family" (or `/bita minimapa juntar on|off`) folds Bitácora, Recordame, Bingo de la Guild, Taller, Listos para la raid, Centinela and Trueque into a single button with a menu; each addon keeps its own click and right click there. The minimap click and the addon compartment now go through the addon's own error guard too (an error there was shown by the game, not kept). Shift-clicking an item from the bag into a focused note no longer opens the split-stack dialog (Pergamino tells the game the link was taken). New cream icons for the book and the bell.
 - **Its own errors, kept** (Pergamino 5): a Lua error in a handler no longer reaches the player as a popup; it is kept in the saved data (`errorsByAddon`, the last 10 per edition), said once in the chat, and `/bita errores` opens an "Errores" bookmark (a card in Recordame and the parts) to copy it into a GitHub issue. The bookmark only shows while there is something kept.
@@ -16,7 +16,7 @@
 - **In the client**: the start entry no longer reads "in ." when the zone text was still empty (it fills in once the zone arrives); the milestones view folds consecutive level-ups of a day into "Levels 2 to 9"; chat lines are measured (`settings.chat`: never / important once per session / all; `/bita chat …`; the old "screenshot chat line" option became "never"); the addon's **language can be chosen** (`/bita idioma es|en|auto`, also in Options) so Spanish works on an English client; a **welcome card** the first time the book opens and friendlier empty pages; **bookmark tooltips** with the page and the key binding; own icons in the addon compartment (book; a bell for the reminders addons). The options page is drawn on first use, in the chosen language.
 - Look: the book cover is drawn for the window's shape (the compass rose no longer stretches); list rows take ink and gold on the tavern skin instead of the default teal; on the tavern web page the open ribbon and the main button are gold and crimson rather than blue, a pushpin that floated beside the notes is gone, and on a phone the tabs fit and the level chart keeps readable labels.
 
-## 0.1.0 (unreleased)
+## 0.1.0 (2026-11-05, CurseForge 0.1.2)
 
 First version, for WoW Forever 1.60.1.
 
