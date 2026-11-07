@@ -90,8 +90,9 @@ function UI.ChipRow(parent, width)
 			c:Fit()
 			c:SetPressed(it.selected)
 			c:SetScript("OnClick", it.onClick)
+			-- wrap: 8 px of air between rows (a chip is 20 tall)
 			if x > 0 and x + c:GetWidth() > maxX then
-				x, y = 0, y + 24
+				x, y = 0, y + 28
 			end
 			c:ClearAllPoints()
 			c:SetPoint("TOPLEFT", self, "TOPLEFT", x, -y)

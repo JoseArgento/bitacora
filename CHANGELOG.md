@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1 (unreleased)
+
+- **Unpin works**: "Unpin" in the notebook did nothing (an update with `pinned = nil` is an empty table in Lua, so the field never changed); a field set to `false` is now cleared.
+- **Reminders form, laid out**: the "when" chips wrap with air between rows, a rule under them, the field of the chosen kind shows its own placeholder (it was an invisible line under the help), the help 10 px under it, the checks on their row and "Add reminder" 12 px under them against the right edge of the page, 180 wide. Same on Recordame's single page.
+- Options panel: the "one minimap button" line is short; which addons it folds is in its tooltip. Notebook thumbnails show a short name ("postal…png") and the whole file name in a tooltip.
+
 ## 0.2.0 (2026-11-07)
 
 - **Minimap, polished** (Pergamino 7): the round button now has a bevelled gold ring, a dark leather disc and a cream icon, like the game's own; it can be hidden with `/bita minimapa on|off` as well as in Options. **One button for the whole family**: Options → "One minimap button for the whole family" (or `/bita minimapa juntar on|off`) folds Bitácora, Recordame, Bingo de la Guild, Taller, Listos para la raid, Centinela and Trueque into a single button with a menu; each addon keeps its own click and right click there. The minimap click and the addon compartment now go through the addon's own error guard too (an error there was shown by the game, not kept). Shift-clicking an item from the bag into a focused note no longer opens the split-stack dialog (Pergamino tells the game the link was taken). New cream icons for the book and the bell.

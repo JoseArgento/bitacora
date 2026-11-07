@@ -351,3 +351,21 @@ def test_a_single_page_edition_shows_its_errors_on_a_card():
     assert g.run("return ns.UI.errorsCard:IsShown()") is True
     assert "se rompio el recordatorio" in g.run("return ns.UI.errorsCard.page.area.box._text")
     assert g.run("return ns.UI.errorsTab") is None
+
+
+def test_unpin_really_unpins_and_the_row_loses_its_tag(game):
+    # { pinned = nil } is an empty table in Lua, so the old toggle could pin but never unpin
+    game.run("ns.Toggle(1); local n = ns.Notes.Create({ title = 'Fijada' }); ns.UI.views[1].Select(n.id); MOCK.noteId = n.id")
+    game.run("ns.UI.views[1].pin:GetScript('OnClick')(ns.UI.views[1].pin)")
+    assert game.run("return ns.Notes.Get(MOCK.noteId).pinned") is True
+    assert game.run("return ns.UI.views[1].pin:GetText()") == "Unpin"
+    game.run("ns.UI.views[1].pin:GetScript('OnClick')(ns.UI.views[1].pin)")
+    assert game.run("return ns.Notes.Get(MOCK.noteId).pinned") is None
+    assert game.run("return ns.UI.views[1].pin:GetText()") == "Pin"
+    assert game.run("return ns.Notes.Search('', nil, nil)[1].pinned") is None
+
+
+def test_thumbnail_names_are_short_and_keep_the_extension(game):
+    assert game.run("return ns.ShortName('arg.png', 11)") == "arg.png"
+    assert game.run("return ns.ShortName('postal_anoche_en_forjaz.png', 11)") == "postal…png"
+    assert game.run("return ns.ShortName('abcdefghijklmnop', 8)") == "abcdef…"

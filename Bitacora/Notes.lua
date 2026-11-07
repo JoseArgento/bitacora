@@ -82,13 +82,19 @@ function N.Create(fields)
 	return note
 end
 
+-- fields: the values to change. A field set to false is cleared (a nil in a table literal is simply
+-- absent, so { pinned = nil } would change nothing: that is how Unpin did nothing once).
 function N.Update(id, fields)
 	local note = ns.db.notes[id]
 	if not note then
 		return nil
 	end
 	for k, v in pairs(fields) do
-		note[k] = v
+		if v == false then
+			note[k] = nil
+		else
+			note[k] = v
+		end
 	end
 	if fields.title then
 		note.title = ns.Trim(fields.title)

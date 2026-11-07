@@ -80,9 +80,13 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(page)
 	kinds:SetPoint("TOPLEFT", whenLabel, "BOTTOMLEFT", 0, -6)
 	kinds:SetPoint("RIGHT", form, "RIGHT", 0, 0)
 
-	-- the detail of the kind chosen: only the field that kind needs, with a short help under it
+	-- a rule 12 px under the last row of chips; the detail of the kind chosen 12 px under it: only the
+	-- field that kind needs (full width, with a placeholder so the field itself is visible), help under it
+	local kindsRule = UI.Rule(form)
+	kindsRule:SetPoint("TOPLEFT", kinds, "BOTTOMLEFT", 0, -12)
+	kindsRule:SetPoint("RIGHT", form, "RIGHT", 0, 0)
 	local detail = CreateFrame("Frame", nil, form)
-	detail:SetPoint("TOPLEFT", kinds, "BOTTOMLEFT", 0, -10)
+	detail:SetPoint("TOPLEFT", kindsRule, "BOTTOMLEFT", 0, -12)
 	detail:SetPoint("RIGHT", form, "RIGHT", 0, 0)
 	detail:SetHeight(26)
 	local value = UI.Input(detail, 150, nil, "")
@@ -92,7 +96,7 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(page)
 	local valueHint = UI.Label(form, "", "muted")
 	valueHint:SetJustifyH("LEFT")
 	valueHint:SetWordWrap(true)
-	valueHint:SetPoint("TOPLEFT", detail, "BOTTOMLEFT", 0, -4)
+	valueHint:SetPoint("TOPLEFT", detail, "BOTTOMLEFT", 0, -10)
 	valueHint:SetPoint("RIGHT", form, "RIGHT", 0, 0)
 
 	-- for whom, and how often: the checks on one row, the button under them on the right
@@ -105,8 +109,8 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(page)
 	-- officers can send a day-and-time reminder to the whole guild
 	local forGuild = UI.Check(form, L.FOR_GUILD)
 
-	local create = UI.Button(form, L.ADD_REMINDER, 170, nil)
-	create:SetPoint("TOPRIGHT", checks, "BOTTOMRIGHT", 0, -12)
+	local create = UI.Button(form, L.ADD_REMINDER, 180, nil)
+	create:SetPoint("TOPRIGHT", form, "RIGHT", 0, 0) -- layout() anchors it under the checks
 	local cancel = UI.Button(form, L.CANCEL_EDIT, 100, nil)
 	cancel:SetPoint("RIGHT", create, "LEFT", -8, 0)
 	cancel:Hide()
@@ -140,12 +144,15 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(page)
 		places:SetShown(k == "place")
 		local hint = ""
 		local detailH = 26
+		if value.SetPlaceholder then
+			value:SetPlaceholder(k == "zone" and L.R_ZONE_FIELD or k == "level" and L.R_LEVEL_HINT or k == "reset" and L.R_RESET_FIELD or k == "time" and L.R_HOUR_FIELD or "")
+		end
 		if k == "zone" then
 			value:SetPoint("TOPLEFT", detail, "TOPLEFT", 0, 0)
 			value:SetPoint("RIGHT", detail, "RIGHT", 0, 0)
 			hint = L.R_ZONE_HINT
 		elseif k == "level" or k == "reset" then
-			value:SetWidth(60)
+			value:SetWidth(k == "level" and 60 or 90)
 			value:SetPoint("TOPLEFT", detail, "TOPLEFT", 0, 0)
 			hint = k == "level" and L.R_LEVEL_HINT or L.R_RESET_HINT
 		elseif k == "time" then
@@ -182,7 +189,7 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(page)
 
 		-- the checks under the help (or under the detail when there is none)
 		checks:ClearAllPoints()
-		checks:SetPoint("TOPLEFT", hint ~= "" and valueHint or detail, "BOTTOMLEFT", 0, -12)
+		checks:SetPoint("TOPLEFT", hint ~= "" and valueHint or detail, "BOTTOMLEFT", 0, -14)
 		checks:SetPoint("RIGHT", form, "RIGHT", 0, 0)
 		repeating:ClearAllPoints()
 		repeating:SetShown(k ~= "level")
@@ -197,10 +204,11 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(page)
 		create:ClearAllPoints()
 		if forGuild:IsShown() then
 			forGuild:SetPoint("TOPLEFT", checks, "BOTTOMLEFT", 0, -8)
-			create:SetPoint("TOPRIGHT", checks, "BOTTOMRIGHT", 0, -(8 + 18 + 12))
+			create:SetPoint("TOP", checks, "BOTTOM", 0, -(8 + 18 + 12))
 		else
-			create:SetPoint("TOPRIGHT", checks, "BOTTOMRIGHT", 0, -12)
+			create:SetPoint("TOP", checks, "BOTTOM", 0, -12)
 		end
+		create:SetPoint("RIGHT", form, "RIGHT", 0, 0)
 		create:SetText(view.editing and L.SAVE_REMINDER or L.ADD_REMINDER)
 		cancel:SetShown(view.editing ~= nil)
 		head:SetText(view.editing and L.EDIT_REMINDER_HEAD or L.NEW_REMINDER_HEAD)
@@ -208,11 +216,11 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(page)
 		-- the form is as tall as its rows, so what hangs from its bottom (the list on one page) follows
 		local h = 20 + 12 + 26 -- heading, the text
 		h = h + 14 + 14 + 6 + (kinds:GetHeight() or 20) -- "when" and its chips
-		h = h + 10 + math.max(1, detailH)
+		h = h + 12 + 1 + 12 + math.max(1, detailH) -- the rule and the detail
 		if hint ~= "" then
-			h = h + 4 + math.max(14, valueHint:GetStringHeight() or 14)
+			h = h + 10 + math.max(14, valueHint:GetStringHeight() or 14)
 		end
-		h = h + 12 + 20 -- the checks
+		h = h + 14 + 20 -- the checks
 		if forGuild:IsShown() then
 			h = h + 8 + 18
 		end
@@ -417,6 +425,6 @@ UI.RegisterTab("TAB_REMINDERS", "reminders", function(page)
 	view.list = list
 	view.form, view.create, view.onlyChar, view.repeating = form, create, onlyChar, repeating
 	view.text, view.value, view.minute, view.kinds, view.places, view.checks = text, value, minute, kinds, places, checks
-	view.valueHint, view.cancel, view.head, view.dayButton = valueHint, cancel, head, dayButton
+	view.valueHint, view.cancel, view.head, view.dayButton, view.detail, view.kindsRule = valueHint, cancel, head, dayButton, detail, kindsRule
 	return view
 end)

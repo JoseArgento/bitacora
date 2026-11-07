@@ -184,3 +184,25 @@ def test_the_tab_shows_guild_reminders_for_officers():
     ofi.run("ns.Toggle()")
     ofi.run(f"ns.UI.SelectTab({i})")
     assert ofi.ns.UI.views[i] is not None
+
+
+def test_the_reminder_form_stacks_its_rows_in_order(game):
+    # chips wrap with air, a rule under them, the field of the chosen kind with a placeholder, its help, the
+    # checks and the button on the right (the field used to be invisible behind the help line)
+    game.run("ns.Toggle('reminders')")
+    i = game.run("return ns.UI.tabOfTopic.reminders")
+    v = game.run(f"return ns.UI.views[{i}]")
+    assert v.value._shown is True
+    assert game.run(f"local v = ns.UI.views[{i}]; return v.value.placeholder and v.value.placeholder._text or ''") == "Zone or subzone"
+    chain = game.run(f"""
+        local v = ns.UI.views[{i}]
+        local function anchor(f) local p = f._points[#f._points - 1]; return p[2], p[5] end
+        local ruleTo, ruleY = anchor(v.kindsRule)
+        local detTo, detY = anchor(v.detail)
+        local hintTo, hintY = anchor(v.valueHint)
+        local chkTo, chkY = anchor(v.checks)
+        return tostring(ruleTo == v.kinds) .. ruleY .. '|' .. tostring(detTo == v.kindsRule) .. detY .. '|' .. tostring(hintTo == v.detail) .. hintY .. '|' .. tostring(chkTo == v.valueHint) .. chkY
+    """)
+    assert chain == "true-12|true-12|true-10|true-14"
+    # chip rows are 28 px apart (20 tall + 8 of air)
+    assert game.run("local r = ns.UI.ChipRow(UIParent, 100); r:Set({ { text = 'aaaaaaaaaaaa' }, { text = 'bbbbbbbbbbbb' }, { text = 'c' } }); return r:GetHeight()") >= 48

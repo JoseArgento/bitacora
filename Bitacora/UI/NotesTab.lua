@@ -177,6 +177,17 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 		b.name:SetPoint("TOPRIGHT", b, "BOTTOMRIGHT", 0, -1)
 		b.name:SetWordWrap(false)
 		b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+		b:SetScript("OnEnter", function(self)
+			if self.file then
+				GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+				GameTooltip:SetText(self.file, 1, 1, 1)
+				GameTooltip:AddLine(L.IMAGE_TIP, nil, nil, nil, true)
+				GameTooltip:Show()
+			end
+		end)
+		b:SetScript("OnLeave", function()
+			GameTooltip:Hide()
+		end)
 		b:SetScript("OnClick", function(self, button)
 			local note = current()
 			if not note or not self.file then
@@ -208,7 +219,7 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 	local pin = UI.Button(editor, L.PIN, 80, function()
 		local note = current()
 		if note then
-			N.Update(note.id, { pinned = not note.pinned or nil })
+			N.Update(note.id, { pinned = not note.pinned })
 			view.ShowNote()
 		end
 	end)
@@ -401,7 +412,7 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 			b.file, b.index = file, i
 			if file then
 				b.tex:SetTexture(N.ImagePath(file))
-				b.name:SetText(file)
+				b.name:SetText(ns.ShortName(file, 11))
 				b:Show()
 			else
 				b:Hide()
@@ -411,7 +422,7 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 		view.RefreshList(true)
 	end
 
-	view.title, view.body, view.sections, view.list = title, body, sections, list
+	view.title, view.body, view.sections, view.list, view.pin = title, body, sections, list, pin
 
 	function view.Select(id, focusTitle)
 		view.selected = id

@@ -87,6 +87,21 @@ function ns.Preview(s, n)
 	return s
 end
 
+-- A file name short enough for a thumbnail label: "postal_an…png" keeps the extension.
+function ns.ShortName(name, n)
+	name = tostring(name or "")
+	n = n or 12
+	if #name <= n then
+		return name
+	end
+	local ext = name:match("%.(%w+)$") or ""
+	local keep = n - #ext - 2
+	if keep < 3 then
+		return name:sub(1, n - 1) .. "…"
+	end
+	return name:sub(1, keep) .. "…" .. ext
+end
+
 -- Lua pattern from a GlobalStrings format: "You receive loot: %sx%d" -> "^You receive loot: (.+)x(%d+)$"
 function ns.PatternFromFormat(fmt)
 	local p = fmt:gsub("([%^%$%(%)%.%[%]%*%+%-%?])", "%%%1")

@@ -85,10 +85,12 @@ def test_on_the_single_page_the_button_sits_under_the_checks():
     assert view.onlyChar._shown is True and view.repeating._shown is True
     # the checks share a row; the button goes under that row, on the right
     assert g.run(f"local v = ns.UI.views[{i}]; return v.onlyChar._points[1][2] == v.checks and v.repeating._points[1][1] == 'LEFT'") is True
-    anchored = g.run(f"local v = ns.UI.views[{i}]; local p = v.create._points[#v.create._points]; return p[1] .. ':' .. tostring(p[2] == v.checks) .. ':' .. p[3]")
-    assert anchored == "TOPRIGHT:true:BOTTOMRIGHT"
-    # heading, text, when and its chips, the field, its help, the checks and the button all fit in the form
-    assert view.form.height >= 20 + 12 + 26 + 14 + 14 + 6 + 20 + 10 + 26 + 4 + 14 + 12 + 20 + 12 + 26
+    # the button hangs 12 px under the checks and sits against the form's right edge (180 wide)
+    pts = g.run(f"local v = ns.UI.views[{i}]; local n = #v.create._points; local a, b = v.create._points[n - 1], v.create._points[n]; return a[1] .. ':' .. tostring(a[2] == v.checks) .. ':' .. a[3] .. ':' .. tostring(a[5]) .. '|' .. b[1] .. ':' .. tostring(b[2] == v.form) .. ':' .. b[3]")
+    assert pts == "TOP:true:BOTTOM:-12|RIGHT:true:RIGHT"
+    assert view.create.width == 180
+    # heading, text, when and its chips, the rule, the field, its help, the checks and the button all fit in the form
+    assert view.form.height >= 20 + 12 + 26 + 14 + 14 + 6 + 20 + 12 + 1 + 12 + 26 + 10 + 14 + 14 + 20 + 12 + 26
     # and a rule separates the form from the list
     assert g.run(f"return ns.UI.views[{i}].sep ~= nil") is True
 

@@ -112,7 +112,8 @@ function panel.Build()
 	panel.title, panel.intro = title, sub
 
 	local y = -64
-	local function add(key, text, part)
+	-- tip: a longer explanation shown as a tooltip, so the line itself stays short
+	local function add(key, text, part, tip)
 		if not part then
 			return
 		end
@@ -121,6 +122,17 @@ function panel.Build()
 			ns.Fire("settings", key)
 		end)
 		c:SetPoint("TOPLEFT", 12, y)
+		if tip then
+			c:SetScript("OnEnter", function(self)
+				GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+				GameTooltip:SetText(text)
+				GameTooltip:AddLine(tip, 1, 1, 1, true)
+				GameTooltip:Show()
+			end)
+			c:SetScript("OnLeave", function()
+				GameTooltip:Hide()
+			end)
+		end
 		panel.checks[key] = c
 		y = y - 28
 	end
@@ -136,7 +148,7 @@ function panel.Build()
 	add("campBuff", L.OPT_CAMP_BUFF, ns.Reminders)
 	add("bookIntro", L.OPT_BOOK_INTRO, true)
 	add("minimap", L.OPT_MINIMAP, true)
-	add("minimapMerged", L.OPT_MINIMAP_MERGED, true)
+	add("minimapMerged", L.OPT_MINIMAP_MERGED, true, L.OPT_MINIMAP_MERGED_TIP)
 
 	-- the pickers: a label and a button each, one under the other
 	local last
