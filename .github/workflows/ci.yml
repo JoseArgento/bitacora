@@ -19,3 +19,13 @@ jobs:
       - run: ruff check tests tools
       - run: pytest -q
       - run: python tools/build_web.py
+  ayudante:
+    # the capture helper is a Windows script: here it runs for real, with Windows PowerShell 5.1 and PowerShell 7
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pytest lupa pillow
+      - run: pytest -q tests/test_ayudante.py -rs

@@ -50,7 +50,7 @@ UI.RegisterTab("TAB_JOURNAL", "journal", function(page)
 		if where ~= "" then
 			text = text:gsub("%.$", "") -- "Reached level 11 · Elwynn Forest", not "level 11. · Elwynn"
 		end
-		row.text:SetText(text .. where)
+		row.text:SetText(P.InkLinks(text .. where)) -- loot links in ink, not the game's white and green
 		row.selected:SetShown(view.selected == e)
 	end, function(e)
 		view.selected = e
@@ -143,7 +143,7 @@ UI.RegisterTab("TAB_JOURNAL", "journal", function(page)
 			when = when .. " · " .. e.zone
 		end
 		entryWhen:SetText(when)
-		entryText.text:SetText(J.Text(e))
+		entryText.text:SetText(P.InkLinks(J.Text(e)))
 	end
 
 	function view.Refresh()

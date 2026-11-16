@@ -264,24 +264,22 @@ function UI.MinimapButton()
 		guard = ns.guard,
 		hub = { addon = ns.edition.title or ADDON, label = ns.edition.title or L.TITLE, order = HUB_ORDER[ADDON] or 15 },
 	})
-	if settings.minimapMerged ~= nil then
-		P.MinimapHub.SetMerged(settings.minimapMerged)
-	end
+	-- the family's choice (one button for all) lives in every addon's settings: the hub reads and keeps it
+	P.MinimapHub.Bind(settings)
 	return UI.minimap
 end
 
 -- One button for the whole family (settings.minimapMerged, shared by every edition through Bitacora_Datos):
 -- the option in the panel and /bita minimapa juntar on|off.
 function UI.SetMinimapMerged(merged)
-	ns.db.settings.minimapMerged = merged and true or false
-	P.MinimapHub.SetMerged(merged)
+	P.MinimapHub.Choose(merged) -- saved by the hub in every addon's settings
 end
 
 ns.On("settings", function(key)
 	if key == "minimap" and UI.minimap then
 		UI.minimap:SetShown(ns.db.settings.minimap ~= false)
 	elseif key == "minimapMerged" then
-		P.MinimapHub.SetMerged(ns.db.settings.minimapMerged)
+		P.MinimapHub.Choose(ns.db.settings.minimapMerged) -- the player ticked the option: dated and kept everywhere
 	end
 end)
 

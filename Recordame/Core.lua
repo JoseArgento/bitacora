@@ -67,7 +67,8 @@ end
 function ns.PlainText(s)
 	s = tostring(s or "")
 	s = s:gsub("|H.-|h(.-)|h", "%1")
-	s = s:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+	-- colours: "|cffrrggbb" and Forever's named ones ("|cnIQ2:" in front of every item link)
+	s = s:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|cn[^:|]*:", ""):gsub("|r", "")
 	s = s:gsub("|T.-|t", ""):gsub("|A.-|a", "")
 	return s
 end

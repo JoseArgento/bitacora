@@ -17,6 +17,9 @@ ignore:
   - .pkgmeta-recordame
   - RECORDAME.md
   - tests
+  # the capture helper is a Windows script: it lives on GitHub, not inside the addon's zip
+  - ayudante
+  - .gitattributes
   - tools
   - web
   - dist

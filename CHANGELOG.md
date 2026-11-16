@@ -1,6 +1,14 @@
 # Changelog
 
-## 0.2.1 (unreleased)
+## 0.3.0 (unreleased)
+
+- **Pictures without typing file names.** "Add image" opens a card with the list of the pictures there are (thumbnails, date, size, how many notes use each): pick one, see it big, give it a name of your own, "Add to the note". The list comes from the new **capture helper** (`ayudante/`, a Windows PowerShell script on GitHub, not inside the addon's zip): it creates `Interface\AddOns\BitacoraImagenes` (an addon cannot create folders), saves what you copied when you press **Ctrl+Alt+V** (an addon cannot read the clipboard) and brings your game screenshots. Pictures keep their shape (thumbnails and the big view were square); a name mistyped in an old note (`arg.png` for `arg.jpg`) is found by its name. Without the helper, "Type the name" works as before.
+- **The album shows the photo** of each screenshot the helper brought, and "Pictures" opens the same card.
+- **Links read on parchment.** Item links in a note are shown in ink (white, grey and bright green could not be read) and saved with the game's own colour; loot in the journal too. Forever writes item links with named colours (`|cnIQ2:`): previews and search showed the colour code, now they show the name.
+- **The game's options page fits its frame.** With every part installed it ran over the bottom edge: it scrolls now (mouse wheel, a slim bar when needed), the four pickers sit two per row, and the two longest lines are short with the rest in a tooltip.
+- **One minimap button for the family, for real** (Pergamino 8): an addon that showed its own button after the family was merged stayed outside (Taller did). The choice is saved in every addon of the family, so it holds whichever ones are enabled, and the merged button remembers where you dragged it.
+
+## 0.2.1 (2026-11-07)
 
 - **Unpin works**: "Unpin" in the notebook did nothing (an update with `pinned = nil` is an empty table in Lua, so the field never changed); a field set to `false` is now cleared.
 - **Reminders form, laid out**: the "when" chips wrap with air between rows, a rule under them, the field of the chosen kind shows its own placeholder (it was an invisible line under the help), the help 10 px under it, the checks on their row and "Add reminder" 12 px under them against the right edge of the page, 180 wide. Same on Recordame's single page.

@@ -16,6 +16,7 @@
 Edition.lua
 Locales.lua
 Core.lua
+Images.lua
 Notes.lua
 Journal.lua
 Album.lua
@@ -27,6 +28,7 @@ Chronicle.lua
 Events.lua
 UI\Widgets.lua
 UI\Main.lua
+UI\ImagePicker.lua
 UI\NotesTab.lua
 UI\JournalTab.lua
 UI\AlbumTab.lua
