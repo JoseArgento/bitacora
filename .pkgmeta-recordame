@@ -14,6 +14,8 @@ ignore:
   - Bitacora_Recordatorios
   - tests
   - ayudante
+  # the pictures folder is its own one-time download: inside this zip every update would wipe the player's pictures
+  - BitacoraImagenes
   - .gitattributes
   - tools
   - web

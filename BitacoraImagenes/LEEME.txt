@@ -1,0 +1,18 @@
+Bitácora · Imágenes
+
+Esta carpeta es tuya: acá van las imágenes que Bitácora muestra en las notas y en el álbum.
+
+1. Copiá acá tus capturas: los archivos WoWScrnShot_....jpg de la carpeta
+   World of Warcraft\_forever_\Screenshots  (seleccionar, Ctrl+C, y acá Ctrl+V).
+2. En el juego: /reload
+3. En una nota de Bitácora: "Agregar imagen". Aparecen solas, por fecha y lugar.
+
+No la actualices ni la reinstales desde CurseForge: un instalador borra la carpeta
+entera antes de copiar la nueva, y con ella tus imágenes (los originales siguen en Screenshots).
+
+---
+
+This folder is yours: the pictures Bitácora shows in notes and in the album go here.
+Copy your screenshots (WoWScrnShot_....jpg, from World of Warcraft\_forever_\Screenshots) into it,
+type /reload in the game, and "Add image" lists them by date and place.
+Do not update or reinstall it from CurseForge: an installer deletes the whole folder first.

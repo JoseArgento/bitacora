@@ -1,0 +1,4 @@
+-- Bitácora · Imágenes: esta carpeta guarda tus imágenes. No tiene código.
+-- Copiá acá tus capturas (los archivos WoWScrnShot_*.jpg de la carpeta Screenshots del juego), hacé /reload,
+-- y Bitácora las ofrece en "Agregar imagen" y les pone la foto en el Álbum.
+-- Si usás el ayudante de capturas (opcional), él escribe en este archivo la lista de lo que guardó.

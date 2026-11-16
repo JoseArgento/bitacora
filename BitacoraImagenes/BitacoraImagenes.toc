@@ -1,0 +1,9 @@
+## Interface: 16001
+## Title: Bitácora · Imágenes
+## Notes: The folder for your pictures: copy your screenshots here and Bitácora shows them in notes and in the album. Installed once; Bitácora's updates never touch it.
+## Notes-esES: La carpeta de tus imágenes: copiá acá tus capturas y Bitácora las muestra en las notas y en el álbum. Se instala una vez; las actualizaciones de Bitácora no la tocan.
+## Notes-esMX: La carpeta de tus imágenes: copiá acá tus capturas y Bitácora las muestra en las notas y en el álbum. Se instala una vez; las actualizaciones de Bitácora no la tocan.
+## Author: José Argento
+## Version: 1
+
+Indice.lua

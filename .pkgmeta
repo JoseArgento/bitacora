@@ -19,6 +19,8 @@ ignore:
   - tests
   # the capture helper is a Windows script: it lives on GitHub, not inside the addon's zip
   - ayudante
+  # the pictures folder is its own one-time download: inside this zip every update would wipe the player's pictures
+  - BitacoraImagenes
   - .gitattributes
   - tools
   - web

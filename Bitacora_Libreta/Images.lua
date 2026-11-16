@@ -106,21 +106,67 @@ end
 -- pasted their screenshots there without making a folder.
 I.FOLDERS = { ns.IMAGE_FOLDER, "Screenshots\\", "Interface\\AddOns\\", "Interface\\" }
 
-local probe, canProbe
+local probe, canProbe, way
 local located = {}
 
--- Can this client tell a picture that loads from one that is not there? SetTexture returns "success": it has
--- to say yes to a texture of ours and no to a name that cannot exist. Checked once.
+-- Ways of asking the game whether a file loaded. In Forever SetTexture's "success" does not tell a missing
+-- file from a real one (seen in the client, 16/11), so the others are tried too: the first way that says yes
+-- to a texture of ours and no to a name that cannot exist is the one used.
+local function reset(tex)
+	pcall(tex.SetTexture, tex, nil)
+end
+local function getter(method)
+	return function(tex, path)
+		reset(tex)
+		pcall(tex.SetTexture, tex, path)
+		local ok, v = pcall(tex[method], tex)
+		return ok and v ~= nil and v ~= "" and v ~= 0
+	end
+end
+I.WAYS = {
+	{
+		"SetTexture",
+		function(tex, path)
+			reset(tex)
+			local ok, loaded = pcall(tex.SetTexture, tex, path)
+			return ok and loaded == true
+		end,
+	},
+	{ "GetTextureFileID", getter("GetTextureFileID") },
+	{ "GetTexture", getter("GetTexture") },
+	{ "GetTextureFilePath", getter("GetTextureFilePath") },
+	{
+		"GetFileIDFromPath",
+		function(_, path)
+			local ok, id = pcall(GetFileIDFromPath, path)
+			return ok and type(id) == "number" and id ~= 0
+		end,
+	},
+}
+local function knownPaths()
+	return ns.MEDIA .. "icon.tga", ns.IMAGE_FOLDER .. "__no_existe__.jpg"
+end
+
+-- Can this client tell a picture that loads from one that is not there? Checked once; I.Way() names how.
 function I.CanProbe()
 	if canProbe == nil then
 		probe = probe or UIParent:CreateTexture(nil, "BACKGROUND")
 		probe:Hide()
-		local okYes, yes = pcall(probe.SetTexture, probe, ns.MEDIA .. "icon")
-		local okNo, no = pcall(probe.SetTexture, probe, ns.IMAGE_FOLDER .. "__no_existe__.tga")
-		canProbe = okYes and okNo and yes == true and no == false
-		pcall(probe.SetTexture, probe, nil)
+		local yes, no = knownPaths()
+		canProbe = false
+		for _, w in ipairs(I.WAYS) do
+			if w[2](probe, yes) == true and w[2](probe, no) == false then
+				canProbe, way = true, w
+				break
+			end
+		end
+		reset(probe)
 	end
 	return canProbe
+end
+
+function I.Way()
+	return I.CanProbe() and way[1] or nil
 end
 
 -- The path where this file loads, or nil. Looked for once per session, found or not: a file copied while
@@ -132,13 +178,12 @@ function I.Locate(file)
 	if located[file] == nil then
 		located[file] = false
 		for _, folder in ipairs(I.FOLDERS) do
-			local ok, loaded = pcall(probe.SetTexture, probe, folder .. file)
-			if ok and loaded == true then
+			if way[2](probe, folder .. file) == true then
 				located[file] = folder .. file
 				break
 			end
 		end
-		pcall(probe.SetTexture, probe, nil)
+		reset(probe)
 	end
 	return located[file] or nil
 end
@@ -287,7 +332,7 @@ function I.List()
 			seen[key] = true
 			local own = ns.db.imageTitles and ns.db.imageTitles[key]
 			local title = own or a.shot.caption or (ns.Album and ns.Album.Describe(a.shot)) or file
-			out[#out + 1] = { file = file, title = title, t = a.shot.t or 0, shot = a.shot.stamp, uses = count[key] or 0, unsure = not sure or nil }
+			out[#out + 1] = { file = file, title = title, t = a.shot.t or 0, shot = a.shot.stamp, uses = count[key] or 0, unsure = not sure or nil, album = true }
 		end
 	end
 	table.sort(out, function(a, b)
@@ -330,10 +375,11 @@ function I.ByShot(stamp)
 	return found and file or nil
 end
 
--- For /bita imagenes: where pictures load from in this client, in words.
+-- For /bita imagenes: where pictures load from in this client, and what the game answers to each way of
+-- asking (for a bug report: with this one can tell which way would work here).
 function I.Report()
 	local lines = {}
-	lines[#lines + 1] = "SetTexture dice si cargó: " .. (I.CanProbe() and "sí" or "no (no puedo saber qué archivos hay)")
+	lines[#lines + 1] = "puedo saber qué archivos hay: " .. (I.CanProbe() and ("sí, con " .. way[1]) or "no")
 	lines[#lines + 1] = "ayudante: " .. (I.HasHelper() and (#I.Index() .. " imágenes") or "no instalado")
 	local shots = albumShots()
 	local found, where = 0, {}
@@ -349,5 +395,25 @@ function I.Report()
 	for folder, n in pairs(where) do
 		lines[#lines + 1] = ("  %d en %s"):format(n, folder)
 	end
+	-- what each way answers: a texture of ours, a name that cannot exist, and the newest screenshots in the
+	-- pictures folder and in the game's own
+	local yes, no = knownPaths()
+	local paths = { { "nuestra", yes }, { "inexistente", no } }
+	for i = 1, math.min(3, #shots) do
+		local file = I.ShotFile(shots[i].shot)
+		paths[#paths + 1] = { "imagenes " .. i, ns.IMAGE_FOLDER .. file }
+		if i == 1 then
+			paths[#paths + 1] = { "screenshots", "Screenshots\\" .. file }
+		end
+	end
+	probe = probe or UIParent:CreateTexture(nil, "BACKGROUND")
+	for _, p in ipairs(paths) do
+		local bits = {}
+		for _, w in ipairs(I.WAYS) do
+			bits[#bits + 1] = w[1] .. "=" .. (w[2](probe, p[2]) and "si" or "no")
+		end
+		lines[#lines + 1] = p[1] .. ": " .. table.concat(bits, " ")
+	end
+	reset(probe)
 	return lines
 end

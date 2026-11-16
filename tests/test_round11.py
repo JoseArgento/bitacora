@@ -260,7 +260,7 @@ FOLDER = "Interface\\AddOns\\BitacoraImagenes\\"
 
 def with_files(game, *paths):
     """A client whose SetTexture says whether the file loaded (MOCK.files = the files that exist)."""
-    game.run("MOCK.files = { [ns.MEDIA .. 'icon'] = true }; GetPhysicalScreenSize = function() return 1920, 1080 end")
+    game.run("MOCK.files = { [ns.MEDIA .. 'icon.tga'] = true }; GetPhysicalScreenSize = function() return 1920, 1080 end")
     for path in paths:
         game.m.path = path
         game.run("MOCK.files[MOCK.path] = true")
@@ -341,3 +341,48 @@ def test_the_links_of_a_note_are_listed_under_the_text_with_their_tooltips(game)
     game.m.body = many
     game.run("local n = ns.Notes.Create({ title = 'Muchos', body = MOCK.body }); ns.UI.views[1].Select(n.id)")
     assert game.run(f"return {line}:GetText()").endswith(" +4")
+
+
+def test_a_client_whose_settexture_always_says_yes_is_asked_another_way(game):
+    # Forever (16/11): SetTexture's "success" could not tell a missing file. The addon tries the other ways and
+    # keeps the first one that tells a texture of ours from a name that cannot exist.
+    game.fire("SCREENSHOT_SUCCEEDED")
+    game.run("ns.Char().album[1].stamp = '111626_141801'")
+    game.m.have = "Interface\\AddOns\\BitacoraImagenes\\WoWScrnShot_111626_141801.jpg"
+    game.run('MOCK.exists = { [ns.MEDIA .. "icon.tga"] = 55, [MOCK.have] = 77 }')
+    # the mock's textures share their methods through Frame: SetTexture says yes to everything, the file ID tells
+    game.lua.execute("""
+        local probe = UIParent:CreateTexture()
+        local class = debug.getmetatable(probe)
+        local old = class.__index
+        class.__index = function(self, key)
+            if key == "SetTexture" then
+                return function(t, path) rawset(t, "texture", path) return true end
+            elseif key == "GetTextureFileID" then
+                return function(t) return MOCK.exists[rawget(t, "texture")] or 0 end
+            end
+            if type(old) == "function" then return old(self, key) end
+            return old[key]
+        end
+    """)
+    assert game.run("return ns.Images.CanProbe(), ns.Images.Way()") == (True, "GetTextureFileID")
+    assert game.run("return ns.Images.Locate('WoWScrnShot_111626_141801.jpg')") == game.m.have
+    assert game.run("return ns.Images.Locate('WoWScrnShot_000000_000000.jpg')") is None
+    report = "\n".join(game.run("return ns.Images.Report()").values())
+    assert "sí, con GetTextureFileID" in report and "de las que el juego puede mostrar: 1" in report
+    assert "inexistente: SetTexture=si GetTextureFileID=no" in report and "nuestra: SetTexture=si GetTextureFileID=si" in report
+
+
+def test_when_the_game_cannot_tell_the_screenshots_folder_is_tried_underneath(game):
+    game.fire("SCREENSHOT_SUCCEEDED")
+    game.run("ns.Char().album[1].stamp = '111626_141801'")
+    assert game.run("return ns.Images.CanProbe()") is False  # this mock answers nothing
+    game.run("ns.UI.PickImage(nil)")
+    row = "ns.UI.imagePicker.list.box.rows[1]"
+    assert game.run(f"return {row}.tex.texture, {row}.tex.under.texture, {row}.tex.under:IsShown()") == (
+        "Interface\\AddOns\\BitacoraImagenes\\WoWScrnShot_111626_141801.jpg",
+        "Screenshots\\WoWScrnShot_111626_141801.jpg",
+        True,
+    )
+    # the row is named by when and where, and does not repeat the date under it
+    assert game.run(f"return {row}.sub:GetText()") == "game screenshot"

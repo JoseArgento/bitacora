@@ -263,3 +263,19 @@ def test_a_folder_that_is_not_the_game_is_refused(tmp_path):
     (wow / "_forever_" / "Interface" / "AddOns").mkdir(parents=True)
     run(SHELLS[0], wow, "Instalar", "-SinAtajo")
     assert (wow / "_forever_" / "Interface" / "AddOns" / "BitacoraImagenes" / "Indice.lua").exists()
+
+
+def test_the_pictures_folder_is_a_download_of_its_own_and_matches_what_the_helper_writes():
+    # an updater deletes an addon's folders before installing the new ones: inside Bitácora's zip the player's
+    # pictures would go with every update. So the folder is published once, by itself, and never in the zips.
+    for meta in (".pkgmeta", ".pkgmeta-recordame"):
+        assert "  - BitacoraImagenes\n" in (ROOT / meta).read_text(encoding="utf-8"), meta
+    folder = ROOT / "BitacoraImagenes"
+    toc = (folder / "BitacoraImagenes.toc").read_text(encoding="utf-8")
+    assert "## Interface: 16001" in toc and toc.rstrip().endswith("Indice.lua") and "@project-version@" not in toc
+    # no code in it, and nothing that looks like the helper's list (Bitácora would think the helper is installed)
+    lua = (folder / "Indice.lua").read_text(encoding="utf-8")
+    assert all(line.startswith("--") or not line.strip() for line in lua.splitlines())
+    # the helper writes the same title, so installing it afterwards changes nothing the game notices
+    script = SCRIPT.read_text(encoding="utf-8-sig")
+    assert "'## Title: Bitácora · Imágenes'," in script and "## Title: Bitácora · Imágenes" in toc

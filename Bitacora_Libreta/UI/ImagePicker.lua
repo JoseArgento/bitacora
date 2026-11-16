@@ -20,16 +20,28 @@ function UI.FitImage(tex, box, name, boxW, boxH)
 	tex:SetPoint("CENTER", box, "CENTER", 0, 0)
 	tex:SetSize(w, h)
 	tex:SetTexture(I.Path(name))
+	-- A client that cannot say which files load: the same screenshot straight from the game's Screenshots
+	-- folder goes underneath, so it shows if the game lets an addon load from there (nothing to copy then).
+	local direct = type(name) == "string" and name:match("^WoWScrnShot_") and not I.Find(name) and not I.CanProbe()
+	if direct then
+		tex.under = tex.under or box:CreateTexture(nil, "BORDER")
+		tex.under:ClearAllPoints()
+		tex.under:SetPoint("CENTER", box, "CENTER", 0, 0)
+		tex.under:SetSize(w, h)
+		tex.under:SetTexture("Screenshots\\" .. name)
+		tex.under:Show()
+	elseif tex.under then
+		tex.under:Hide()
+	end
 end
 
 local function subText(item)
 	local bits = {}
-	if item.t and item.t > 0 then
+	-- an album screenshot is already named by when and where it was taken
+	if item.t and item.t > 0 and not item.album then
 		bits[#bits + 1] = date("%d/%m %H:%M", item.t)
 	end
-	if item.unsure then
-		bits[#bits + 1] = L.IMG_UNSURE
-	elseif item.shot then
+	if item.shot then
 		bits[#bits + 1] = L.IMG_SHOT
 	elseif item.typed then
 		bits[#bits + 1] = L.IMG_TYPED
