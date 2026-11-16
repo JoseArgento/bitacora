@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.0 (unreleased)
+## 0.3.0 (2026-11-16)
 
 - **Pictures without typing file names.** "Add image" opens a card with the list of the pictures there are (thumbnails, date, size, how many notes use each): pick one, see it big, give it a name of your own, "Add to the note". The list comes from the new **capture helper** (`ayudante/`, a Windows PowerShell script on GitHub, not inside the addon's zip): it creates `Interface\AddOns\BitacoraImagenes` (an addon cannot create folders), saves what you copied when you press **Ctrl+Alt+V** (an addon cannot read the clipboard) and brings your game screenshots. Pictures keep their shape (thumbnails and the big view were square); a name mistyped in an old note (`arg.png` for `arg.jpg`) is found by its name. Without the helper, "Type the name" works as before.
 - **Your game screenshots show up by themselves.** The album already knows the file name of every screenshot you take, and Forever lets an addon load pictures straight from the game's `Screenshots` folder (seen in the client on 16 November: 32 screenshots shown from there with nothing copied). So the picture list offers all of them by date and place, with thumbnails, and nobody installs, copies or types anything. Bitácora asks the game which files load: `SetTexture`'s answer cannot tell a missing file in Forever, `GetTextureFileID` can, and the first way that works is the one used (`/bita imagenes` reports). A screenshot stamped a second later than its file is still found.
