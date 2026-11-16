@@ -341,6 +341,10 @@ function Frame:SetSize(w, h)
 	self.width, self.height = w, h
 end
 function Frame:GetSize()
+	-- like the client: a texture with no size of its own (0, 0) has the size of its file (MOCK.sizes)
+	if self.width == 0 and self.height == 0 and MOCK.sizes and MOCK.sizes[self.texture] then
+		return MOCK.sizes[self.texture][1], MOCK.sizes[self.texture][2]
+	end
 	return self.width or 100, self.height or 100
 end
 function Frame:GetStringWidth()

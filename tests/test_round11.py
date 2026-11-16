@@ -491,3 +491,45 @@ def test_a_click_on_the_big_picture_shows_it_as_big_as_the_screen_allows(game):
     # a click anywhere closes it
     game.run("ns.UI.imageZoom:GetScript('OnClick')(ns.UI.imageZoom, 'LeftButton')")
     assert game.run("return ns.UI.imageZoom:IsShown()") is False
+
+
+def test_the_list_groups_screenshots_and_the_pictures_of_bitacoras_folder(game):
+    for _ in range(2):
+        game.fire("SCREENSHOT_SUCCEEDED")
+    game.run("local a = ns.Char().album; a[1].stamp, a[1].t = '111426_101010', 100; a[2].stamp, a[2].t = '111526_202020', 200")
+    # one screenshot loads from the game's folder, the other was copied into Bitácora's; plus a picture by hand
+    with_files(game, "Screenshots\\WoWScrnShot_111526_202020.jpg", "Interface\\AddOns\\BitacoraImagenes\\WoWScrnShot_111426_101010.jpg", "Interface\\AddOns\\BitacoraImagenes\\mapa.png")
+    game.run("ns.Toggle(1); local n = ns.Notes.Create({ title = 'Fotos' }); ns.UI.views[1].Select(n.id); MOCK.noteId = n.id")
+    game.run("local v = ns.UI.views[1]; v.addImage:GetScript('OnClick')(v.addImage)")
+    card = "ns.UI.imagePicker"
+    # typing a name that has no file behind it is refused and said; one that exists is added and remembered
+    game.m.chat = game.lua.table()
+    game.run(f"{card}.typeIt:GetScript('OnClick')({card}.typeIt)")
+    answer_prompt(game, "no_esta.png")
+    assert game.run("return #(ns.Notes.Get(MOCK.noteId).images or {})") == 0 and any("no_esta.png" in c for c in game.m.chat.values())
+    answer_prompt(game, "mapa.png")
+    assert list(game.run("return ns.Notes.Get(MOCK.noteId).images").values()) == ["mapa.png"]
+    game.run("ns.Notes.RemoveImage(MOCK.noteId, 1)")  # out of the note: it stays on the list
+    game.run("local v = ns.UI.views[1]; v.addImage:GetScript('OnClick')(v.addImage)")
+    chips = f"{card}.groups.chips"
+    assert game.run(f"return {chips}[1]:GetText(), {chips}[2]:GetText(), {chips}[3]:GetText()") == ("All (3)", "Screenshots (1)", "Folder (2)")
+    game.run(f"{chips}[2]:GetScript('OnClick')({chips}[2], 'LeftButton')")
+    assert [i.file for i in game.run(f"return {card}.items").values()] == ["WoWScrnShot_111526_202020.jpg"]
+    game.run(f"{chips}[3]:GetScript('OnClick')({chips}[3], 'LeftButton')")
+    assert [i.file for i in game.run(f"return {card}.items").values()] == ["WoWScrnShot_111426_101010.jpg", "mapa.png"]
+    # the choice of group stays while the card is used; a name nobody uses can be taken off the list
+    game.run("ns.Images.Forget('mapa.png')")
+    assert [i.file for i in game.run(f"return {card}.items").values()] == ["WoWScrnShot_111426_101010.jpg"]
+    assert game.run(f"return {chips}[3]:GetText()") == "Folder (1)"
+
+
+def test_a_picture_nobody_measured_takes_the_shape_the_game_says(game):
+    # arg.jpg is 3000×2000: typed by hand, it was drawn as wide as the box, squeezed (seen in the client, 16/11)
+    with_files(game, "Interface\\AddOns\\BitacoraImagenes\\arg.png")
+    game.run("MOCK.sizes = { ['Interface\\\\AddOns\\\\BitacoraImagenes\\\\arg.png'] = { 3000, 2000 } }")
+    assert game.run("return ns.Images.NativeSize('arg.png')") == (3000, 2000)
+    assert game.run("return ns.Images.Fit('arg.png', 508, 490)") == (508, 339)
+    assert game.run("return ns.Images.Fit('arg.png', 60, 60)") == (60, 40)
+    # a file the game says nothing about keeps the box
+    assert game.run("return ns.Images.NativeSize('otra.png')") is None
+    assert game.run("return ns.Images.Fit('otra.png', 60, 60)") == (60, 60)

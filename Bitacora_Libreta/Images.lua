@@ -331,9 +331,34 @@ function I.SetTitle(name, text)
 end
 
 -- Width and height that fit a box and keep the picture's shape. Without a known size: the box itself.
+-- The picture's own size, asked to the game: a texture with no size of its own takes the file's. For the
+-- pictures nobody measured (a file put in the folder by hand): without it they were drawn as wide as the
+-- box, whatever their shape. nil while the game does not know yet (the file is still loading, or missing).
+local measure
+local measured = {}
+function I.NativeSize(name)
+	local path = I.Path(name)
+	if measured[path] then
+		return measured[path][1], measured[path][2]
+	end
+	measure = measure or UIParent:CreateTexture(nil, "BACKGROUND")
+	measure:Hide()
+	pcall(measure.SetSize, measure, 0, 0)
+	pcall(measure.SetTexture, measure, path)
+	local ok, w, h = pcall(measure.GetSize, measure)
+	pcall(measure.SetTexture, measure, nil)
+	if ok and type(w) == "number" and type(h) == "number" and w >= 2 and h >= 2 then
+		measured[path] = { w, h }
+		return w, h
+	end
+end
+
 function I.Fit(name, boxW, boxH)
 	local e = I.Find(name)
 	local w, h = e and e.w, e and e.h
+	if not w or not h then
+		w, h = I.NativeSize(name)
+	end
 	if (not w or not h) and type(name) == "string" and name:match("^WoWScrnShot_") then
 		-- a game screenshot has the shape of the screen
 		if GetPhysicalScreenSize then
@@ -372,7 +397,7 @@ function I.List()
 		if e.shot then
 			brought[e.shot] = true
 		end
-		out[#out + 1] = { file = e.file, title = I.Title(e.file), w = e.w, h = e.h, t = e.t, shot = e.shot, uses = count[key] or 0 }
+		out[#out + 1] = { file = e.file, title = I.Title(e.file), w = e.w, h = e.h, t = e.t, shot = e.shot, uses = count[key] or 0, group = "folder" }
 	end
 	local sure, unsureShown = I.CanProbe(), 0
 	for _, a in ipairs(albumShots()) do
@@ -386,7 +411,9 @@ function I.List()
 			seen[key] = true
 			local own = ns.db.imageTitles and ns.db.imageTitles[key]
 			local title = own or a.shot.caption or (ns.Album and ns.Album.Describe(a.shot)) or file
-			out[#out + 1] = { file = file, title = title, t = a.shot.t or 0, shot = a.shot.stamp, uses = count[key] or 0, unsure = not sure or nil, album = true, pending = pending or nil }
+			-- a screenshot copied into Bitácora's folder belongs with the pictures of that folder
+			local inFolder = found and (I.Locate(file) or ""):sub(1, #ns.IMAGE_FOLDER) == ns.IMAGE_FOLDER
+			out[#out + 1] = { file = file, title = title, t = a.shot.t or 0, shot = a.shot.stamp, uses = count[key] or 0, unsure = not sure or nil, album = true, pending = pending or nil, group = inFolder and "folder" or "shots" }
 		end
 	end
 	table.sort(out, function(a, b)
@@ -395,14 +422,23 @@ function I.List()
 		end
 		return a.file < b.file
 	end)
+	-- the names typed by hand: the ones in notes, and the ones remembered from before (I.Remember)
 	local typed = {}
+	local function addTyped(name)
+		local key = string.lower(name)
+		if not seen[key] and not I.Find(name) then
+			seen[key] = true
+			typed[#typed + 1] = { file = name, title = I.Title(name), t = 0, uses = count[key] or 0, typed = true, group = "folder" }
+		end
+	end
 	for _, note in pairs(ns.db and ns.db.notes or {}) do
 		for _, name in ipairs(note.images or {}) do
-			local key = string.lower(name)
-			if not seen[key] and not I.Find(name) then
-				seen[key] = true
-				typed[#typed + 1] = { file = name, title = I.Title(name), t = 0, uses = count[key] or 0, typed = true }
-			end
+			addTyped(name)
+		end
+	end
+	for _, name in pairs(ns.db and ns.db.imageNames or {}) do
+		if I.ValidName(name) then
+			addTyped(name)
 		end
 	end
 	table.sort(typed, function(a, b)
@@ -412,6 +448,31 @@ function I.List()
 		out[#out + 1] = e
 	end
 	return out
+end
+
+-- A file name typed by hand stays in the list, in a note or not, until it is taken off (I.Forget).
+function I.Remember(name)
+	name = I.ValidName(name)
+	if name and not name:match("^WoWScrnShot_") then
+		ns.db.imageNames = ns.db.imageNames or {}
+		ns.db.imageNames[string.lower(name)] = name
+	end
+	return name
+end
+
+function I.Forget(name)
+	if ns.db.imageNames and type(name) == "string" then
+		ns.db.imageNames[string.lower(name)] = nil
+		ns.Fire("images")
+	end
+end
+
+-- Is there such a file where the game loads pictures from? nil when the game cannot tell.
+function I.Exists(name)
+	if not I.CanProbe() then
+		return nil
+	end
+	return I.Locate(name, true) ~= nil
 end
 
 -- The picture of a game screenshot: the helper's copy, or the game's own file wherever it loads from.

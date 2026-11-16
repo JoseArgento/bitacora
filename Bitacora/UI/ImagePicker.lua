@@ -20,6 +20,15 @@ function UI.FitImage(tex, box, name, boxW, boxH)
 	tex:SetPoint("CENTER", box, "CENTER", 0, 0)
 	tex:SetSize(w, h)
 	tex:SetTexture(I.Path(name))
+	-- a picture nobody measured, still loading: once the game knows its size, its shape is put right
+	tex.fitting = name
+	if not I.Find(name) and not I.NativeSize(name) and not (type(name) == "string" and name:match("^WoWScrnShot_")) then
+		C_Timer.After(0.5, function()
+			if tex.fitting == name and I.NativeSize(name) then
+				tex:SetSize(I.Fit(name, boxW, boxH))
+			end
+		end)
+	end
 	-- A client that cannot say which files load: the same screenshot straight from the game's Screenshots
 	-- folder goes underneath, so it shows if the game lets an addon load from there (nothing to copy then).
 	local direct = type(name) == "string" and name:match("^WoWScrnShot_") and not I.Find(name) and not I.CanProbe()
@@ -112,8 +121,12 @@ local function build()
 	local body = card.body
 
 	-- left: the list -------------------------------------------------------------------------------
+	-- which pictures: all, the game's screenshots, or the ones in Bitácora's own folder
+	local groups = UI.ChipRow(body, 300)
+	groups:SetPoint("TOPLEFT", 0, 0)
+	card.groups = groups
 	local listFrame = CreateFrame("Frame", nil, body)
-	listFrame:SetPoint("TOPLEFT", 0, 0)
+	listFrame:SetPoint("TOPLEFT", 0, -28)
 	listFrame:SetPoint("BOTTOMLEFT", 0, 62)
 	listFrame:SetWidth(300)
 	local list
@@ -139,7 +152,19 @@ local function build()
 		row.title:SetText(item.title)
 		row.sub:SetText(subText(item))
 		row.selected:SetShown(card.selected == item.file)
-	end, function(item)
+	end, function(item, button, row)
+		-- right click on a name typed by hand that no note uses: off the list
+		if button == "RightButton" then
+			if item.typed and (item.uses or 0) == 0 then
+				UI.Menu(row, function(root)
+					root:CreateTitle(item.title)
+					root:CreateButton(L.IMG_FORGET, function()
+						I.Forget(item.file)
+					end)
+				end)
+			end
+			return
+		end
 		card.selected = item.file
 		list:Refresh()
 		card.ShowSelected()
@@ -227,6 +252,12 @@ local function build()
 				ns.Print(L.IMAGE_BAD_NAME)
 				return
 			end
+			-- where the game can tell: a name with no file behind it is said, not added
+			if I.Exists(file) == false then
+				ns.Print(L.IMG_NOT_FOUND:format(file))
+				return
+			end
+			I.Remember(file)
 			local fn = card.onPick
 			card:Hide()
 			if fn then
@@ -281,7 +312,28 @@ local function build()
 	end
 
 	function card.Refresh()
-		local items = I.List()
+		local all = I.List()
+		local n = { shots = 0, folder = 0 }
+		for _, it in ipairs(all) do
+			n[it.group or "folder"] = n[it.group or "folder"] + 1
+		end
+		local function chip(key, label)
+			return {
+				text = label,
+				selected = (card.group or "all") == key,
+				onClick = function()
+					card.group = key
+					card.Refresh()
+				end,
+			}
+		end
+		groups:Set({ chip("all", L.IMG_GROUP_ALL:format(#all)), chip("shots", L.IMG_GROUP_SHOTS:format(n.shots)), chip("folder", L.IMG_GROUP_FOLDER:format(n.folder)) })
+		local items = {}
+		for _, it in ipairs(all) do
+			if (card.group or "all") == "all" or (it.group or "folder") == card.group then
+				items[#items + 1] = it
+			end
+		end
 		card.items = items
 		if card.selected then
 			local still = false
