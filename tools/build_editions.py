@@ -28,8 +28,8 @@ EDITIONS = {
         "en": "Bitácora notebook: notes with tabs, links, images, and notes attached to NPCs, items and zones.",
         "es": "Libreta de Bitácora: notas con pestañas, links, imágenes y notas pegadas a PNJ, ítems y zonas.",
         "slash": ["/libreta"],
-        "logic": ["Notes.lua"],
-        "ui": ["UI/NotesTab.lua", "UI/Tooltip.lua"],
+        "logic": ["Images.lua", "Notes.lua"],
+        "ui": ["UI/ImagePicker.lua", "UI/NotesTab.lua", "UI/Tooltip.lua"],
         "icon": "Interface\\AddOns\\Bitacora_Datos\\Media\\icon",
     },
     "Bitacora_Diario": {
@@ -46,8 +46,8 @@ EDITIONS = {
         "en": "Bitácora album: notes when, where and with whom you took each screenshot.",
         "es": "Álbum de Bitácora: anota cuándo, dónde y con quién sacaste cada captura.",
         "slash": ["/album"],
-        "logic": ["Album.lua"],
-        "ui": ["UI/AlbumTab.lua"],
+        "logic": ["Images.lua", "Album.lua"],
+        "ui": ["UI/ImagePicker.lua", "UI/AlbumTab.lua"],
         "icon": "Interface\\AddOns\\Bitacora_Datos\\Media\\icon",
     },
     "Bitacora_Recordatorios": {

@@ -119,7 +119,8 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 	body:RegisterCallback("OnTextChanged", function(_, editBox, userChanged)
 		local note = current()
 		if note and userChanged then
-			note.body = editBox:GetText()
+			-- on the page the links wear ink; what is saved keeps the game's own colours
+			note.body = P.GameLinks(editBox:GetText())
 			touch()
 		end
 	end, view)
@@ -143,11 +144,10 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 		if not note then
 			return
 		end
-		UI.Prompt(L.IMAGE_FILE, "", function(text)
-			if not N.AddImage(note.id, text) then
+		-- a card with the pictures there are (the capture helper's list): nobody types a file name
+		UI.PickImage(function(file)
+			if not N.AddImage(note.id, file) then
 				ns.Print(L.IMAGE_BAD_NAME)
-			else
-				ns.Print(L.IMAGE_HELP)
 			end
 			view.ShowNote()
 		end)
@@ -156,9 +156,10 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 	view.addImage = addImage
 
 	local preview = P.Card(ADDON .. "ImagePreview", 548, 566, "")
-	preview.tex = preview.body:CreateTexture(nil, "ARTWORK")
-	preview.tex:SetPoint("TOP", 0, 0)
-	preview.tex:SetSize(512, 512)
+	preview.box = CreateFrame("Frame", nil, preview.body)
+	preview.box:SetPoint("TOP", 0, 0)
+	preview.box:SetSize(508, 506)
+	preview.tex = preview.box:CreateTexture(nil, "ARTWORK")
 	UI.imagePreview = preview
 
 	local thumbs = {}
@@ -170,8 +171,6 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 		b.bg:SetAllPoints()
 		b.bg:SetColorTexture(0.23, 0.14, 0.07, 0.15)
 		b.tex = b:CreateTexture(nil, "ARTWORK")
-		b.tex:SetPoint("TOPLEFT", 2, -2)
-		b.tex:SetPoint("BOTTOMRIGHT", -2, 2)
 		b.name = UI.Label(b, "", "small", "CENTER")
 		b.name:SetPoint("TOPLEFT", b, "BOTTOMLEFT", 0, -1)
 		b.name:SetPoint("TOPRIGHT", b, "BOTTOMRIGHT", 0, -1)
@@ -180,7 +179,11 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 		b:SetScript("OnEnter", function(self)
 			if self.file then
 				GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-				GameTooltip:SetText(self.file, 1, 1, 1)
+				local shown = ns.Images.Title(self.file)
+				GameTooltip:SetText(shown, 1, 1, 1)
+				if shown ~= self.file then
+					GameTooltip:AddLine(self.file, 0.7, 0.7, 0.7)
+				end
 				GameTooltip:AddLine(L.IMAGE_TIP, nil, nil, nil, true)
 				GameTooltip:Show()
 			end
@@ -195,15 +198,21 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 			end
 			if button == "RightButton" then
 				UI.Menu(self, function(root)
-					root:CreateTitle(self.file)
-					root:CreateButton(L.DELETE, function()
+					root:CreateTitle(ns.Images.Title(self.file))
+					root:CreateButton(L.RENAME, function()
+						UI.Prompt(L.IMG_RENAME_PROMPT, ns.Images.Title(self.file), function(text)
+							ns.Images.SetTitle(self.file, text)
+							view.ShowNote()
+						end)
+					end)
+					root:CreateButton(L.IMG_REMOVE, function()
 						N.RemoveImage(note.id, self.index)
 						view.ShowNote()
 					end)
 				end)
 			else
-				preview.title:SetText(self.file)
-				preview.tex:SetTexture(N.ImagePath(self.file))
+				preview.title:SetText(ns.Images.Title(self.file))
+				UI.FitImage(preview.tex, preview.box, self.file, 508, 506)
 				preview:Show()
 			end
 		end)
@@ -234,7 +243,8 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 	-- tells the game it was used, so shift-clicking a stack no longer opens the split dialog.
 	P.AcceptLinks(body, function(text)
 		if left:IsVisible() then
-			body:Insert(text)
+			-- in ink, like the rest of the page: white, grey and bright green cannot be read on parchment
+			body:Insert(P.InkLinks(text))
 		end
 	end)
 	P.AcceptLinks(title, function(text)
@@ -399,7 +409,7 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 			return
 		end
 		title:SetText(note.title or "")
-		body:SetText(note.body or "")
+		body:SetText(P.InkLinks(note.body or ""))
 		pin:SetText(note.pinned and L.UNPIN or L.PIN)
 		local scope = note.char and L.CHAR_NOTE:format(note.char) or L.ACCOUNT_NOTE
 		if note.attach then
@@ -411,8 +421,8 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 			local file = images[i]
 			b.file, b.index = file, i
 			if file then
-				b.tex:SetTexture(N.ImagePath(file))
-				b.name:SetText(ns.ShortName(file, 11))
+				UI.FitImage(b.tex, b, file, 60, 60)
+				b.name:SetText(ns.ShortName(ns.Images.Title(file), 11))
 				b:Show()
 			else
 				b:Hide()
@@ -423,6 +433,7 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 	end
 
 	view.title, view.body, view.sections, view.list, view.pin = title, body, sections, list, pin
+	view.thumbs = thumbs
 
 	function view.Select(id, focusTitle)
 		view.selected = id

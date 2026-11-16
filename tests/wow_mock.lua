@@ -328,6 +328,15 @@ end
 function Frame:GetHeight()
 	return self.height or 100
 end
+function Frame:SetScrollChild(child)
+	self.scrollChild = child
+end
+function Frame:SetVerticalScroll(v)
+	self.verticalScroll = v
+end
+function Frame:GetVerticalScroll()
+	return self.verticalScroll or 0
+end
 function Frame:SetSize(w, h)
 	self.width, self.height = w, h
 end

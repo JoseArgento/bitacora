@@ -15,10 +15,12 @@
 Edition.lua
 Locales.lua
 Core.lua
+Images.lua
 Notes.lua
 Events.lua
 UI\Widgets.lua
 UI\Main.lua
+UI\ImagePicker.lua
 UI\NotesTab.lua
 UI\Tooltip.lua
 UI\Options.lua

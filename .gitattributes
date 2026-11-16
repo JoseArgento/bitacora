@@ -1,0 +1,4 @@
+# The capture helper is for Windows: the .bat files need CRLF and the .ps1 its UTF-8 BOM (Windows PowerShell 5.1
+# reads a file without one as ANSI and the accents break). Stored as they are, never converted.
+ayudante/*.bat -text
+ayudante/*.ps1 -text

@@ -15,10 +15,12 @@
 Edition.lua
 Locales.lua
 Core.lua
+Images.lua
 Album.lua
 Events.lua
 UI\Widgets.lua
 UI\Main.lua
+UI\ImagePicker.lua
 UI\AlbumTab.lua
 UI\Options.lua
 UI\Skin.lua

@@ -40,6 +40,9 @@ UI.RegisterTab("TAB_ALBUM", "album", function(page)
 		if shot.caption then
 			table.insert(bits, 1, A.Describe(shot))
 		end
+		if ns.Images.ByShot(shot.stamp) then
+			table.insert(bits, L.ALBUM_HAS_PHOTO)
+		end
 		row.bottom:SetText(table.concat(bits, " · "))
 		row.selected:SetShown(view.selected == item.index)
 	end, function(item, button, row)
@@ -76,6 +79,16 @@ UI.RegisterTab("TAB_ALBUM", "album", function(page)
 	facts:SetPoint("RIGHT", 0, 0)
 	facts:SetWordWrap(true)
 	facts:SetSpacing(4)
+	-- the picture itself, when the capture helper brought it (the game does not let an addon read Screenshots)
+	local photoBox = CreateFrame("Frame", nil, detail)
+	photoBox:SetPoint("TOPLEFT", facts, "BOTTOMLEFT", 0, -12)
+	photoBox:SetSize(320, 180)
+	local photo = photoBox:CreateTexture(nil, "ARTWORK")
+	local noPhoto = UI.Label(detail, L.ALBUM_PHOTO_NONE, "muted")
+	noPhoto:SetPoint("TOPLEFT", facts, "BOTTOMLEFT", 0, -12)
+	noPhoto:SetPoint("RIGHT", 0, 0)
+	noPhoto:SetWordWrap(true)
+	view.photoBox, view.photo, view.noPhoto = photoBox, photo, noPhoto
 	local setCaption = UI.Button(detail, L.CAPTION, 120, function()
 		local shot = view.selected and A.List()[view.selected]
 		if shot then
@@ -91,6 +104,11 @@ UI.RegisterTab("TAB_ALBUM", "album", function(page)
 		end
 	end)
 	delete:SetPoint("LEFT", setCaption, "RIGHT", 8, 0)
+	-- the list of pictures the helper keeps (the same card the notes use), to look at them and name them
+	local pictures = UI.Button(right, L.ALBUM_SEE_PICTURES, 100, function()
+		UI.PickImage(nil)
+	end)
+	view.pictures = pictures
 	local nothing = UI.Label(right, L.ALBUM_PICK, "muted", "CENTER")
 	nothing:SetPoint("CENTER", 0, 40)
 	nothing:SetPoint("LEFT", 20, 0)
@@ -106,6 +124,7 @@ UI.RegisterTab("TAB_ALBUM", "album", function(page)
 	footRule:SetPoint("BOTTOMLEFT", folder, "TOPLEFT", 0, 8)
 	footRule:SetPoint("RIGHT", right, "RIGHT", 0, 0)
 	setCaption:SetPoint("BOTTOMLEFT", footRule, "TOPLEFT", 0, 10)
+	pictures:SetPoint("BOTTOMRIGHT", footRule, "TOPRIGHT", 0, 10)
 	view.setCaption, view.footRule = setCaption, footRule
 
 	function view.ShowShot()
@@ -125,6 +144,12 @@ UI.RegisterTab("TAB_ALBUM", "album", function(page)
 			table.insert(lines, L.WITH:format(table.concat(shot.group, ", ")))
 		end
 		facts:SetText(table.concat(lines, "\n"))
+		local e = ns.Images.ByShot(shot.stamp)
+		photoBox:SetShown(e ~= nil)
+		noPhoto:SetShown(e == nil)
+		if e then
+			UI.FitImage(photo, photoBox, e.file, 320, 180)
+		end
 	end
 
 	function view.Refresh()

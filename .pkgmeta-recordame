@@ -13,6 +13,8 @@ ignore:
   - Bitacora_Album
   - Bitacora_Recordatorios
   - tests
+  - ayudante
+  - .gitattributes
   - tools
   - web
   - dist

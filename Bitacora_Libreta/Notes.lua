@@ -223,24 +223,13 @@ end
 
 -- Images -----------------------------------------------------------------------------------------
 
-local IMAGE_EXT = { png = true, jpg = true, jpeg = true, tga = true, blp = true }
-
--- Only a plain file name inside the images folder: no paths, so a note cannot point anywhere else.
+-- The name check and the texture path live in Images.lua (the album uses them too).
 function N.ValidImageName(name)
-	name = ns.Trim(name)
-	if name == "" or #name > 80 or not name:match("^[%w_%-%.]+$") or name:find("..", 1, true) then
-		return nil
-	end
-	local ext = name:match("%.(%w+)$")
-	if not ext or not IMAGE_EXT[string.lower(ext)] then
-		return nil
-	end
-	return name
+	return ns.Images.ValidName(name)
 end
 
 function N.ImagePath(name)
-	-- PNG paths must include the extension (warcraft.wiki.gg, SetTexture); for the other formats it is optional
-	return ns.IMAGE_FOLDER .. name
+	return ns.Images.Path(name)
 end
 
 function N.AddImage(id, name)
