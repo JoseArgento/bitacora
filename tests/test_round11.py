@@ -431,3 +431,63 @@ def test_a_screenshot_stamped_a_second_late_is_still_found(game):
     items = game.run("return ns.Images.List()")
     assert len(items) == 1 and items[1].file == "WoWScrnShot_111626_141959.jpg"
     assert "Elwynn" in game.run("return ns.Images.Title('WoWScrnShot_111626_141959.jpg')")
+
+
+def test_a_screenshot_taken_since_the_game_started_waits_for_the_next_start(game):
+    # seen in the client (16/11): Forever loads from Screenshots only the files that were there when the game
+    # started; the ones taken since do not load, not even after /reload, and do after a restart
+    game.run("MOCK.taken = 0; Screenshot = function() MOCK.taken = MOCK.taken + 1 end")
+    with_files(game)  # the client can tell what loads, and the new screenshot is not among it
+    game.fire("SCREENSHOT_SUCCEEDED")
+    game.run("local a = ns.Char().album; a[1].stamp, a[1].t = '110126_101010', time() - 20 * 86400")  # old and deleted
+    game.run("ns.Toggle(1); local n = ns.Notes.Create({ title = 'Fotos' }); ns.UI.views[1].Select(n.id); MOCK.noteId = n.id")
+    v = "ns.UI.views[1]"
+    game.m.chat = game.lua.table()
+    game.run(f"{v}.takeShot:GetScript('OnClick')({v}.takeShot)")
+    game.run("local t = MOCK.timers; MOCK.timers = {}; t[1]()")
+    game.fire("SCREENSHOT_SUCCEEDED")
+    stamp = game.run("local a = ns.Char().album; return a[#a].stamp")
+    file = f"WoWScrnShot_{stamp}.jpg"
+    assert list(game.run("return ns.Notes.Get(MOCK.noteId).images").values()) == [file]
+    # said once in the chat, and in the thumbnail's place
+    assert sum("next time you start the game" in c for c in game.m.chat.values()) == 1
+    thumbs = f"{v}.thumbs"
+    assert game.run(f"return {thumbs}[1].tex.pending:IsShown(), {thumbs}[1].tex.pending:GetText()") == (True, "after a restart")
+    # the list offers it (it can go into other notes meanwhile) and says why it shows no picture; the old one
+    # whose file is gone is not offered
+    game.run(f"{v}.addImage:GetScript('OnClick')({v}.addImage)")
+    items = game.run("return ns.UI.imagePicker.items")
+    assert [(i.file, i.pending, i.typed) for i in items.values()] == [(file, True, None)]
+    assert "shows after you restart the game" in game.run("return ns.UI.imagePicker.list.box.rows[1].sub:GetText()")
+    # after the restart the file loads: no more waiting
+    game.m.path = "Screenshots\\" + file
+    game.run("MOCK.files[MOCK.path] = true")
+    assert game.run(f"return ns.Images.IsPending('{file}'), ns.Images.Path('{file}')") == (False, "Screenshots\\" + file)
+
+
+def test_a_note_holds_up_to_eight_pictures_in_one_row(game):
+    game.run("ns.Toggle(1); local n = ns.Notes.Create({ title = 'Muchas' }); for i = 1, 4 do ns.Notes.AddImage(n.id, 'foto' .. i .. '.png') end; ns.UI.views[1].Select(n.id); MOCK.noteId = n.id")
+    v = "ns.UI.views[1]"
+    # four: big, with their names
+    assert game.run(f"return {v}.thumbs[4]:GetWidth(), {v}.thumbs[4].name:IsShown(), {v}.addImage:IsEnabled()") == (64, True, True)
+    game.run("for i = 5, 8 do ns.Notes.AddImage(MOCK.noteId, 'foto' .. i .. '.png') end; ns.UI.views[1].ShowNote()")
+    # eight: small, all visible in the page's width, and the buttons stop there
+    assert game.run(f"return #{v}.thumbs, {v}.thumbs[8]:IsShown(), {v}.thumbs[8]:GetWidth(), {v}.thumbs[8].name:IsShown()") == (8, True, 40, False)
+    assert 7 * 45 + 40 <= 366
+    assert game.run(f"return {v}.addImage:IsEnabled(), {v}.takeShot:IsEnabled()") == (False, False)
+
+
+def test_a_click_on_the_big_picture_shows_it_as_big_as_the_screen_allows(game):
+    game.lua.execute(INDEX)
+    game.run("UIParent.width, UIParent.height = 1920, 1080; GetPhysicalScreenSize = function() return 1920, 1080 end")
+    game.run("ns.Toggle(1); local n = ns.Notes.Create({ title = 'Fotos' }); ns.Notes.AddImage(n.id, 'captura_02.tga'); ns.Notes.AddImage(n.id, 'chica.png'); ns.UI.views[1].Select(n.id)")
+    v = "ns.UI.views[1]"
+    game.run(f"{v}.thumbs[1]:GetScript('OnClick')({v}.thumbs[1], 'LeftButton')")
+    assert game.run("return ns.UI.imagePreview:IsShown(), ns.UI.imagePreview.tex:GetWidth()") == (True, 508)
+    game.run("ns.UI.imagePreview.box:GetScript('OnMouseUp')(ns.UI.imagePreview.box, 'LeftButton')")
+    # a 1920×1080 picture on a 1920×1080 screen: 90 % of the height, its shape kept
+    assert game.run("return ns.UI.imagePreview:IsShown(), ns.UI.imageZoom:IsShown(), ns.UI.imageZoom.tex:GetWidth(), ns.UI.imageZoom.tex:GetHeight()") == (False, True, 1728, 972)
+    assert game.run("return ns.UI.imageZoom.title:GetText()") == "Captura 16/11 14:32"
+    # a click anywhere closes it
+    game.run("ns.UI.imageZoom:GetScript('OnClick')(ns.UI.imageZoom, 'LeftButton')")
+    assert game.run("return ns.UI.imageZoom:IsShown()") is False

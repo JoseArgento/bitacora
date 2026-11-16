@@ -4,7 +4,7 @@ local UI = ns.UI
 local P = UI.P
 local N = ns.Notes
 
-local MAX_THUMBS = 4
+local MAX_THUMBS = 8 -- up to four: big, with their names; five to eight: small, in the same row
 
 -- Left page: the sections as chips, the search, the list of notes, "New note".
 -- Right page: the note itself (title, scope, body, images, pin / attach / more).
@@ -216,8 +216,14 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 		capturing = nil
 		UI.frame:SetAlpha(1)
 		if shot and shot.stamp then
-			N.AddImage(id, (ns.Images.ShotFile(shot)))
+			local file = ns.Images.ShotFile(shot)
+			N.AddImage(id, file)
 			view.ShowNote()
+			-- the game only loads the screenshots that were there when it started: said once per session
+			if ns.Images.IsPending(file) and not UI.saidPending then
+				UI.saidPending = true
+				ns.Print(L.SHOT_PENDING)
+			end
 			-- the file can take a moment to be readable: look again
 			C_Timer.After(1.5, function()
 				if view.selected == id then
@@ -261,8 +267,18 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 	local preview = P.Card(ADDON .. "ImagePreview", 548, 566, "")
 	preview.box = CreateFrame("Frame", nil, preview.body)
 	preview.box:SetPoint("TOP", 0, 0)
-	preview.box:SetSize(508, 506)
+	preview.box:SetSize(508, 490)
 	preview.tex = preview.box:CreateTexture(nil, "ARTWORK")
+	-- a click on the big picture: as big as the screen allows
+	preview.box:EnableMouse(true)
+	preview.box:SetScript("OnMouseUp", function()
+		if preview.file then
+			preview:Hide()
+			UI.ZoomImage(preview.file)
+		end
+	end)
+	preview.hint = UI.Label(preview.body, L.IMG_ZOOM_HINT, "muted", "CENTER")
+	preview.hint:SetPoint("BOTTOM", 0, 0)
 	UI.imagePreview = preview
 
 	local thumbs = {}
@@ -314,8 +330,9 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 					end)
 				end)
 			else
+				preview.file = self.file
 				preview.title:SetText(ns.Images.Title(self.file))
-				UI.FitImage(preview.tex, preview.box, self.file, 508, 506)
+				UI.FitImage(preview.tex, preview.box, self.file, 508, 490)
 				preview:Show()
 			end
 		end)
@@ -520,12 +537,19 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 		end
 		scopeLabel:SetText(scope)
 		local images = note.images or {}
+		-- up to four pictures: 64 px with their names; more: 40 px, all in the one row (the tooltip names them)
+		local big = #images <= 4
+		local side, step = big and 64 or 40, big and 72 or 45
 		for i, b in ipairs(thumbs) do
 			local file = images[i]
 			b.file, b.index = file, i
 			if file then
-				UI.FitImage(b.tex, b, file, 60, 60)
+				b:SetSize(side, side)
+				b:ClearAllPoints()
+				b:SetPoint("TOPLEFT", imagesRow, "BOTTOMLEFT", (i - 1) * step, -8)
+				UI.FitImage(b.tex, b, file, side - 4, side - 4)
 				b.name:SetText(ns.ShortName(ns.Images.Title(file), 11))
+				b.name:SetShown(big)
 				b:Show()
 			else
 				b:Hide()

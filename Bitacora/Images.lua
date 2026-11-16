@@ -272,6 +272,40 @@ local function albumShots()
 end
 
 -- What to call it: the name the player gave it here, the helper's title, or the file name.
+-- The album entry of a screenshot's file, by the stamp in its name (or the second or two after it).
+function I.ShotOf(name)
+	local stamp = type(name) == "string" and name:match("^WoWScrnShot_([%d_]+)%.")
+	if not stamp then
+		return nil
+	end
+	for _, c in pairs(ns.db and ns.db.chars or {}) do
+		for _, shot in ipairs(type(c) == "table" and c.album or {}) do
+			if type(shot) == "table" and shot.stamp then
+				local earlier = I.EarlierStamps(shot.stamp)
+				if shot.stamp == stamp or earlier[1] == stamp or earlier[2] == stamp then
+					return shot
+				end
+			end
+		end
+	end
+end
+
+-- A screenshot the game cannot show YET. Forever loads pictures straight from the Screenshots folder, but
+-- it only knows the files that were there when the game started (seen in the client, 16/11: the ones taken
+-- since the last start did not load, not even after /reload; after a restart they did). So a recent
+-- screenshot that does not load is waiting for the next start, not lost.
+I.PENDING_HOURS = 12
+function I.IsPending(name)
+	if not I.CanProbe() or I.Find(name) then
+		return false
+	end
+	local shot = I.ShotOf(name)
+	if not shot or (shot.t or 0) < time() - I.PENDING_HOURS * 3600 then
+		return false
+	end
+	return I.Locate(name, true) == nil
+end
+
 function I.Title(name)
 	local e = I.Find(name)
 	local key = string.lower(e and e.file or name)
@@ -280,18 +314,9 @@ function I.Title(name)
 		return own or e.title or name
 	end
 	-- a game screenshot: its caption in the album, or when and where it was taken
-	local stamp = type(name) == "string" and name:match("^WoWScrnShot_([%d_]+)%.")
-	if stamp then
-		for _, c in pairs(ns.db and ns.db.chars or {}) do
-			for _, shot in ipairs(type(c) == "table" and c.album or {}) do
-				if type(shot) == "table" and shot.stamp then
-					local earlier = I.EarlierStamps(shot.stamp)
-					if shot.stamp == stamp or earlier[1] == stamp or earlier[2] == stamp then
-						return shot.caption or (ns.Album and ns.Album.Describe(shot)) or name
-					end
-				end
-			end
-		end
+	local shot = I.ShotOf(name)
+	if shot then
+		return shot.caption or (ns.Album and ns.Album.Describe(shot)) or name
 	end
 	return name
 end
@@ -355,11 +380,13 @@ function I.List()
 		local key = file and string.lower(file)
 		unsureShown = unsureShown + (found and 0 or 1)
 		-- when the game cannot tell what loads, only the newest ones: a long list of maybes helps nobody
-		if file and not seen[key] and not brought[a.shot.stamp] and (found or (not sure and unsureShown <= 30)) then
+		-- taken since the game started: it will load after the next start, and can go into a note meanwhile
+		local pending = sure and not found and (a.shot.t or 0) >= time() - I.PENDING_HOURS * 3600
+		if file and not seen[key] and not brought[a.shot.stamp] and (found or pending or (not sure and unsureShown <= 30)) then
 			seen[key] = true
 			local own = ns.db.imageTitles and ns.db.imageTitles[key]
 			local title = own or a.shot.caption or (ns.Album and ns.Album.Describe(a.shot)) or file
-			out[#out + 1] = { file = file, title = title, t = a.shot.t or 0, shot = a.shot.stamp, uses = count[key] or 0, unsure = not sure or nil, album = true }
+			out[#out + 1] = { file = file, title = title, t = a.shot.t or 0, shot = a.shot.stamp, uses = count[key] or 0, unsure = not sure or nil, album = true, pending = pending or nil }
 		end
 	end
 	table.sort(out, function(a, b)

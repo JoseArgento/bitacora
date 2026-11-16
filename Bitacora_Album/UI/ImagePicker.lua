@@ -33,6 +33,55 @@ function UI.FitImage(tex, box, name, boxW, boxH)
 	elseif tex.under then
 		tex.under:Hide()
 	end
+	-- taken since the game started: the game will only load it after the next start; say so in its place
+	local pending = I.IsPending(name)
+	if pending and not tex.pending then
+		tex.pending = UI.Label(box, "", "small", "CENTER")
+		tex.pending:SetPoint("LEFT", box, "LEFT", 1, 0)
+		tex.pending:SetPoint("RIGHT", box, "RIGHT", -1, 0)
+		tex.pending:SetWordWrap(true)
+	end
+	if tex.pending then
+		tex.pending:SetShown(pending)
+		tex.pending:SetText(boxW >= 200 and L.IMG_PENDING or (boxW >= 56 and L.IMG_PENDING_SHORT or "…"))
+	end
+end
+
+-- The picture as big as the screen allows (or its own size when that is known and smaller): click anywhere,
+-- or Escape, to close.
+local zoom
+function UI.ZoomImage(name)
+	if not zoom then
+		zoom = CreateFrame("Button", ADDON .. "ImageZoom", UIParent)
+		zoom:SetFrameStrata("FULLSCREEN_DIALOG")
+		zoom:SetAllPoints(UIParent)
+		zoom:Hide()
+		tinsert(UISpecialFrames, ADDON .. "ImageZoom")
+		zoom.shade = zoom:CreateTexture(nil, "BACKGROUND")
+		zoom.shade:SetAllPoints()
+		zoom.shade:SetColorTexture(0, 0, 0, 0.75)
+		zoom.tex = zoom:CreateTexture(nil, "ARTWORK")
+		zoom.title = UI.Label(zoom, "", "big", "CENTER")
+		zoom.title:SetTextColor(0.95, 0.89, 0.75)
+		zoom.title:SetPoint("BOTTOM", zoom, "BOTTOM", 0, 14)
+		zoom:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+		zoom:SetScript("OnClick", function(self)
+			self:Hide()
+		end)
+		UI.imageZoom = zoom
+	end
+	local boxW, boxH = (UIParent:GetWidth() or 1024) * 0.92, (UIParent:GetHeight() or 768) * 0.9
+	-- its own size, in the units the interface draws in, when the helper noted it
+	local e = I.Find(name)
+	if e and e.w and e.h and GetPhysicalScreenSize then
+		local screenW = GetPhysicalScreenSize()
+		local unit = (screenW and screenW > 0) and (UIParent:GetWidth() or screenW) / screenW or 1
+		boxW, boxH = math.min(boxW, e.w * unit), math.min(boxH, e.h * unit)
+	end
+	UI.FitImage(zoom.tex, zoom, name, boxW, boxH)
+	zoom.title:SetText(I.Title(name))
+	zoom:Show()
+	return zoom
 end
 
 local function subText(item)
@@ -41,7 +90,9 @@ local function subText(item)
 	if item.t and item.t > 0 and not item.album then
 		bits[#bits + 1] = date("%d/%m %H:%M", item.t)
 	end
-	if item.shot then
+	if item.pending then
+		bits[#bits + 1] = L.IMG_PENDING
+	elseif item.shot then
 		bits[#bits + 1] = L.IMG_SHOT
 	elseif item.typed then
 		bits[#bits + 1] = L.IMG_TYPED
