@@ -368,6 +368,11 @@ function Frame:CreateTexture()
 end
 function Frame:SetTexture(path)
 	self.texture = path
+	-- like the client: "success". MOCK.files (a set of paths) says which files exist; without it, nothing
+	-- is returned, as in the mock's older days (the addon then cannot tell what loads)
+	if MOCK.files and path ~= nil then
+		return MOCK.files[path] == true
+	end
 end
 function Frame:GetEditBox()
 	return self.editBox

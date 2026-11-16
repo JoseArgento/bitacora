@@ -162,7 +162,7 @@ def test_the_helpers_index_is_read_carefully(game):
     assert game.run("return ns.Images.Fit('captura_02.tga', 60, 60)") == (60, 34)
     assert game.run("return ns.Images.Fit('arg.png', 508, 506)") == (508, 339)
     assert game.run("return ns.Images.Fit('sin_medidas.tga', 60, 60)") == (60, 60)
-    assert game.run("return ns.Images.ByShot('111626_005316').file") == "captura_01.tga"
+    assert game.run("return ns.Images.ByShot('111626_005316')") == "captura_01.tga"
     assert game.run("return ns.Images.ByShot('010101_000000')") is None and game.run("return ns.Images.ByShot(nil)") is None
 
 
@@ -232,7 +232,9 @@ def test_the_album_shows_the_photo_the_helper_brought(game):
     assert game.run(f"return {view}.photoBox:IsShown(), {view}.noPhoto:IsShown()") == (False, True)
     # "Pictures" opens the same card the notes use
     game.run(f"{view}.pictures:GetScript('OnClick')({view}.pictures)")
-    assert game.run("return ns.UI.imagePicker:IsShown(), #ns.UI.imagePicker.items") == (True, 4)
+    # the four of the helper, plus the screenshot it did not bring (this mock cannot tell what loads: "unsure")
+    assert game.run("return ns.UI.imagePicker:IsShown(), #ns.UI.imagePicker.items") == (True, 5)
+    assert game.run("local n = 0; for _, it in ipairs(ns.UI.imagePicker.items) do if it.unsure then n = n + 1 end end; return n") == 1
 
 
 def test_forevers_named_colour_links_read_as_plain_text_in_previews_and_search(game):
@@ -249,3 +251,93 @@ def test_forevers_named_colour_links_read_as_plain_text_in_previews_and_search(g
     game.m.runTimers()
     assert game.run("return ns.Notes.Get(MOCK.noteId).body") == body + "!"
     assert len(game.run("return ns.Notes.Search('linen cloth', nil, ns.CharKey())")) == 1
+
+
+# game screenshots, with nothing installed ----------------------------------------------------------------
+
+FOLDER = "Interface\\AddOns\\BitacoraImagenes\\"
+
+
+def with_files(game, *paths):
+    """A client whose SetTexture says whether the file loaded (MOCK.files = the files that exist)."""
+    game.run("MOCK.files = { [ns.MEDIA .. 'icon'] = true }; GetPhysicalScreenSize = function() return 1920, 1080 end")
+    for path in paths:
+        game.m.path = path
+        game.run("MOCK.files[MOCK.path] = true")
+
+
+def test_screenshots_copied_to_the_folder_are_listed_without_typing_anything(game):
+    for _ in range(3):
+        game.fire("SCREENSHOT_SUCCEEDED")
+    game.run("local a = ns.Char().album; a[1].stamp, a[1].t = '111426_101010', 100; a[2].stamp, a[2].t = '111526_202020', 200; a[3].stamp, a[3].t = '111626_005316', 300; a[3].caption = 'Molten Core'")
+    # two of the three were copied: one to the pictures folder, one pasted straight into AddOns
+    with_files(game, "Interface\\AddOns\\BitacoraImagenes\\WoWScrnShot_111626_005316.jpg", "Interface\\AddOns\\WoWScrnShot_111426_101010.jpg")
+    assert game.run("return ns.Images.CanProbe(), ns.Images.HasHelper()") == (True, False)
+    game.run("ns.Toggle(1); local n = ns.Notes.Create({ title = 'Fotos' }); ns.UI.views[1].Select(n.id); MOCK.noteId = n.id")
+    game.run("local v = ns.UI.views[1]; v.addImage:GetScript('OnClick')(v.addImage)")
+    card = "ns.UI.imagePicker"
+    items = game.run(f"return {card}.items")
+    # newest first, named by the caption or by when and where; the one that is nowhere is not offered
+    assert [(i.file, i.unsure) for i in items.values()] == [("WoWScrnShot_111626_005316.jpg", None), ("WoWScrnShot_111426_101010.jpg", None)]
+    assert items[1].title == "Molten Core" and "Elwynn" in items[2].title
+    assert game.run(f"return {card}.empty:IsShown(), {card}.url:IsShown()") == (False, False)
+    assert "Screenshots" in game.run(f"return {card}.hint:GetText()")
+    rows = f"{card}.list.box.rows"
+    # the thumbnail has the shape of the screen and loads from where the file was found
+    assert game.run(f"return {rows}[2].tex.texture, {rows}[2].tex:GetWidth(), {rows}[2].tex:GetHeight()") == ("Interface\\AddOns\\WoWScrnShot_111426_101010.jpg", 36, 20)
+    game.run(f"{rows}[1]:GetScript('OnClick')({rows}[1], 'LeftButton'); {card}.use:GetScript('OnClick')({card}.use)")
+    assert list(game.run("return ns.Notes.Get(MOCK.noteId).images").values()) == ["WoWScrnShot_111626_005316.jpg"]
+    thumbs = "ns.UI.views[1].thumbs"
+    assert game.run(f"return {thumbs}[1].tex.texture, {thumbs}[1].tex:GetWidth(), {thumbs}[1].tex:GetHeight()") == (FOLDER.replace("\\\\", "\\") + "WoWScrnShot_111626_005316.jpg", 60, 34)
+    # the album shows the photo of the ones that load, and says what to do for the other
+    game.run("ns.Toggle('album')")
+    view = "ns.UI.views[ns.UI.tabOfTopic.album]"
+    game.run(f"{view}.Refresh()")
+    arows = f"{view}.list.box.rows"
+    game.run(f"{arows}[1]:GetScript('OnClick')({arows}[1], 'LeftButton')")
+    assert game.run(f"return {view}.photoBox:IsShown(), {view}.photo.texture") == (True, "Interface\\AddOns\\BitacoraImagenes\\WoWScrnShot_111626_005316.jpg")
+    game.run(f"{arows}[2]:GetScript('OnClick')({arows}[2], 'LeftButton')")
+    assert game.run(f"return {view}.photoBox:IsShown(), {view}.noPhoto:IsShown()") == (False, True)
+    assert "Screenshots" in game.run(f"return {view}.noPhoto:GetText()")
+
+
+def test_a_client_that_loads_straight_from_screenshots_needs_no_copying(game):
+    game.fire("SCREENSHOT_SUCCEEDED")
+    game.run("ns.Char().album[1].stamp = '111626_132213'")
+    with_files(game, "Screenshots\\WoWScrnShot_111626_132213.jpg")
+    assert game.run("return ns.Images.ByShot('111626_132213'), ns.Images.Path('WoWScrnShot_111626_132213.jpg')") == ("WoWScrnShot_111626_132213.jpg", "Screenshots\\WoWScrnShot_111626_132213.jpg")
+    assert len(game.run("return ns.Images.List()")) == 1
+    # /bita imagenes says what the game answered, for a bug report
+    game.m.chat = game.lua.table()
+    game.lua.globals().SlashCmdList.BITACORA("imagenes")
+    said = " ".join(game.m.chat.values())
+    assert "capturas del álbum: 1" in said and "1 en Screenshots" in said
+
+
+def test_the_screenshot_format_setting_names_the_file(game):
+    game.fire("SCREENSHOT_SUCCEEDED")
+    game.run("ns.Char().album[1].stamp = '111626_132213'; C_CVar = { GetCVar = function() return 'tga' end }")
+    assert game.run("return (ns.Images.ShotFile(ns.Char().album[1]))") == "WoWScrnShot_111626_132213.tga"
+    assert game.run("return ns.Images.ShotFile({ stamp = '../../x' })") is None
+
+
+# the links of a note, where the mouse can ask about them -----------------------------------------------
+
+
+def test_the_links_of_a_note_are_listed_under_the_text_with_their_tooltips(game):
+    game.m.body = "armadura: " + GREEN + " y " + WHITE + " y otra vez " + WHITE
+    game.run("ns.Toggle(1); local n = ns.Notes.Create({ title = 'Links', body = MOCK.body }); ns.UI.views[1].Select(n.id); MOCK.noteId = n.id")
+    line = "ns.UI.views[1].linksLine"
+    text = game.run(f"return {line}:GetText()")
+    # each link once, in ink (the same link, so the tooltip is the item's)
+    assert text == "|cff1f6b2a|Hitem:4306|h[Silk Cloth]|h|r |cff3a2313|Hitem:2589::::::::1:::::::|h[Linen Cloth]|h|r"
+    assert game.run(f"return {line}:IsShown()") is True
+    assert game.run(f"return {line}:GetScript('OnHyperlinkEnter') ~= nil") is True
+    # a note without links shows the hint instead
+    game.run("local n = ns.Notes.Create({ title = 'Sin links', body = 'nada' }); ns.UI.views[1].Select(n.id)")
+    assert game.run(f"return {line}:IsShown()") is False
+    # many links: the ones that do not fit on the line are counted
+    many = " ".join(f"|cffffffff|Hitem:{i}|h[A fairly long item name {i}]|h|r" for i in range(1, 7))
+    game.m.body = many
+    game.run("local n = ns.Notes.Create({ title = 'Muchos', body = MOCK.body }); ns.UI.views[1].Select(n.id)")
+    assert game.run(f"return {line}:GetText()").endswith(" +4")

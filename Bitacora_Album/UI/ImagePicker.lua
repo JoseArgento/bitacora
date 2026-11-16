@@ -27,7 +27,9 @@ local function subText(item)
 	if item.t and item.t > 0 then
 		bits[#bits + 1] = date("%d/%m %H:%M", item.t)
 	end
-	if item.shot then
+	if item.unsure then
+		bits[#bits + 1] = L.IMG_UNSURE
+	elseif item.shot then
 		bits[#bits + 1] = L.IMG_SHOT
 	elseif item.typed then
 		bits[#bits + 1] = L.IMG_TYPED
@@ -232,11 +234,13 @@ local function build()
 		empty:SetShown(#items == 0)
 		list.box:SetShown(#items > 0)
 		empty:SetText(helper and L.IMG_EMPTY_HELPER or L.IMG_NO_HELPER)
-		hint:SetText(helper and L.IMG_HELPER_HINT or L.IMG_GET_HELPER)
-		url:SetShown(not helper)
+		-- the helper's address only while there is nothing to show: with pictures in the list, how to add more
+		local showUrl = not helper and #items == 0
+		hint:SetText(helper and L.IMG_HELPER_HINT or (showUrl and L.IMG_GET_HELPER or L.IMG_COPY_HINT))
+		url:SetShown(showUrl)
 		url:SetValue(L.IMG_HELPER_URL)
 		hint:ClearAllPoints()
-		hint:SetPoint("BOTTOMLEFT", 0, helper and 4 or 26)
+		hint:SetPoint("BOTTOMLEFT", 0, showUrl and 26 or 4)
 		hint:SetPoint("RIGHT", typeIt, "LEFT", -12, 0)
 		card.ShowSelected()
 	end

@@ -93,6 +93,7 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 			C_Timer.After(0.8, function()
 				pending = false
 				view.RefreshList(true)
+				view.ShowLinks()
 			end)
 		end
 	end
@@ -129,6 +130,54 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 	hint:SetPoint("TOPLEFT", area, "BOTTOMLEFT", 2, -2)
 	hint:SetPoint("RIGHT", 0, 0)
 	hint:SetWordWrap(false)
+
+	-- The links of the note, once more under the text, where the mouse can ask about them: the text itself
+	-- is an edit box and the game shows no tooltip for a link inside one (seen in the client, 16/11). One
+	-- line, in the place of the hint; the ones that do not fit are counted ("+3").
+	local LINKS_ROOM = 64 -- letters that fit on the line, brackets included
+	local linksLine = P.LinkText(editor, "", { role = "small" })
+	linksLine:SetPoint("TOPLEFT", area, "BOTTOMLEFT", 2, -2)
+	linksLine:SetPoint("RIGHT", 0, 0)
+	linksLine:SetHeight(14)
+	linksLine:Hide()
+	view.linksLine = linksLine
+	function view.ShowLinks()
+		local note = view.selected and N.Get(view.selected)
+		local shown, seen, room, more = {}, {}, LINKS_ROOM, 0
+		for link in tostring(note and note.body or ""):gmatch("(|c%w+:?|H.-|h.-|h|r)") do
+			local ref = link:match("|H(.-)|h")
+			if ref and not seen[ref] then
+				seen[ref] = true
+				local name = link:match("|h(.-)|h") or ""
+				if #name + 1 <= room then
+					room = room - #name - 1
+					shown[#shown + 1] = P.InkLinks(link)
+				else
+					more = more + 1
+				end
+			end
+		end
+		local any = #shown > 0
+		hint:SetShown(not any)
+		linksLine:SetShown(any)
+		if any then
+			linksLine:SetText(table.concat(shown, " ") .. (more > 0 and (" +" .. more) or ""))
+		end
+	end
+	-- and, where the client does give an edit box its links, the tooltip right on the text
+	local edit = body.GetEditBox and body:GetEditBox()
+	if edit and edit.SetHyperlinksEnabled then
+		pcall(edit.SetHyperlinksEnabled, edit, true)
+		pcall(edit.SetScript, edit, "OnHyperlinkEnter", function(self, link)
+			GameTooltip:SetOwner(self, "ANCHOR_CURSOR")
+			if pcall(GameTooltip.SetHyperlink, GameTooltip, link) then
+				GameTooltip:Show()
+			end
+		end)
+		pcall(edit.SetScript, edit, "OnHyperlinkLeave", function()
+			GameTooltip:Hide()
+		end)
+	end
 
 	-- images strip: one row with the label and the button centred on each other, 12 px under the hint
 	local imagesRow = CreateFrame("Frame", nil, editor)
@@ -429,6 +478,7 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 			end
 		end
 		addImage:SetEnabled(#images < MAX_THUMBS)
+		view.ShowLinks()
 		view.RefreshList(true)
 	end
 

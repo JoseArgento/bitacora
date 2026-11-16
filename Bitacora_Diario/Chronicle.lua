@@ -121,7 +121,8 @@ function C.OnAddonMessage(prefix, text, channel, sender)
 		return
 	end
 	sender = Ambiguate(sender, "none")
-	if sender == UnitName("player") or not allowed(sender) then
+	-- my own message coming back: Forever senders are "Name Second", which UnitName never equals
+	if Pergamino.IsMe(sender) or not allowed(sender) then
 		return
 	end
 	local kind, number, name = text:match("^M|1|(%a+)|(%d+)|?(.*)$")

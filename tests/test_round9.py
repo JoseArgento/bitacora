@@ -293,7 +293,7 @@ def test_shift_click_on_a_focused_note_does_not_split_the_stack(game):
 def test_the_album_says_where_pictures_for_notes_go(game):
     game.run("ns.Toggle('album')")
     text = game.run("return ns.UI.views[ns.UI.tabOfTopic.album].folder:GetText()")
-    assert "Screenshots" in text and "capture helper" in text and "cannot read them" in text
+    assert "Screenshots" in text and "BitacoraImagenes" in text and "/reload" in text
 
 
 def test_the_game_options_page_uses_the_games_fonts_not_ink(game):

@@ -144,11 +144,11 @@ UI.RegisterTab("TAB_ALBUM", "album", function(page)
 			table.insert(lines, L.WITH:format(table.concat(shot.group, ", ")))
 		end
 		facts:SetText(table.concat(lines, "\n"))
-		local e = ns.Images.ByShot(shot.stamp)
-		photoBox:SetShown(e ~= nil)
-		noPhoto:SetShown(e == nil)
-		if e then
-			UI.FitImage(photo, photoBox, e.file, 320, 180)
+		local picture = ns.Images.ByShot(shot.stamp)
+		photoBox:SetShown(picture ~= nil)
+		noPhoto:SetShown(picture == nil)
+		if picture then
+			UI.FitImage(photo, photoBox, picture, 320, 180)
 		end
 	end
 

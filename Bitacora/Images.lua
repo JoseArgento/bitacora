@@ -14,7 +14,10 @@ local _, ns = ...
 -- shot  for a game screenshot, the stamp of WoWScrnShot_<stamp>.jpg (the album matches on it)
 -- from  the file it was made from, when the helper converted a picture that was already in the folder
 --
--- Without the helper everything still works by typing the file name, as before.
+-- Without the helper: the game's own screenshots are known by name (the album notes the stamp of each one,
+-- WoWScrnShot_<stamp>.jpg), so they can be listed and shown as soon as the files are somewhere the game
+-- loads pictures from. I.Locate looks for them (SetTexture says whether a file loaded); the player only
+-- copies files, never types a name.
 
 local I = {}
 ns.Images = I
@@ -98,11 +101,105 @@ function I.Find(name)
 	return byStem
 end
 
+-- Where a picture can be: the pictures folder; the game's own Screenshots folder (if this client lets an
+-- addon load from it, nothing has to be copied at all); and the AddOns and Interface folders, for whoever
+-- pasted their screenshots there without making a folder.
+I.FOLDERS = { ns.IMAGE_FOLDER, "Screenshots\\", "Interface\\AddOns\\", "Interface\\" }
+
+local probe, canProbe
+local located = {}
+
+-- Can this client tell a picture that loads from one that is not there? SetTexture returns "success": it has
+-- to say yes to a texture of ours and no to a name that cannot exist. Checked once.
+function I.CanProbe()
+	if canProbe == nil then
+		probe = probe or UIParent:CreateTexture(nil, "BACKGROUND")
+		probe:Hide()
+		local okYes, yes = pcall(probe.SetTexture, probe, ns.MEDIA .. "icon")
+		local okNo, no = pcall(probe.SetTexture, probe, ns.IMAGE_FOLDER .. "__no_existe__.tga")
+		canProbe = okYes and okNo and yes == true and no == false
+		pcall(probe.SetTexture, probe, nil)
+	end
+	return canProbe
+end
+
+-- The path where this file loads, or nil. Looked for once per session, found or not: a file copied while
+-- playing shows up after a /reload anyway, and a reload starts the session again.
+function I.Locate(file)
+	if not I.CanProbe() or type(file) ~= "string" then
+		return nil
+	end
+	if located[file] == nil then
+		located[file] = false
+		for _, folder in ipairs(I.FOLDERS) do
+			local ok, loaded = pcall(probe.SetTexture, probe, folder .. file)
+			if ok and loaded == true then
+				located[file] = folder .. file
+				break
+			end
+		end
+		pcall(probe.SetTexture, probe, nil)
+	end
+	return located[file] or nil
+end
+
 -- The texture path of a note's picture. PNG paths must include the extension (warcraft.wiki.gg, SetTexture);
 -- for the other formats it is optional.
 function I.Path(name)
 	local e = I.Find(name)
-	return ns.IMAGE_FOLDER .. (e and e.file or name)
+	if e then
+		return ns.IMAGE_FOLDER .. e.file
+	end
+	return I.Locate(name) or (ns.IMAGE_FOLDER .. name)
+end
+
+-- Game screenshots ------------------------------------------------------------------------------------
+-- "jpeg", "tga" or "png" (the screenshotFormat setting): the extension of the files the game writes.
+local SHOT_EXT = { jpeg = "jpg", jpg = "jpg", tga = "tga", png = "png" }
+local function shotExtensions()
+	local now = C_CVar and C_CVar.GetCVar and C_CVar.GetCVar("screenshotFormat")
+	local first = SHOT_EXT[string.lower(tostring(now or "jpeg"))] or "jpg"
+	local out = { first }
+	for _, ext in ipairs({ "jpg", "tga", "png" }) do
+		if ext ~= first then
+			out[#out + 1] = ext
+		end
+	end
+	return out
+end
+
+-- The file of an album entry: its name and, when the game can load it from somewhere, true. Without a way
+-- to tell (I.CanProbe), the name the game gives by default and nil.
+function I.ShotFile(shot)
+	if type(shot) ~= "table" or type(shot.stamp) ~= "string" or not shot.stamp:match("^[%d_]+$") then
+		return nil
+	end
+	local base = "WoWScrnShot_" .. shot.stamp .. "."
+	local exts = shotExtensions()
+	if I.CanProbe() then
+		for _, ext in ipairs(exts) do
+			if I.Locate(base .. ext) then
+				return base .. ext, true
+			end
+		end
+	end
+	return base .. exts[1], nil
+end
+
+-- Every screenshot the album knows, of every character: stamp → { shot, who }.
+local function albumShots()
+	local out = {}
+	for key, c in pairs(ns.db and ns.db.chars or {}) do
+		for _, shot in ipairs(type(c) == "table" and c.album or {}) do
+			if type(shot) == "table" and shot.stamp then
+				out[#out + 1] = { shot = shot, who = key }
+			end
+		end
+	end
+	table.sort(out, function(a, b)
+		return (a.shot.t or 0) > (b.shot.t or 0)
+	end)
+	return out
 end
 
 -- What to call it: the name the player gave it here, the helper's title, or the file name.
@@ -110,7 +207,21 @@ function I.Title(name)
 	local e = I.Find(name)
 	local key = string.lower(e and e.file or name)
 	local own = ns.db and ns.db.imageTitles and ns.db.imageTitles[key]
-	return own or (e and e.title) or name
+	if own or e then
+		return own or e.title or name
+	end
+	-- a game screenshot: its caption in the album, or when and where it was taken
+	local stamp = type(name) == "string" and name:match("^WoWScrnShot_([%d_]+)%.")
+	if stamp then
+		for _, c in pairs(ns.db and ns.db.chars or {}) do
+			for _, shot in ipairs(type(c) == "table" and c.album or {}) do
+				if type(shot) == "table" and shot.stamp == stamp then
+					return shot.caption or (ns.Album and ns.Album.Describe(shot)) or name
+				end
+			end
+		end
+	end
+	return name
 end
 
 function I.SetTitle(name, text)
@@ -126,6 +237,12 @@ end
 function I.Fit(name, boxW, boxH)
 	local e = I.Find(name)
 	local w, h = e and e.w, e and e.h
+	if (not w or not h) and type(name) == "string" and name:match("^WoWScrnShot_") then
+		-- a game screenshot has the shape of the screen
+		if GetPhysicalScreenSize then
+			w, h = GetPhysicalScreenSize()
+		end
+	end
 	if not w or not h or w <= 0 or h <= 0 then
 		return boxW, boxH
 	end
@@ -146,15 +263,39 @@ local function uses()
 	return n
 end
 
--- Everything there is to pick from: the helper's index (newest first), then the names typed by hand in
--- notes that the index does not know. { file, title, w, h, t, shot, uses, typed }
+-- Everything there is to pick from: the helper's index (newest first), the game screenshots the album
+-- knows and the game can load (all of them when it cannot tell: `unsure`), then the names typed by hand in
+-- notes. { file, title, w, h, t, shot, uses, typed, unsure }
 function I.List()
 	local out, seen, count = {}, {}, uses()
+	local brought = {}
 	for _, e in ipairs(I.Index() or {}) do
 		local key = string.lower(e.file)
 		seen[key] = true
+		if e.shot then
+			brought[e.shot] = true
+		end
 		out[#out + 1] = { file = e.file, title = I.Title(e.file), w = e.w, h = e.h, t = e.t, shot = e.shot, uses = count[key] or 0 }
 	end
+	local sure, unsureShown = I.CanProbe(), 0
+	for _, a in ipairs(albumShots()) do
+		local file, found = I.ShotFile(a.shot)
+		local key = file and string.lower(file)
+		unsureShown = unsureShown + (found and 0 or 1)
+		-- when the game cannot tell what loads, only the newest ones: a long list of maybes helps nobody
+		if file and not seen[key] and not brought[a.shot.stamp] and (found or (not sure and unsureShown <= 30)) then
+			seen[key] = true
+			local own = ns.db.imageTitles and ns.db.imageTitles[key]
+			local title = own or a.shot.caption or (ns.Album and ns.Album.Describe(a.shot)) or file
+			out[#out + 1] = { file = file, title = title, t = a.shot.t or 0, shot = a.shot.stamp, uses = count[key] or 0, unsure = not sure or nil }
+		end
+	end
+	table.sort(out, function(a, b)
+		if (a.t or 0) ~= (b.t or 0) then
+			return (a.t or 0) > (b.t or 0)
+		end
+		return a.file < b.file
+	end)
 	local typed = {}
 	for _, note in pairs(ns.db and ns.db.notes or {}) do
 		for _, name in ipairs(note.images or {}) do
@@ -174,14 +315,39 @@ function I.List()
 	return out
 end
 
--- The picture of a game screenshot, when the helper brought it: WoWScrnShot_<stamp>.jpg → its entry.
+-- The picture of a game screenshot: the helper's copy, or the game's own file wherever it loads from.
+-- Returns the name to hand to I.Path / UI.FitImage, or nil.
 function I.ByShot(stamp)
 	if not stamp then
 		return nil
 	end
 	for _, e in ipairs(I.Index() or {}) do
 		if e.shot == stamp then
-			return e
+			return e.file
 		end
 	end
+	local file, found = I.ShotFile({ stamp = stamp })
+	return found and file or nil
+end
+
+-- For /bita imagenes: where pictures load from in this client, in words.
+function I.Report()
+	local lines = {}
+	lines[#lines + 1] = "SetTexture dice si cargó: " .. (I.CanProbe() and "sí" or "no (no puedo saber qué archivos hay)")
+	lines[#lines + 1] = "ayudante: " .. (I.HasHelper() and (#I.Index() .. " imágenes") or "no instalado")
+	local shots = albumShots()
+	local found, where = 0, {}
+	for _, a in ipairs(shots) do
+		local file, ok = I.ShotFile(a.shot)
+		if ok then
+			found = found + 1
+			local folder = (I.Locate(file) or ""):match("^(.*\\)") or "?"
+			where[folder] = (where[folder] or 0) + 1
+		end
+	end
+	lines[#lines + 1] = ("capturas del álbum: %d, de las que el juego puede mostrar: %d"):format(#shots, found)
+	for folder, n in pairs(where) do
+		lines[#lines + 1] = ("  %d en %s"):format(n, folder)
+	end
+	return lines
 end

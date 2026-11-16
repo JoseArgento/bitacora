@@ -321,6 +321,11 @@ onSlash = function(msg)
 		ns.OpenOptions()
 	elseif cmd == "errores" or cmd == "errors" then
 		ns.UI.Errors()
+	elseif (cmd == "imagenes" or cmd == "imágenes" or cmd == "images") and ns.Images then
+		-- where pictures load from in this client (for a bug report: it says what the game answered)
+		for _, line in ipairs(ns.Images.Report()) do
+			ns.Print(line)
+		end
 	elseif cmd == "help" or cmd == "ayuda" or cmd == "?" then
 		ns.Print(L.HELP)
 	else
