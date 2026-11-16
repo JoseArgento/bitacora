@@ -2,7 +2,7 @@
 
 *(English below.)*
 
-> **Es opcional.** Para tus capturas del juego no hace falta: alcanza con copiar los archivos de `Screenshots` a `Interface\AddOns\BitacoraImagenes` (ver el README de Bitácora). El ayudante suma lo que un addon no puede hacer solo: **pegar desde el portapapeles** y crear la carpeta por vos.
+> **Es opcional.** Tus capturas del juego ya aparecen solas en Bitácora (Forever deja cargarlas directo de la carpeta `Screenshots`). El ayudante es para lo único que un addon no puede hacer: **pegar una imagen desde el portapapeles**.
 
 El juego no deja que ningún addon **cree carpetas**, **lea el portapapeles** ni **vea qué archivos hay**. Por eso, para poner una imagen en una nota de Bitácora había que crear la carpeta a mano, copiar el archivo y escribir su nombre sin equivocarse. Este ayudante hace esas tres cosas desde afuera del juego:
 

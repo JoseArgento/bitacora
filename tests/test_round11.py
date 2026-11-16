@@ -281,7 +281,7 @@ def test_screenshots_copied_to_the_folder_are_listed_without_typing_anything(gam
     assert [(i.file, i.unsure) for i in items.values()] == [("WoWScrnShot_111626_005316.jpg", None), ("WoWScrnShot_111426_101010.jpg", None)]
     assert items[1].title == "Molten Core" and "Elwynn" in items[2].title
     assert game.run(f"return {card}.empty:IsShown(), {card}.url:IsShown()") == (False, False)
-    assert "Screenshots" in game.run(f"return {card}.hint:GetText()")
+    assert "by themselves" in game.run(f"return {card}.hint:GetText()")
     rows = f"{card}.list.box.rows"
     # the thumbnail has the shape of the screen and loads from where the file was found
     assert game.run(f"return {rows}[2].tex.texture, {rows}[2].tex:GetWidth(), {rows}[2].tex:GetHeight()") == ("Interface\\AddOns\\WoWScrnShot_111426_101010.jpg", 36, 20)
@@ -386,3 +386,48 @@ def test_when_the_game_cannot_tell_the_screenshots_folder_is_tried_underneath(ga
     )
     # the row is named by when and where, and does not repeat the date under it
     assert game.run(f"return {row}.sub:GetText()") == "game screenshot"
+
+
+def test_take_screenshot_puts_the_picture_in_the_note(game):
+    # Forever loads pictures straight from the Screenshots folder (seen in the client, 16/11): the button takes
+    # the screenshot with the book out of the way and the note gets it, with nothing copied or typed
+    game.run("MOCK.taken = 0; Screenshot = function() MOCK.taken = MOCK.taken + 1 end")
+    game.run("ns.Toggle(1); local n = ns.Notes.Create({ title = 'Fotos' }); ns.UI.views[1].Select(n.id); MOCK.noteId = n.id")
+    v = "ns.UI.views[1]"
+    assert game.run(f"return {v}.takeShot:IsShown(), {v}.takeShot:IsEnabled()") == (True, True)
+    game.run(f"{v}.takeShot:GetScript('OnClick')({v}.takeShot)")
+    assert game.run("return ns.UI.frame:GetAlpha(), MOCK.taken") == (0, 0)  # the book is out of the picture first
+    game.run(f"{v}.takeShot:GetScript('OnClick')({v}.takeShot)")  # a second click while it is busy does nothing
+    # a tenth of a second later the game is asked for the picture (the 3 s safety net has not run yet)
+    game.run("local t = MOCK.timers; MOCK.timers = { t[2] }; t[1]()")
+    assert game.run("return MOCK.taken") == 1
+    game.fire("SCREENSHOT_SUCCEEDED")
+    stamp = game.run("local a = ns.Char().album; return a[#a].stamp")
+    assert game.run("return ns.UI.frame:GetAlpha()") == 1
+    assert list(game.run("return ns.Notes.Get(MOCK.noteId).images").values()) == [f"WoWScrnShot_{stamp}.jpg"]
+    game.m.runTimers()
+    # a screenshot taken by hand while nothing is pending is not added to any note
+    game.fire("SCREENSHOT_SUCCEEDED")
+    assert len(game.run("return ns.Notes.Get(MOCK.noteId).images")) == 1
+
+
+def test_the_book_comes_back_when_the_game_never_takes_the_screenshot(game):
+    game.run("Screenshot = function() end")
+    game.run("ns.Toggle(1); local n = ns.Notes.Create({ title = 'Fotos' }); ns.UI.views[1].Select(n.id); MOCK.noteId = n.id")
+    game.run("local b = ns.UI.views[1].takeShot; b:GetScript('OnClick')(b)")
+    assert game.run("return ns.UI.frame:GetAlpha()") == 0
+    game.m.runTimers()
+    assert game.run("return ns.UI.frame:GetAlpha()") == 1
+    assert game.run("return ns.Notes.Get(MOCK.noteId).images") is None or len(game.run("return ns.Notes.Get(MOCK.noteId).images")) == 0
+
+
+def test_a_screenshot_stamped_a_second_late_is_still_found(game):
+    # the album notes the time when the game says the screenshot is done; the file was named a moment before
+    game.fire("SCREENSHOT_SUCCEEDED")
+    game.run("local s = ns.Char().album[1]; s.stamp, s.t = '111626_142000', 5")
+    with_files(game, "Screenshots\\WoWScrnShot_111626_141959.jpg")
+    assert list(game.run("return ns.Images.EarlierStamps('111626_142000')").values()) == ["111626_141959", "111626_141958"]
+    assert game.run("return ns.Images.ByShot('111626_142000', 5)") == "WoWScrnShot_111626_141959.jpg"
+    items = game.run("return ns.Images.List()")
+    assert len(items) == 1 and items[1].file == "WoWScrnShot_111626_141959.jpg"
+    assert "Elwynn" in game.run("return ns.Images.Title('WoWScrnShot_111626_141959.jpg')")

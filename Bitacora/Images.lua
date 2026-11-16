@@ -171,11 +171,12 @@ end
 
 -- The path where this file loads, or nil. Looked for once per session, found or not: a file copied while
 -- playing shows up after a /reload anyway, and a reload starts the session again.
-function I.Locate(file)
+function I.Locate(file, fresh)
 	if not I.CanProbe() or type(file) ~= "string" then
 		return nil
 	end
-	if located[file] == nil then
+	-- fresh: a file that may appear while playing (a screenshot just taken) is looked for again every time
+	if located[file] == nil or (fresh and located[file] == false) then
 		located[file] = false
 		for _, folder in ipairs(I.FOLDERS) do
 			if way[2](probe, folder .. file) == true then
@@ -195,7 +196,8 @@ function I.Path(name)
 	if e then
 		return ns.IMAGE_FOLDER .. e.file
 	end
-	return I.Locate(name) or (ns.IMAGE_FOLDER .. name)
+	-- looked for again every time while it is missing: a screenshot added to a note a moment ago
+	return I.Locate(name, true) or (ns.IMAGE_FOLDER .. name)
 end
 
 -- Game screenshots ------------------------------------------------------------------------------------
@@ -222,13 +224,35 @@ function I.ShotFile(shot)
 	local base = "WoWScrnShot_" .. shot.stamp .. "."
 	local exts = shotExtensions()
 	if I.CanProbe() then
+		-- a screenshot of this session can show up at any moment; an older one is there or it is not
+		local fresh = (shot.t or 0) >= I.sessionStart
 		for _, ext in ipairs(exts) do
-			if I.Locate(base .. ext) then
+			if I.Locate(base .. ext, fresh) then
 				return base .. ext, true
+			end
+		end
+		-- The album stamps the screenshot when the game says it is done; the game names the file a moment
+		-- earlier. Across a change of second the two differ: the second before, and the one before that.
+		for _, earlier in ipairs(I.EarlierStamps(shot.stamp)) do
+			local file = "WoWScrnShot_" .. earlier .. "." .. exts[1]
+			if I.Locate(file, fresh) then
+				return file, true
 			end
 		end
 	end
 	return base .. exts[1], nil
+end
+
+I.sessionStart = time()
+
+-- "111626_141800" → { "111626_141759", "111626_141758" }
+function I.EarlierStamps(stamp)
+	local mo, d, y, h, mi, s = tostring(stamp):match("^(%d%d)(%d%d)(%d%d)_(%d%d)(%d%d)(%d%d)$")
+	if not mo then
+		return {}
+	end
+	local t = time({ year = 2000 + tonumber(y), month = tonumber(mo), day = tonumber(d), hour = tonumber(h), min = tonumber(mi), sec = tonumber(s) })
+	return { date("%m%d%y_%H%M%S", t - 1), date("%m%d%y_%H%M%S", t - 2) }
 end
 
 -- Every screenshot the album knows, of every character: stamp → { shot, who }.
@@ -260,8 +284,11 @@ function I.Title(name)
 	if stamp then
 		for _, c in pairs(ns.db and ns.db.chars or {}) do
 			for _, shot in ipairs(type(c) == "table" and c.album or {}) do
-				if type(shot) == "table" and shot.stamp == stamp then
-					return shot.caption or (ns.Album and ns.Album.Describe(shot)) or name
+				if type(shot) == "table" and shot.stamp then
+					local earlier = I.EarlierStamps(shot.stamp)
+					if shot.stamp == stamp or earlier[1] == stamp or earlier[2] == stamp then
+						return shot.caption or (ns.Album and ns.Album.Describe(shot)) or name
+					end
 				end
 			end
 		end
@@ -362,7 +389,7 @@ end
 
 -- The picture of a game screenshot: the helper's copy, or the game's own file wherever it loads from.
 -- Returns the name to hand to I.Path / UI.FitImage, or nil.
-function I.ByShot(stamp)
+function I.ByShot(stamp, t)
 	if not stamp then
 		return nil
 	end
@@ -371,7 +398,7 @@ function I.ByShot(stamp)
 			return e.file
 		end
 	end
-	local file, found = I.ShotFile({ stamp = stamp })
+	local file, found = I.ShotFile({ stamp = stamp, t = t })
 	return found and file or nil
 end
 

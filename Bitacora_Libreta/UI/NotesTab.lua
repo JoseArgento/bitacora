@@ -204,6 +204,60 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 	addImage:SetPoint("LEFT", imagesLabel, "RIGHT", 12, 0)
 	view.addImage = addImage
 
+	-- "Take screenshot": the book steps aside, the game takes the picture and it goes into this note. The
+	-- album hears about every screenshot (its file name included), and Forever loads pictures straight from
+	-- the Screenshots folder (seen in the client, 16/11): nothing to copy, nothing to type.
+	local capturing
+	local function finishCapture(shot)
+		if not capturing then
+			return
+		end
+		local id = capturing
+		capturing = nil
+		UI.frame:SetAlpha(1)
+		if shot and shot.stamp then
+			N.AddImage(id, (ns.Images.ShotFile(shot)))
+			view.ShowNote()
+			-- the file can take a moment to be readable: look again
+			C_Timer.After(1.5, function()
+				if view.selected == id then
+					view.ShowNote()
+				end
+			end)
+		end
+	end
+	local takeShot = UI.Button(editor, L.TAKE_SHOT, 120, function()
+		local note = current()
+		if not note or capturing then
+			return
+		end
+		capturing = note.id
+		UI.frame:SetAlpha(0)
+		C_Timer.After(0.1, function()
+			Screenshot()
+		end)
+		C_Timer.After(3, function()
+			finishCapture(nil) -- the game never said it took it: the book comes back anyway
+		end)
+	end)
+	takeShot:SetPoint("LEFT", addImage, "RIGHT", 8, 0)
+	takeShot:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_TOP")
+		GameTooltip:SetText(L.TAKE_SHOT)
+		GameTooltip:AddLine(L.TAKE_SHOT_TIP, 1, 1, 1, true)
+		GameTooltip:Show()
+	end)
+	takeShot:SetScript("OnLeave", function()
+		GameTooltip:Hide()
+	end)
+	takeShot:SetShown(ns.Album ~= nil) -- the notebook on its own does not hear about screenshots
+	view.takeShot = takeShot
+	ns.On("album", function(shot)
+		if capturing and type(shot) == "table" then
+			finishCapture(shot)
+		end
+	end)
+
 	local preview = P.Card(ADDON .. "ImagePreview", 548, 566, "")
 	preview.box = CreateFrame("Frame", nil, preview.body)
 	preview.box:SetPoint("TOP", 0, 0)
@@ -478,6 +532,7 @@ UI.RegisterTab("TAB_NOTES", "notes", function(page)
 			end
 		end
 		addImage:SetEnabled(#images < MAX_THUMBS)
+		takeShot:SetEnabled(#images < MAX_THUMBS)
 		view.ShowLinks()
 		view.RefreshList(true)
 	end

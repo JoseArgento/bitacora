@@ -40,7 +40,7 @@ UI.RegisterTab("TAB_ALBUM", "album", function(page)
 		if shot.caption then
 			table.insert(bits, 1, A.Describe(shot))
 		end
-		if ns.Images.ByShot(shot.stamp) then
+		if ns.Images.ByShot(shot.stamp, shot.t) then
 			table.insert(bits, L.ALBUM_HAS_PHOTO)
 		end
 		row.bottom:SetText(table.concat(bits, " · "))
@@ -144,7 +144,7 @@ UI.RegisterTab("TAB_ALBUM", "album", function(page)
 			table.insert(lines, L.WITH:format(table.concat(shot.group, ", ")))
 		end
 		facts:SetText(table.concat(lines, "\n"))
-		local picture = ns.Images.ByShot(shot.stamp)
+		local picture = ns.Images.ByShot(shot.stamp, shot.t)
 		photoBox:SetShown(picture ~= nil)
 		noPhoto:SetShown(picture == nil)
 		if picture then
