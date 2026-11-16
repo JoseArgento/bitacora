@@ -30,7 +30,7 @@ El diario de a bordo de tus personajes de **WoW Forever**: una libreta, un diari
   - Una nota puede ser de todos tus personajes o de uno solo.
   - Shift-click en un ítem, una misión o un logro lo linkea en la nota.
   - **Notas pegadas a cosas:** pegás una nota a un PNJ (tu objetivo), a un ítem linkeado o a la zona. Aparece en el tooltip del PNJ o del ítem, y te avisa en el chat cuando entrás a esa zona.
-  - **Imágenes:** hasta 4 por nota (ver más abajo).
+  - **Imágenes:** hasta 4 por nota, elegidas de una lista con miniaturas (ver más abajo). Los **links** de ítems se ven en tinta sobre el pergamino (los blancos, grises y verdes del juego no se leían) y se guardan con el color del juego.
 - **Diario**
   - Se escribe solo: el día que empezó, cada nivel, la primera vez en cada zona, jefes (marca la primera vez), muertes, misiones, botín de la calidad que elijas (épico por defecto), logros, oro (1, 10, 100, 1000) y tiempo jugado.
   - **Lo de Forever:** los desafíos del Legado salen con sus puntos ("Desafío del Legado: Explorador (+3 puntos)"), tu primer campamento y cada plano de campamento que aprendés.
@@ -88,18 +88,20 @@ Las partes de arriba usan `Bitacora_Datos`, que es donde se guardan tus cosas. P
 
 ## Instalar
 
-1. **Creá la carpeta `Interface\AddOns\BitacoraImagenes\`** (vacía, a mano: un addon no puede crear carpetas). Ahí van las imágenes que ponés en las notas; está afuera de la carpeta del addon para que una actualización no te las borre. Si no vas a usar imágenes, igual no molesta.
+1. Para poner **imágenes** en las notas y ver las **fotos del álbum**, usá el [ayudante de capturas](ayudante/LEEME.md): crea la carpeta `Interface\AddOns\BitacoraImagenes\` por vos (un addon no puede crear carpetas) y la llena. Si no vas a usar imágenes, salteá este paso.
 2. Copiá a `Interface\AddOns\`, dentro de la carpeta de Forever del juego (`World of Warcraft\_forever_\`), la carpeta `Bitacora_Datos` y además `Bitacora` (todo junto) o las partes que quieras.
 
 ## Imágenes en la libreta
 
-El juego no puede abrir archivos de cualquier lado: solo carga imágenes de la carpeta de addons. Por eso:
-- **Formato:** PNG, JPG, TGA o BLP.
-- **Medidas:** lados potencia de 2 (64, 128, 256, 512…).
-- **Sin reiniciar:** un archivo nuevo aparece con `/reload` (desde 9.0.1, según [warcraft.wiki.gg](https://warcraft.wiki.gg/wiki/API:TextureBase_SetTexture)).
-- **El nombre lo escribís vos:** el addon no puede listar la carpeta. Solo acepta un nombre simple (`mapa.png`), así una nota no puede apuntar a otra parte.
+El juego no deja que un addon cree carpetas, lea el portapapeles ni vea qué archivos hay, y solo carga imágenes de la carpeta de addons. Para eso está el **[ayudante de capturas](ayudante/LEEME.md)**, un script de Windows chico y de código abierto (sin red, sin permisos de administrador) que lo hace desde afuera del juego:
 
-La pestaña **Imágenes** de la página web lleva cualquier imagen a potencia de 2, con márgenes transparentes si no es cuadrada, y te dice qué nombre escribir.
+- **Instalar.bat**, una vez: crea `Interface\AddOns\BitacoraImagenes\`, convierte las imágenes que ya tuvieras ahí y deja el atajo **Ctrl+Alt+V**.
+- **Ctrl+Alt+V**: guarda lo que copiaste (un recorte con Win+Shift+S, una imagen de una página, un archivo copiado en el Explorador). Sin nada copiado, trae tu última captura del juego.
+- **Traer capturas del juego.bat**: copia tus capturas adonde Bitácora puede mostrarlas; el Álbum les pone la foto.
+
+En el juego, *Agregar imagen* abre una tarjeta con **la lista de lo que hay**, con miniaturas: elegís, la ves en grande, le ponés un nombre tuyo si querés, y "Poner en la nota". Las capturas nuevas aparecen después de *Recargar* (un `/reload`). Nadie escribe nombres de archivo; si en una nota vieja quedó uno mal escrito (`foto.png` por `foto.jpg`), Bitácora lo encuentra igual por el nombre.
+
+Sin el ayudante sigue andando como antes: ponés el archivo en esa carpeta (PNG, TGA o BLP; un nombre simple como `mapa.png`, así una nota no puede apuntar a otra parte) y lo escribís con "Escribir el nombre". La pestaña **Imágenes** de la página web lleva cualquier imagen a potencia de 2 y te dice qué nombre escribir.
 
 ## La página web
 
@@ -117,7 +119,7 @@ La pestaña **Imágenes** de la página web lleva cualquier imagen a potencia de
 
 ## ¿Y Forever Journal o Forever Told?
 
-Hay otros diarios para Forever, y son buenos: [Forever Journal](https://www.curseforge.com/wow/addons/forever-journal) tiene el viaje por capítulos, metas, compañeros, un libro de misiones y recordatorios dentro del juego; [Forever Told](https://www.curseforge.com/wow/addons/forever-told) tiene crónica de guild, "se busca", epitafios Hardcore y capturas automáticas. Si querés eso, instalalos. Lo que Bitácora tiene y ellos no: **la página web** (el libro de a bordo, las postales, el álbum armado con tus capturas reales, los personajes lado a lado, la crónica de la guild semana a semana), las **notas que salen en el tooltip** del PNJ o del ítem, **imágenes** en las notas, los hitos propios de Forever (Legado, campamento, planos), el calendario del juego como recordatorios, castellano de verdad, y 234 tests que se corren contra la API de Forever antes de cada versión.
+Hay otros diarios para Forever, y son buenos: [Forever Journal](https://www.curseforge.com/wow/addons/forever-journal) tiene el viaje por capítulos, metas, compañeros, un libro de misiones y recordatorios dentro del juego; [Forever Told](https://www.curseforge.com/wow/addons/forever-told) tiene crónica de guild, "se busca", epitafios Hardcore y capturas automáticas. Si querés eso, instalalos. Lo que Bitácora tiene y ellos no: **la página web** (el libro de a bordo, las postales, el álbum armado con tus capturas reales, los personajes lado a lado, la crónica de la guild semana a semana), las **notas que salen en el tooltip** del PNJ o del ítem, **imágenes** en las notas, los hitos propios de Forever (Legado, campamento, planos), el calendario del juego como recordatorios, castellano de verdad, y 259 tests que se corren contra la API de Forever antes de cada versión.
 
 ## Privacidad
 
@@ -130,16 +132,20 @@ El addon no manda nada tuyo a nadie si no prendés la crónica de la guild. Lo �
 **Probado:**
 - ✅ **Cada función, evento y template existe en Forever 1.60.1.** Lo revisa `tools/check_api.py` contra los dumps de [Ketho/BlizzardInterfaceResources](https://github.com/Ketho/BlizzardInterfaceResources) y el código de la UI de [Gethe/wow-ui-source](https://github.com/Gethe/wow-ui-source), rama `forever`. Ejemplos: `ChatFrameUtil.InsertLink` (Forever no tiene `ChatEdit_InsertLink`), `RaidWarningUtil.AddMessage` (`RaidNotice_AddMessage` solo existe con los alias viejos), `TooltipDataProcessor`, `ScrollingEditBoxTemplate`, el compartimento de addons de Forever. El script encuentra nombres inventados o mal escritos.
 - ✅ [forever-lint](https://github.com/JoseArgento/forever-lint): solo la nota FL012 (las cuentas de prueba no pueden mandar mensajes de addon), que la crónica ya maneja. [Addon Sentry](https://github.com/JoseArgento/addon-sentry) da "Sin señales de riesgo".
-- ✅ **234 tests.**
-  - 147 corren el addon en Lua 5.1 (el Lua de WoW), con un reemplazo chico del cliente (`tests/wow_mock.lua`): eventos, datos guardados y recargados, recordatorios (incluido el semanal), tooltips, links con shift-click, nombres de imágenes, patrones de botín en varios idiomas, valores secretos, cada pestaña armándose sin errores de Lua, el progreso contra una guía de aventuras de prueba, la crónica (mensajes malos, con códigos de color o con código adentro, inundación, tope de 300, dos jugadores pasándose hitos), los reportes de la beta (muertes dobles, zona vieja al llegar), el tiempo por nivel (incluido el reajuste con `/played`), los compañeros (tope, valores secretos, otros reinos), los recordatorios que vencieron mientras no jugabas, posponer y el reloj del reino, el libro (páginas, marcadores, tapa, fuentes) y las partes sueltas: cada una sola, varias juntas compartiendo los datos, y el completo con una parte (la parte se hace a un lado).
+- ✅ **259 tests.**
+  - La mayoría corren el addon en Lua 5.1 (el Lua de WoW), con un reemplazo chico del cliente (`tests/wow_mock.lua`): eventos, datos guardados y recargados, recordatorios (incluido el semanal), tooltips, links con shift-click, nombres de imágenes, patrones de botín en varios idiomas, valores secretos, cada pestaña armándose sin errores de Lua, el progreso contra una guía de aventuras de prueba, la crónica (mensajes malos, con códigos de color o con código adentro, inundación, tope de 300, dos jugadores pasándose hitos), los reportes de la beta (muertes dobles, zona vieja al llegar), el tiempo por nivel (incluido el reajuste con `/played`), los compañeros (tope, valores secretos, otros reinos), los recordatorios que vencieron mientras no jugabas, posponer y el reloj del reino, el libro (páginas, marcadores, tapa, fuentes) y las partes sueltas: cada una sola, varias juntas compartiendo los datos, y el completo con una parte (la parte se hace a un lado).
   - El resto prueban la página: lee el archivo igual que Lua 5.1, empareja capturas y arma los textos.
+  - 10 corren el **ayudante de capturas** de verdad en Windows (GitHub Actions, con Windows PowerShell 5.1 y PowerShell 7): instala en un juego de mentira, convierte, pega del portapapeles, trae capturas; lo que sale se abre con Pillow (medidas, que arriba siga siendo arriba) y lo lee el Lua del propio addon. Otras 4 revisan el script sin correrlo: que no use la red, que no borre nada, que esté guardado como Windows lo necesita.
 - ✅ Las dos páginas probadas en Chromium: cada pestaña, el tiempo por nivel y los compañeros, capturas y PNG reales, escritorio y celular, claro y oscuro, y que no aparezca ningún "null" ni "undefined" en pantalla.
 
 **En el cliente** (desde el lanzamiento, 4 y 5/11): el libro con sus texturas y fuentes, los marcadores, el botón del minimapa, las imágenes PNG desde `BitacoraImagenes`, los nombres de las capturas (`WoWScrnShot_MMDDYY_HHMMSS`), el diario, el álbum, los recordatorios por zona, el progreso (tiempo por nivel, compañeros) y las opciones del juego.
 
+**Visto en los datos guardados** (16/11): los jefes de mazmorra se anotan (el evento de jefe salta en Forever: 122 anotados), 665 misiones, 111 capturas en el álbum.
+
 **Todavía sin ver ⏳:**
 - **La guía de aventuras:** con la guía nunca abierta `EJ_GetInstanceByIndex` no listó nada; el addon ahora recorre los niveles antes de rendirse, pero falta confirmarlo.
-- **Los eventos de jefes:** que `ENCOUNTER_END` o `BOSS_KILL` salten en las mazmorras de Forever (todavía no entré a una).
+- **Las imágenes del ayudante dentro del juego:** el script está probado en Windows y el addon contra su lista, pero falta ver en el cliente la tarjeta de imágenes con las miniaturas TGA, y si una captura recién pegada aparece con *Recargar* o pide reiniciar el juego.
+- **Los links en tinta y el panel de opciones con scroll:** probados contra el formato de links que guarda Forever (`|cnIQ2:`, visto en los datos guardados del 16/11), falta verlos en pantalla.
 - **El calendario:** los campos de `C_Calendar.GetDayEvent` (tomados como en retail) y el popup de tres botones.
 - **El Legado:** que `C_Traits.GetTraitCurrencyForAchievement` dé los puntos, y qué abre `ToggleLegacyChallenges` antes de desbloquearlo.
 - **El campamento:** los IDs del hechizo de fogata y de los buffs, y que `C_RestrictedActions` avise cuando las auras son secretas (si no, el aviso se apaga solo por la sesión).

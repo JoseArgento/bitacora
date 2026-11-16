@@ -152,20 +152,20 @@ function Potencia2([double]$N) {
     return $p
 }
 
-# Guarda la imagen como TGA de 24 bits sin comprimir, filas de abajo hacia arriba (como las texturas que
-# el juego ya carga de estos addons), con lados potencia de dos: achicada hasta $LADO_MAX y apretada al
+# Guarda la imagen como TGA de 32 bits sin comprimir, filas de abajo hacia arriba (igual que las texturas
+# que el juego ya carga de estos addons), con lados potencia de dos: achicada hasta $LADO_MAX y apretada al
 # cuadro. La forma real se anota en la lista.
 function Guardar-Tga([System.Drawing.Image]$Origen, [string]$Destino) {
     $escala = [Math]::Min(1.0, $LADO_MAX / [double][Math]::Max($Origen.Width, $Origen.Height))
     $tw = Potencia2 ($Origen.Width * $escala)
     $th = Potencia2 ($Origen.Height * $escala)
-    $bmp = New-Object System.Drawing.Bitmap($tw, $th, [System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
+    $bmp = New-Object System.Drawing.Bitmap($tw, $th, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
     $g = [System.Drawing.Graphics]::FromImage($bmp)
     $atributos = New-Object System.Drawing.Imaging.ImageAttributes
     try {
         $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
         $g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
-        $g.Clear([System.Drawing.Color]::Black)
+        $g.Clear([System.Drawing.Color]::Black)   # fondo opaco: lo transparente de un PNG queda negro
         $atributos.SetWrapMode([System.Drawing.Drawing2D.WrapMode]::TileFlipXY)   # sin borde oscuro
         $cuadro = New-Object System.Drawing.Rectangle(0, 0, $tw, $th)
         $g.DrawImage($Origen, $cuadro, 0, 0, $Origen.Width, $Origen.Height, [System.Drawing.GraphicsUnit]::Pixel, $atributos)
@@ -174,7 +174,7 @@ function Guardar-Tga([System.Drawing.Image]$Origen, [string]$Destino) {
         $g.Dispose()
     }
     $cuadro = New-Object System.Drawing.Rectangle(0, 0, $tw, $th)
-    $bits = $bmp.LockBits($cuadro, [System.Drawing.Imaging.ImageLockMode]::ReadOnly, [System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
+    $bits = $bmp.LockBits($cuadro, [System.Drawing.Imaging.ImageLockMode]::ReadOnly, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
     try {
         $paso = [Math]::Abs($bits.Stride)
         $bytes = New-Object byte[] ($paso * $th)
@@ -189,14 +189,14 @@ function Guardar-Tga([System.Drawing.Image]$Origen, [string]$Destino) {
     $cabecera[13] = ($tw -shr 8) -band 0xFF
     $cabecera[14] = $th -band 0xFF
     $cabecera[15] = ($th -shr 8) -band 0xFF
-    $cabecera[16] = 24
-    $cabecera[17] = 0                      # origen abajo a la izquierda
+    $cabecera[16] = 32
+    $cabecera[17] = 8                      # 8 bits de alfa; origen abajo a la izquierda
     $temporal = $Destino + '.tmp'
     $salida = [System.IO.File]::Create($temporal)
     try {
         $salida.Write($cabecera, 0, 18)
         for ($y = $th - 1; $y -ge 0; $y--) {
-            $salida.Write($bytes, $y * $paso, $tw * 3)   # BGR, como lo quiere el TGA
+            $salida.Write($bytes, $y * $paso, $tw * 4)   # BGRA, como lo quiere el TGA
         }
     } finally {
         $salida.Dispose()
@@ -236,8 +236,8 @@ function Es-Hueco-Libre([System.IO.FileInfo]$Archivo) {
 # ve con /reload. Por eso la carpeta guarda "huecos": archivos mínimos, con nombre, que una captura pisa.
 function Completar-Huecos([string]$Carpeta) {
     $libres = @(Get-ChildItem -LiteralPath $Carpeta -Filter 'captura_*.tga' | Where-Object { Es-Hueco-Libre $_ }).Count
-    $vacio = New-Object byte[] (18 + 4 * 4 * 3)
-    $vacio[2] = 2; $vacio[12] = 4; $vacio[14] = 4; $vacio[16] = 24
+    $vacio = New-Object byte[] (18 + 4 * 4 * 4)
+    $vacio[2] = 2; $vacio[12] = 4; $vacio[14] = 4; $vacio[16] = 32; $vacio[17] = 8
     $n = 1
     while ($libres -lt $TOTAL_HUECOS -and $n -le 999) {
         $ruta = Join-Path $Carpeta (Nombre-Hueco $n)

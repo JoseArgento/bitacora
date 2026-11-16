@@ -37,8 +37,8 @@ Las pruebas (`tests/test_ayudante.py`) lo corren de verdad en Windows, con Windo
 
 ### Por qué TGA, por qué "huecos"
 
-- Cada imagen se guarda como **TGA con lados potencia de dos** (hasta 1024×512): es el formato que el juego carga seguro. La imagen se aprieta para entrar en ese cuadro y su forma verdadera se anota en la lista; Bitácora la muestra con esa forma.
-- El juego solo conoce los archivos que existían **cuando arrancó**. Un archivo nuevo no lo ve hasta reiniciar, pero uno que ya existía y cambió, sí (con `/reload`). Por eso la carpeta tiene 24 **huecos** (`captura_001.tga`, …): archivos mínimos que una captura pisa. Cuando el juego está cerrado, el ayudante repone los huecos usados. ⏳ Esto está pensado así por cómo se comportan los clientes modernos; en Forever todavía no lo vi con mis ojos: si una captura recién pegada no aparece después de *Recargar*, reiniciá el juego y contame.
+- Cada imagen se guarda como **TGA de 32 bits con lados potencia de dos** (hasta 1024×1024; una captura de pantalla queda en 1024×512): el mismo formato que las texturas que el juego ya carga de estos addons. La imagen se aprieta para entrar en ese cuadro y su forma verdadera se anota en la lista; Bitácora la muestra con esa forma.
+- Los **huecos**: la carpeta tiene 24 archivos mínimos con nombre (`captura_001.tga`, …) que una captura pisa. Según [warcraft.wiki.gg](https://warcraft.wiki.gg/wiki/API:TextureBase_SetTexture), desde la versión 9.0.1 un archivo nuevo ya aparece con `/reload`; los huecos están por las dudas: un archivo que existía cuando el juego arrancó y después cambió se ve seguro. Cuando el juego está cerrado, el ayudante repone los que se usaron. ⏳ En Forever todavía no lo vi con mis ojos: si una captura recién pegada no aparece después de *Recargar*, reiniciá el juego y contame.
 - La lista es `Indice.lua`, un addon mínimo (solo datos). Bitácora la revisa entrada por entrada antes de usarla.
 
 ## Si algo no anda

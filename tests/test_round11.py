@@ -233,3 +233,19 @@ def test_the_album_shows_the_photo_the_helper_brought(game):
     # "Pictures" opens the same card the notes use
     game.run(f"{view}.pictures:GetScript('OnClick')({view}.pictures)")
     assert game.run("return ns.UI.imagePicker:IsShown(), #ns.UI.imagePicker.items") == (True, 4)
+
+
+def test_forevers_named_colour_links_read_as_plain_text_in_previews_and_search(game):
+    # Forever writes item links as "|cnIQ1:|Hitem:…|h[Linen Cloth]|h|r": the list preview showed the colour code
+    body = "120 de |cnIQ1:|Hitem:2589::::::::16:1485:::::::::|h[Linen Cloth]|h|r para el cambio"
+    game.m.body = body
+    assert game.run("return ns.PlainText(MOCK.body)") == "120 de [Linen Cloth] para el cambio"
+    game.run("ns.Toggle(1); local n = ns.Notes.Create({ title = 'Lino', body = MOCK.body }); ns.UI.views[1].Select(n.id); MOCK.noteId = n.id")
+    rows = "ns.UI.views[1].list.box.rows"
+    assert game.run(f"return {rows}[1].sub:GetText()") == "120 de [Linen Cloth] para el cambio"
+    # on the page the link is in ink, and what is saved is exactly what the game wrote
+    assert "|cff3a2313|Hitem:2589::::::::16:1485:::::::::|h[Linen Cloth]|h|r" in game.run("return ns.UI.views[1].body:GetText()")
+    game.run("ns.UI.views[1].body:SetFocus(); ns.UI.views[1].body:Insert('!')")
+    game.m.runTimers()
+    assert game.run("return ns.Notes.Get(MOCK.noteId).body") == body + "!"
+    assert len(game.run("return ns.Notes.Search('linen cloth', nil, ns.CharKey())")) == 1

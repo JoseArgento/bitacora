@@ -161,11 +161,12 @@ def test_pictures_that_were_already_in_the_folder_become_textures(shell, fake_ga
     assert (by_file["arg.tga"].w, by_file["arg.tga"]["h"], by_file["arg.tga"]["from"]) == (3000, 2000, "arg.jpg")
     assert by_file["postal_de_ana.tga"]["from"] is None  # a name with spaces is not one the addon accepts
     with Image.open(d / "arg.tga") as im:
-        assert im.size == (1024, 512) and im.mode == "RGB"
-        r, g, b = im.getpixel((10, 10))
-        assert r > 150 and b < 90  # the top is still the top
-        r, g, b = im.getpixel((10, 500))
-        assert b > 150 and r < 90
+        # 32 bits, like the textures the game already loads from these addons; opaque
+        assert im.size == (1024, 512) and im.mode == "RGBA"
+        r, g, b, a = im.getpixel((10, 10))
+        assert r > 150 and b < 90 and a == 255  # the top is still the top
+        r, g, b, a = im.getpixel((10, 500))
+        assert b > 150 and r < 90 and a == 255
     assert (d / "arg.jpg").exists()  # the original is left alone
 
 
@@ -183,7 +184,7 @@ def test_paste_fills_a_slot_and_bring_copies_the_screenshots(shell, fake_game, t
     with Image.open(d / "captura_001.tga") as im:
         assert im.size == (1024, 512)
         assert im.getpixel((500, 5))[0] > 150 and im.getpixel((500, 505))[2] > 150
-    assert (d / "captura_001.tga").stat().st_size == 18 + 1024 * 512 * 3
+    assert (d / "captura_001.tga").stat().st_size == 18 + 1024 * 512 * 4
     assert len(free_slots(fake_game)) == 24 and "captura_001.tga" not in free_slots(fake_game)
     entries = index(fake_game)
     assert [(e.file, e.title, e.w, e.h) for e in entries] == [("captura_001.tga", "Molten Core", 1920, 1080)]
@@ -247,8 +248,8 @@ def test_paste_saves_the_picture_in_the_clipboard(shell, fake_game):
     assert len(entries) == 1 and (entries[0].w, entries[0].h) == (800, 600) and entries[0].shot is None
     with Image.open(folder(fake_game) / entries[0].file) as im:
         assert im.size == (1024, 512)
-        r_, g_, b_ = im.getpixel((300, 300))
-        assert g_ > 120 and r_ < 80 and b_ < 110
+        r_, g_, b_, a_ = im.getpixel((300, 300))
+        assert g_ > 120 and r_ < 80 and b_ < 110 and a_ == 255
 
 
 @windows
