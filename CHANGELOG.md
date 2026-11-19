@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- **"Days played" counted minutes.** Progress counted every minute that had a journal entry as a day (a level 35 character showed 552 days). It counts calendar days now.
+- **No more "Open the Adventure Guide (Shift+J)".** In Forever that key opens the guild window. When the game lists no dungeons, the page just says so.
+
 ## 0.3.0 (2026-11-16)
 
 - **Pictures without typing file names.** "Add image" opens a card with the list of the pictures there are (thumbnails, date, size, how many notes use each): pick one, see it big, give it a name of your own, "Add to the note". The list comes from the new **capture helper** (`ayudante/`, a Windows PowerShell script on GitHub, not inside the addon's zip): it creates `Interface\AddOns\BitacoraImagenes` (an addon cannot create folders), saves what you copied when you press **Ctrl+Alt+V** (an addon cannot read the clipboard) and brings your game screenshots. Pictures keep their shape (thumbnails and the big view were square); a name mistyped in an old note (`arg.png` for `arg.jpg`) is found by its name. Without the helper, "Type the name" works as before.

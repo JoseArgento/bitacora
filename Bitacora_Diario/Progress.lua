@@ -18,8 +18,9 @@ function P.Stats(charKey)
 	local days, deathsBy = {}, {}
 	s.legacy = 0
 	for _, e in ipairs(c.journal) do
-		if e.d then
-			days[e.d] = true
+		-- d is "YYYY-MM-DD HH:MM": the day is its first ten characters (the whole string counted minutes)
+		if type(e.d) == "string" then
+			days[e.d:sub(1, 10)] = true
 		end
 		if e.kind == "achievement" and type(e.legacy) == "number" then
 			s.legacy = s.legacy + e.legacy

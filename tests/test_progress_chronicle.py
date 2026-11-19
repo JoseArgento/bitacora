@@ -54,6 +54,22 @@ def test_numbers_from_the_journal(game):
     assert s.days == 1 and s.zones >= 1
 
 
+def test_days_played_counts_days_not_minutes(game):
+    # three entries on one day at different minutes, and one on another day: two days
+    game.run(
+        """
+        local c = ns.Char()
+        c.journal = {
+            { t = 1, d = "2026-11-18 10:07", kind = "death" },
+            { t = 2, d = "2026-11-18 12:14", kind = "death" },
+            { t = 3, d = "2026-11-18 22:25", kind = "zone" },
+            { t = 4, d = "2026-11-19 01:54", kind = "zone" },
+        }
+        """
+    )
+    assert game.ns.Progress.Stats().days == 2
+
+
 def test_dungeons_and_raids_from_the_encounter_journal(game):
     game.fire("ENCOUNTER_END", 2741, "Rhahk'Zor", 1, 5, 1)
     game.m.gametime = game.m.gametime + 60

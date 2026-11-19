@@ -131,7 +131,6 @@ function P.Rows(charKey)
 		else
 			-- two short lines instead of one that the row cuts off
 			line(L.PROG_EJ_EMPTY, nil, { note = true })
-			line(L.PROG_EJ_EMPTY_2, nil, { note = true })
 		end
 	end
 	for _, raid in ipairs({ false, true }) do
