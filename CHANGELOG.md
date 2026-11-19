@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.1 (2026-11-19)
 
 - **"Days played" counted minutes.** Progress counted every minute that had a journal entry as a day (a level 35 character showed 552 days). It counts calendar days now.
 - **No more "Open the Adventure Guide (Shift+J)".** In Forever that key opens the guild window. When the game lists no dungeons, the page just says so.
